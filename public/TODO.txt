@@ -1,0 +1,1 @@
+Contents from both script.js and index.html will be moved into js and css for better readability.

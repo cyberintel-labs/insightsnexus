@@ -1,0 +1,95 @@
+html,
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+#toolbar {
+    background: #333;
+    color: white;
+    padding: 8px;
+    display: flex;
+    gap: 10px;
+    position: relative;
+    z-index: 10;
+}
+
+.menu {
+    position: relative;
+}
+
+.menu>button {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.dropdown,
+.sub-dropdown {
+    position: absolute;
+    background: #fff;
+    color: black;
+    border: 1px solid #ccc;
+    display: none;
+    flex-direction: column;
+    min-width: 150px;
+    z-index: 1000;
+}
+
+.dropdown button,
+.sub-dropdown button,
+.sub-dropdown select {
+    background: none;
+    border: none;
+    padding: 8px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown button:hover {
+    background-color: #eee;
+}
+
+#cy {
+    position: absolute;
+    top: 48px;
+    /* height of toolbar */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+#status {
+    position: absolute;
+    top: 48px;
+    left: 10px;
+    color: #0074D9;
+    z-index: 1001;
+    background: white;
+    padding: 2px 6px;
+    border: 1px solid #ccc;
+}
+
+#context-menu {
+    position: absolute;
+    display: none;
+    background: #eee;
+    border: 1px solid #ccc;
+    padding: 5px;
+    list-style: none;
+    z-index: 9999;
+}
+
+#context-menu li {
+    cursor: pointer;
+    padding: 5px;
+}
+
+#context-menu li:hover {
+    background-color: #ddd;
+}

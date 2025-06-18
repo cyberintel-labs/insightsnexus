@@ -1,0 +1,22 @@
+{
+  "name": "investigating",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.19",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "cytoscape": "^3.32.0",
+    "express": "^5.1.0"
+  }
+}

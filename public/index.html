@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Cytoscape Node Editor</title>
+    <link rel="stylesheet" href="css/styles.css"/>
+</head>
+
+<body>
+
+    <div id="toolbar">
+        <div class="menu">
+            <button onclick="toggleDropdown('file-dropdown')">File</button>
+            <div id="file-dropdown" class="dropdown">
+                <button onclick="event.stopPropagation(); toggleDropdown('load-dropdown')">Load</button>
+                <div id="load-dropdown" class="sub-dropdown">
+                    <select id="file-picker"></select>
+                    <button onclick="confirmLoad()">Load Selected</button>
+                </div>
+                <button onclick="saveGraph()">Save</button>
+            </div>
+        </div>
+        <div class="menu">
+            <button onclick="toggleDropdown('selection-dropdown')">Tools</button>
+            <div id="selection-dropdown" class="dropdown">
+                <button onclick="setMode('connect')">Connect Nodes</button>
+            </div>
+        </div>
+        <div class="menu">
+            <button onclick="ur.undo()">Undo</button>
+            <button onclick="ur.redo()">Redo</button>
+        </div>
+    </div>
+
+    <p id="status"></p>
+    <div id="cy"></div>
+
+    <ul id="context-menu">
+        <li onclick="handleContextAction('edit')">Edit</li>
+        <li onclick="handleContextAction('delete')">Delete</li>
+        <li onclick="handleContextAction('sherlock')">Run Sherlock</li>
+        <li onclick="handleContextAction('connect')">Create Connection</li>
+    </ul>
+
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/cytoscape-edgehandles/cytoscape-edgehandles.min.js"></script>
+    <script src="https://unpkg.com/cytoscape-undo-redo/cytoscape-undo-redo.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
