@@ -5,9 +5,7 @@
     <title>Cytoscape Node Editor</title>
     <link rel="stylesheet" href="css/styles.css"/>
 </head>
-
 <body>
-
     <div id="toolbar">
         <div class="menu">
             <button onclick="toggleDropdown('file-dropdown')">File</button>
@@ -20,16 +18,18 @@
                 <button onclick="saveGraph()">Save</button>
             </div>
         </div>
+        <!---
         <div class="menu">
             <button onclick="toggleDropdown('selection-dropdown')">Tools</button>
             <div id="selection-dropdown" class="dropdown">
-                <button onclick="setMode('connect')">Connect Nodes</button>
+                <button onclick="handleContextAction('connect')">Connect Nodes</button>
             </div>
         </div>
         <div class="menu">
             <button onclick="ur.undo()">Undo</button>
             <button onclick="ur.redo()">Redo</button>
         </div>
+        -->
     </div>
 
     <p id="status"></p>
@@ -45,7 +45,6 @@
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
     <script src="https://unpkg.com/cytoscape-edgehandles/cytoscape-edgehandles.min.js"></script>
     <script src="https://unpkg.com/cytoscape-undo-redo/cytoscape-undo-redo.js"></script>
-    <script src="script.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
-
 </html>

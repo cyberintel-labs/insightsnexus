@@ -36,7 +36,7 @@ const port = 3000;
 app.use(express.json());
 
 // Serve static files (your HTML, JS, etc.)
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "../src")));
 
 // Sherlock API Route
 app.post("/sherlock", (req, res): void => {

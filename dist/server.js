@@ -38,7 +38,7 @@ const port = 3000;
 // Middleware to parse JSON request bodies
 app.use(express_1.default.json());
 // Serve static files (your HTML, JS, etc.)
-app.use(express_1.default.static(path_1.default.join(__dirname, "../public")));
+app.use(express_1.default.static(path_1.default.join(__dirname, "../src")));
 // Sherlock API Route
 app.post("/sherlock", (req, res) => {
     const { username } = req.body;
