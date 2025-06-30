@@ -13,19 +13,20 @@ To start the server open command prompt in the main directory and execute the fo
 # Progress so far
 * Users should be able to create nodes to their desired locations.
 * Edit and delete nodes on screen.
-* Create connections up to 2 nodes at a time.
+* Shift + left click to create box selection.
+* Ctrl + left click to create manual selection.
+* Create multiple connections with the c key.
+* Ctrl + z = undo / Ctrl + y = redo.
 * Allowed a way to delete connections.
 * Save and load their current progress.
 * Implemented keyboard actions such as delete, undo, and redo.
 * Implemented sherlock for hunting down social media accounts.
 
 # TODO
-* Fix undo redo buttons (its kind of broken use keyboard shortcuts for now)
+* Implement proper unit testing.
 * Implement a visual indicator that sherlock is running.
 * Better spread out the sherlock results.
-* Implement proper unit testing.
 * Allow the user to create edge labels.
-* Allow the user to create multiple connections at a time (more than 2).
 * Allow the user to select from different node and connection designs.
 * Save and present the users actions in a history tab.
 * Redesign the visual aspects of the web application.

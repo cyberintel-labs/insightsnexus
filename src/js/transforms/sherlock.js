@@ -2,7 +2,7 @@ import { ur, cy } from "../main.js";
 
 export function runSherlock(node) {
     const username = node.data("label");
-    document.getElementById("status").innerText = `Sherlock: Searching "${username}"...`;
+    document.getElementById("sherlock-status").innerText = `Sherlock: Searching "${username}"...`;
 
     fetch("/sherlock", {
         method: "POST",
@@ -42,12 +42,12 @@ export function runSherlock(node) {
                 }
             });
 
-            document.getElementById("status").innerText = added
+            document.getElementById("sherlock-status").innerText = added
                 ? `Sherlock complete for "${username}"`
                 : `Sherlock complete (no new nodes)`;
         })
         .catch(err => {
             console.error("Sherlock error:", err);
-            document.getElementById("status").innerText = `Sherlock failed for "${username}"`;
+            document.getElementById("sherlock-status").innerText = `Sherlock failed for "${username}"`;
         });
 }

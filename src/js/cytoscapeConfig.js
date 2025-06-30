@@ -36,7 +36,7 @@ export const cy = cytoscape({
             }
         }
     ],
-    boxSelectionEnabled: true,
+    boxSelectionEnabled: false,
     userZoomingEnabled: true,
     userPanningEnabled: true
 });
