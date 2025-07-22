@@ -1,9 +1,32 @@
+/**
+ * OSINT Investigation Graph Analysis Server
+ * 
+ * This server provides the backend functionality for the OSINT investigation graph analysis tool.
+ * It handles Sherlock username searches, graph data persistence, and serves the frontend application.
+ * 
+ * Key Features:
+ * - Sherlock integration for username enumeration across social media platforms
+ * - Graph data save/load functionality for investigation persistence
+ * - Static file serving for the web interface
+ * - RESTful API endpoints for frontend communication
+ */
+
 import {exec, execSync} from "child_process";
 import path from "path";
 import fs from "fs";
 import express, {Request, Response} from "express";
 
-// Attempt to auto detect sherlock
+/**
+ * Sherlock Path Detection
+ * 
+ * Attempts to automatically detect the Sherlock executable in the system PATH.
+ * Sherlock is a tool that searches for usernames across hundreds of social media platforms.
+ * 
+ * Detection Strategy:
+ * 1. First tries Windows 'where' command
+ * 2. Falls back to Unix 'which' command
+ * 3. Sets empty string if not found (will cause API errors)
+ */
 let sherlockPath = "";
 try{
     // Attempt to find for windows systems
@@ -23,12 +46,25 @@ try{
 // const savesDir = path.join(__dirname, "../saves");
 // if(!fs.existsSync(savesDir)) fs.mkdirSync(savesDir);
 
+/**
+ * Directory Setup for Data Persistence
+ * 
+ * Creates necessary directories for storing investigation data:
+ * - graphSaveDir: Stores complete graph states for investigations
+ * - resultSaveDir: Caches Sherlock search results to avoid re-searching
+ */
 const graphSaveDir = path.join(__dirname, '../saves/graph');
 const resultSaveDir = path.join(__dirname, '../saves/results');
 
 if(!fs.existsSync(graphSaveDir)) fs.mkdirSync(graphSaveDir, {recursive: true});
 if(!fs.existsSync(resultSaveDir)) fs.mkdirSync(resultSaveDir, {recursive: true});
 
+/**
+ * Express Application Setup
+ * 
+ * Initializes the web server with middleware and static file serving.
+ * Port 3000 is used for local development.
+ */
 const app = express();
 const port = 3000;
 
@@ -38,7 +74,28 @@ app.use(express.json());
 // Serve static files (your HTML, JS, etc.)
 app.use(express.static(path.join(__dirname, "../src")));
 
-// Sherlock API Route
+/**
+ * Sherlock API Endpoint
+ * 
+ * POST /sherlock
+ * 
+ * Executes Sherlock username search and returns found social media platforms.
+ * 
+ * Input:
+ * - username: string - The username to search across social media platforms
+ * 
+ * Output:
+ * - services: string[] - Array of platform names where the username was found
+ * - error: string - Error message if search fails
+ * 
+ * Process:
+ * 1. Validates username input
+ * 2. Checks if Sherlock is available
+ * 3. Executes Sherlock command with --print-found flag
+ * 4. Parses output to extract found services
+ * 5. Caches results to avoid re-searching
+ * 6. Returns JSON response with found services
+ */
 app.post("/sherlock", (req, res): void => {
     const { username } = req.body;
     if(!username){
@@ -82,6 +139,27 @@ app.post("/sherlock", (req, res): void => {
     });
 });
 
+/**
+ * Graph Save Endpoint
+ * 
+ * POST /save
+ * 
+ * Saves the current graph state to a JSON file for later retrieval.
+ * 
+ * Input:
+ * - filename: string - Name for the saved file (sanitized for filesystem safety)
+ * - graphData: object - Complete Cytoscape graph data including nodes, edges, and layout
+ * 
+ * Output:
+ * - message: string - Success confirmation
+ * - error: string - Error message if save fails
+ * 
+ * Process:
+ * 1. Validates required parameters
+ * 2. Sanitizes filename to prevent path traversal attacks
+ * 3. Writes graph data as formatted JSON
+ * 4. Returns success/error status
+ */
 app.post("/save", (req: Request, res: Response) => {
     const { filename, graphData } = req.body;
 
@@ -105,7 +183,21 @@ app.post("/save", (req: Request, res: Response) => {
     });
 });
 
-// List saved files
+/**
+ * List Saved Graphs Endpoint
+ * 
+ * GET /saves
+ * 
+ * Returns a list of all saved graph files for the load dropdown.
+ * 
+ * Output:
+ * - string[] - Array of available .json filenames
+ * 
+ * Process:
+ * 1. Reads the graph save directory
+ * 2. Filters for .json files only
+ * 3. Returns array of filenames
+ */
 app.get("/saves", (req, res) => {
     fs.readdir(graphSaveDir, (err, files) => {
         if(err){
@@ -119,7 +211,25 @@ app.get("/saves", (req, res) => {
     });
 });
 
-// Load a specific saved graph
+/**
+ * Load Graph Endpoint
+ * 
+ * GET /load/:filename
+ * 
+ * Loads a specific saved graph file and returns its data.
+ * 
+ * Input:
+ * - filename: string (URL parameter) - Name of the file to load
+ * 
+ * Output:
+ * - object - Complete graph data in Cytoscape format
+ * - error: string - Error message if load fails
+ * 
+ * Process:
+ * 1. Constructs file path from filename parameter
+ * 2. Reads and parses JSON file
+ * 3. Returns graph data or error
+ */
 app.get("/load/:filename", (req, res) => {
     const filename = req.params.filename;
     const filePath = path.join(graphSaveDir, filename);
@@ -140,7 +250,16 @@ app.get("/load/:filename", (req, res) => {
     });
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-});
+/**
+ * Server Startup
+ * 
+ * Starts the Express server on the configured port.
+ * Logs the server URL for easy access during development.
+ */
+if(process.env.NODE_ENV !== "test"){
+    app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
+    });
+}
+
+export default app;

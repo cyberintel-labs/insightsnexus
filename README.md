@@ -10,6 +10,15 @@ To start the server open command prompt in the main directory and execute the fo
 * npx tsc
 * node dist/server.js
 
+# Testing the application
+To start running test files, open command prompt in the main directory and execute either:
+* npm test
+* npm run test:ui
+
+# Troubleshooting
+If you run into access denied permission errors even when using sudo, run the following:
+* rm -rf ./node_modules; npm i
+
 # Progress so far
 * Users should be able to create nodes to their desired locations.
 * Edit and delete nodes on screen.

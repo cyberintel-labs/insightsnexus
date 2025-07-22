@@ -1,10 +1,35 @@
+/**
+ * OSINT Investigation Graph Analysis - Main Frontend Module
+ * 
+ * This module contains the core frontend logic for the OSINT investigation graph analysis tool.
+ * It handles user interactions, graph manipulation, and coordinates between different components.
+ * 
+ * Key Features:
+ * - Interactive graph manipulation (add, edit, delete nodes and edges)
+ * - Context menu system for node operations
+ * - Keyboard shortcuts for common actions
+ * - Mode-based interaction system
+ * - Integration with Sherlock username search
+ * - Undo/redo functionality for all graph changes
+ */
+
 // Import shared logic
 import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 
-// Graph state
+/**
+ * Global State Management
+ * 
+ * These variables maintain the current state of the application:
+ * - idCounter: Unique identifier generator for new nodes
+ * - currentMode: Current interaction mode (none, connect, etc.)
+ * - selectedNodes: Array of currently selected nodes for multi-selection
+ * - orderedSelection: Array of nodes selected in order for sequential operations
+ * - rightClickedNode: Reference to the node that was right-clicked for context menu
+ * - shiftDown: Tracks if Shift key is held for box selection mode
+ */
 let idCounter = 0;
 let currentMode = "none";
 let selectedNodes = [];
@@ -12,7 +37,23 @@ let orderedSelection = [];
 let rightClickedNode = null;
 let shiftDown = false;
 
-// Mode setter (was created to showcase the current mode, will remove mode status to the user the further we get into the project)
+/**
+ * Mode Management Function
+ * 
+ * setMode(mode: string)
+ * 
+ * Changes the current interaction mode and updates the UI accordingly.
+ * Clears any existing selections when switching modes.
+ * 
+ * Input:
+ * - mode: string - The new mode to set (none, connect, etc.)
+ * 
+ * Process:
+ * 1. Updates currentMode variable
+ * 2. Unselects all currently selected nodes
+ * 3. Clears selectedNodes array
+ * 4. Updates status display to show current mode
+ */
 function setMode(mode){
     currentMode = mode;
     selectedNodes.forEach(n => n.unselect());
@@ -20,7 +61,22 @@ function setMode(mode){
     document.getElementById("status").innerText = `Mode: ${mode}`;
 }
 
-// Dropdown toggles
+/**
+ * Dropdown Menu Management
+ * 
+ * toggleDropdown(id: string)
+ * 
+ * Handles the show/hide logic for dropdown menus in the UI.
+ * Ensures only one dropdown is open at a time and closes others.
+ * 
+ * Input:
+ * - id: string - The ID of the dropdown element to toggle
+ * 
+ * Process:
+ * 1. Closes all other dropdowns and sub-dropdowns
+ * 2. Toggles the specified dropdown's visibility
+ * 3. Special handling for load dropdown to refresh file list
+ */
 function toggleDropdown(id){
     document.querySelectorAll(".dropdown, .sub-dropdown").forEach(el => {
         if(el.id !== id && !el.contains(document.getElementById(id))){
@@ -35,7 +91,28 @@ function toggleDropdown(id){
     }
 }
 
-// Handles the action calls
+/**
+ * Context Menu Action Handler
+ * 
+ * handleContextAction(action: string)
+ * 
+ * Processes actions triggered from the right-click context menu.
+ * Each action performs a specific operation on the right-clicked node.
+ * 
+ * Input:
+ * - action: string - The action to perform (edit, delete, sherlock, connect)
+ * 
+ * Available Actions:
+ * - edit: Prompts for new node label and updates the node
+ * - delete: Removes the node from the graph
+ * - sherlock: Initiates Sherlock username search for the node
+ * - connect: Switches to connect mode for manual edge creation
+ * 
+ * Process:
+ * 1. Validates that a node was right-clicked
+ * 2. Performs the requested action
+ * 3. Hides the context menu
+ */
 function handleContextAction(action){
     const node = rightClickedNode;
     if(!node) return;
@@ -65,7 +142,20 @@ function handleContextAction(action){
     document.getElementById("context-menu").style.display = "none";
 }
 
-// Should connect the selected nodes based on the order of the list
+/**
+ * Sequential Node Connection
+ * 
+ * connectSelectedInOrder()
+ * 
+ * Connects nodes in the order they were selected, creating a chain of edges.
+ * Useful for creating sequential relationships in investigations.
+ * 
+ * Process:
+ * 1. Checks if at least 2 nodes are selected
+ * 2. Creates edges between consecutive nodes in the selection order
+ * 3. Avoids creating duplicate edges
+ * 4. Clears selection after completion
+ */
 function connectSelectedInOrder(){
     if(orderedSelection.length < 2) return;
 
@@ -90,12 +180,23 @@ function connectSelectedInOrder(){
     orderedSelection = [];
 }
 
+/**
+ * Global Event Handlers
+ * 
+ * These event handlers respond to user interactions with the graph and UI.
+ * They provide the core interactivity for the OSINT investigation tool.
+ */
 
 // Hide context menu on click (TODO: allow the user to click anywhere to close menu (you have to click the button again))
 cy.on("tap", () => document.getElementById("context-menu").style.display = "none");
 document.addEventListener("click", () => document.getElementById("context-menu").style.display = "none");
 
-// On double tap create a node
+/**
+ * Node Creation Handler
+ * 
+ * Double-tap on empty space creates a new node.
+ * Prompts user for node name and adds it to the graph.
+ */
 cy.on("dbltap", (evt) => {
     if(evt.target === cy){
         const name = prompt("Enter node name:");
@@ -109,7 +210,12 @@ cy.on("dbltap", (evt) => {
     }
 });
 
-// If connect mode is selected, on single tap connect nodes
+/**
+ * Node Selection Handler for Connect Mode
+ * 
+ * In connect mode, clicking nodes creates edges between them.
+ * Automatically switches back to normal mode after creating an edge.
+ */
 cy.on("tap", "node", function(evt){
     const node = evt.target;
     if(currentMode === "connect"){
@@ -133,7 +239,12 @@ cy.on("tap", "node", function(evt){
     }
 });
 
-// Context menu on right click
+/**
+ * Context Menu Handler
+ * 
+ * Right-click on a node shows the context menu with available actions.
+ * Positions the menu at the cursor location.
+ */
 cy.on("cxttap", "node", function(evt){
     rightClickedNode = evt.target;
     const menu = document.getElementById("context-menu");
@@ -142,7 +253,12 @@ cy.on("cxttap", "node", function(evt){
     menu.style.display = "block";
 });
 
-// Allows to right click an edge to delete
+/**
+ * Edge Deletion Handler
+ * 
+ * Right-click on an edge prompts for confirmation before deletion.
+ * Shows the source and target node names in the confirmation dialog.
+ */
 cy.on("cxttap", "edge", function(evt){
     console.log("Delete connection?")
     const edge = evt.target;
@@ -153,7 +269,12 @@ cy.on("cxttap", "edge", function(evt){
     console.log("Connection Deleted")
 });
 
-// Should add selected nodes into the order select list
+/**
+ * Node Selection Tracking
+ * 
+ * Tracks nodes as they are selected for ordered operations.
+ * Maintains the order of selection for sequential operations.
+ */
 cy.on("select", "node", function(evt){
     const node = evt.target;
     if(!orderedSelection.includes(node)){
@@ -162,14 +283,24 @@ cy.on("select", "node", function(evt){
     }
 });
 
-// Should remove selected nodes from the order select list
+/**
+ * Node Deselection Tracking
+ * 
+ * Removes nodes from the ordered selection when they are deselected.
+ * Maintains the integrity of the selection order.
+ */
 cy.on("unselect", "node", function(evt){
     const node = evt.target;
     console.log(`Unselected node: ${node}`);
     orderedSelection = orderedSelection.filter(n => n.id() !== node.id());
 });
 
-// Should automatically close open dropdown menus when clicking off like modern applications
+/**
+ * Global Click Handler for Dropdown Management
+ * 
+ * Automatically closes dropdown menus when clicking outside of them.
+ * Provides a modern application feel with intuitive menu behavior.
+ */
 document.addEventListener("click", function(evt){
     const isDropdown = evt.target.closest(".dropdown, .menu, .sub-dropdown");
 
@@ -178,7 +309,22 @@ document.addEventListener("click", function(evt){
     }
 });
 
-// Should listen to del=delete nodes, ctrl+z=undo, ctrl+y=redo, shift=allow for box selection, c=connect selected nodes
+/**
+ * Keyboard Shortcut Handler
+ * 
+ * Provides keyboard shortcuts for common operations:
+ * - Delete: Remove selected nodes/edges
+ * - Ctrl+Z: Undo last action
+ * - Ctrl+Y: Redo last undone action
+ * - Shift: Enable box selection mode
+ * - C: Connect selected nodes in order
+ * 
+ * Process:
+ * 1. Checks for specific key combinations
+ * 2. Prevents default browser behavior where needed
+ * 3. Executes the corresponding action
+ * 4. Updates UI state for mode changes
+ */
 document.addEventListener("keydown", function(evt){
     // if(evt.key === "Escape"){
     //     cy.nodes().unselect();
@@ -211,7 +357,12 @@ document.addEventListener("keydown", function(evt){
     }
 });
 
-// Should listen to when the shift key is no longer being held
+/**
+ * Keyboard Release Handler
+ * 
+ * Resets box selection mode when Shift key is released.
+ * Restores normal panning and cursor behavior.
+ */
 document.addEventListener("keyup", (evt) => {
     if(evt.key === "Shift"){
         shiftDown = false;
@@ -221,7 +372,12 @@ document.addEventListener("keyup", (evt) => {
     }
 });
 
-// Zoom control
+/**
+ * Zoom Control Handler
+ * 
+ * Handles zoom slider input to control graph zoom level.
+ * Updates zoom percentage display in real-time.
+ */
 document.getElementById("zoom-control").addEventListener("input", function(){
     const zoomLevel = parseFloat(this.value);
     cy.zoom({ level: zoomLevel, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } })
@@ -230,6 +386,12 @@ document.getElementById("zoom-control").addEventListener("input", function(){
     document.getElementById("zoom-label").innerText = `${percent}%`;
 });
 
+/**
+ * Module Exports
+ * 
+ * Exports key functions and objects for use by other modules.
+ * Also makes some functions available globally for HTML event handlers.
+ */
 export { ur, cy };
 window.ur = ur;
 window.setMode = setMode;
