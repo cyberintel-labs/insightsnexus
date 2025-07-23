@@ -1,0 +1,13 @@
+{
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "n1",
+          "label": "Test Node"
+        }
+      }
+    ],
+    "edges": []
+  }
+}

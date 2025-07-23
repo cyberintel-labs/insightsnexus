@@ -127,10 +127,10 @@ export const cy = cytoscape({
      * - Enables bulk operations on multiple nodes at once
      * - Particularly useful for large investigation graphs with many entities
      * 
-     * - userZoomingEnabled: true - Allows zoom in/out with mouse wheel
-     * - userPanningEnabled: true - Allows dragging to pan around the graph
+     * - userZoomingEnabled: if true - Allows zoom in/out with mouse wheel
+     * - userPanningEnabled: if true - Allows dragging to pan around the graph
      */
     boxSelectionEnabled: false,
-    userZoomingEnabled: true,
+    userZoomingEnabled: false,
     userPanningEnabled: true
 });

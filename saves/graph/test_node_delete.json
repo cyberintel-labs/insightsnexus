@@ -1,0 +1,13 @@
+{
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "n1",
+          "label": "Keep Me"
+        }
+      }
+    ],
+    "edges": []
+  }
+}
