@@ -386,6 +386,52 @@ document.getElementById("zoom-control").addEventListener("input", function(){
     document.getElementById("zoom-label").innerText = `${percent}%`;
 });
 
+
+// Panel toggle (Plan to add other features into this slider menu)
+document.getElementById("toggle-panel").addEventListener("click", () => {
+    document.getElementById("side-panel").classList.toggle("open");
+});
+
+/*
+* Node Selector Handler
+*
+* It will change the selected nodes into the selected type.
+* Uses the "changeData" type from changeDataHandler to handle the edits
+*/
+// Apply selected node type
+document.querySelectorAll(".node-type-btn").forEach(item => {
+    item.addEventListener("click", () => {
+        const selectedType = item.getAttribute("data-type");
+        const selected = cy.$(":selected");
+
+        if (!selected.length) {
+            alert("Please select a node to change its type.");
+            return;
+        }
+
+        selected.forEach(node => {
+            ur.do("changeData", {
+                id: node.id(),
+                name: "type",
+                oldValue: node.data("type"),
+                newValue: selectedType
+            });
+        });
+    });
+});
+
+/*
+* Expand/Collaspe Side Menu Sections
+*
+* This will toggle the visibility of section elements on the left side menu
+*/
+window.toggleSection = function(id){
+    const section = document.getElementById(id);
+    if (section) {
+        section.style.display = section.style.display === "block" ? "none" : "block";
+    }
+};
+
 /**
  * Module Exports
  * 

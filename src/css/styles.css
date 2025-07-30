@@ -22,7 +22,7 @@ body {
     position: relative;
 }
 
-.menu > button {
+.menu>button {
     background: #34495e;
     color: white;
     border: none;
@@ -32,7 +32,7 @@ body {
     transition: background 0.2s ease;
 }
 
-.menu > button:hover {
+.menu>button:hover {
     background: #3d566e;
 }
 
@@ -96,7 +96,7 @@ body {
     border-radius: 6px;
     font-size: 13px;
     z-index: 1001;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #context-menu {
@@ -110,7 +110,7 @@ body {
     width: 160px;
     z-index: 9999;
     border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 #context-menu li {
@@ -134,13 +134,13 @@ body {
     color: #1a73e8;
     font-size: 14px;
     z-index: 1001;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 #zoom-slider {
     position: absolute;
     bottom: 12px;
-    left: 12px;
+    right: 12px;
     z-index: 1001;
     background: #fff;
     border: 1px solid #ccc;
@@ -149,7 +149,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 #zoom-slider input[type="range"] {
@@ -159,4 +159,67 @@ body {
 #zoom-label {
     font-size: 14px;
     color: #2c3e50;
+}
+
+#side-panel {
+    position: absolute;
+    top: 48px;
+    left: 0;
+    z-index: 1002;
+    height: calc(100% - 48px);
+    width: 220px;
+    transform: translateX(-220px);
+    transition: transform 0.3s ease;
+    background: #f9f9f9;
+    border-right: 1px solid #ccc;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+#side-panel.open {
+    transform: translateX(0);
+}
+
+#toggle-panel {
+    position: absolute;
+    top: 10px;
+    right: -25px;
+    width: 25px;
+    height: 25px;
+    background: #0074D9;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+}
+
+.panel-section {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.section-header {
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.section-body {
+    display: none;
+    padding-left: 5px;
+}
+
+.section-body button {
+    display: block;
+    margin-bottom: 5px;
+    width: 90%;
+    padding: 6px;
+    border: none;
+    background: #ddd;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.section-body button:hover {
+    background: #ccc;
 }

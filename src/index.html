@@ -37,6 +37,45 @@
     </div>
 
     <p id="status"></p>
+
+    <div id="side-panel">
+        <button id="toggle-panel">+</button>
+        <div id="panel-content">
+            <!-- Change node types -->
+            <div class="panel-section">
+                <div class="section-header" onclick="toggleSection('node-type-section')">Change Node Type</div>
+                <div class="section-body" id="node-type-section">
+                    <button class="node-type-btn" data-type="person">Person</button>
+                    <button class="node-type-btn" data-type="event">Event</button>
+                    <button class="node-type-btn" data-type="organization">Organization</button>
+                    <button class="node-type-btn" data-type="username">Username</button>
+                    <button class="node-type-btn" data-type="custom">Custom</button>
+                    <button class="node-type-btn" data-type="address">Address</button>
+                    <button class="node-type-btn" data-type="ip">IP</button>
+                    <button class="node-type-btn" data-type="email">Email</button>
+                    <button class="node-type-btn" data-type="geo">Geo Data</button>
+                    <button class="node-type-btn" data-type="database">Database</button>
+                    <button class="node-type-btn" data-type="default">Default</button>
+                </div>
+            </div>
+
+            <!-- Placeholder section -->
+            <div class="panel-section">
+                <div class="section-header" onclick="toggleSection('section-1-body')">Section 1</div>
+                <div class="section-body" id="section-1-body">
+                    <button>Section 1 Button</button>
+                </div>
+            </div>
+
+            <!-- Placeholder section -->
+            <div class="panel-section">
+                <div class="section-header" onclick="toggleSection('section-2-body')">Section 2</div>
+                <div class="section-body" id="section-2-body">
+                    <button>Section 2 Button</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <div id="cy"></div>
 

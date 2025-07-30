@@ -20,6 +20,7 @@ If you run into access denied permission errors even when using sudo, run the fo
 * rm -rf ./node_modules; npm i
 
 # Progress so far
+* NEW: Added the ability to change node types: just select the node(s) and change type with the left plus button
 * Users should be able to create nodes to their desired locations.
 * Edit and delete nodes on screen.
 * Shift + left click to create box selection.
@@ -32,8 +33,7 @@ If you run into access denied permission errors even when using sudo, run the fo
 * Implemented sherlock for hunting down social media accounts.
 
 # TODO
-* Implement proper unit testing.
-* Implement a visual indicator that sherlock is running.
+* Add a help menu to guide users
 * Better spread out the sherlock results.
 * Allow the user to create edge labels.
 * Allow the user to select from different node and connection designs.
