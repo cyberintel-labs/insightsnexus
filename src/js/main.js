@@ -17,6 +17,7 @@
 import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
+import { embedContentInNode } from './fileUploadHandler.js';
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 
 /**
@@ -137,6 +138,17 @@ function handleContextAction(action){
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");
+    }else if(action === "upload"){
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*,text/plain";
+
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if(file) embedContentInNode(rightClickedNode, file);
+        };
+
+        fileInput.click();
     }
 
     document.getElementById("context-menu").style.display = "none";

@@ -48,10 +48,14 @@ export const cy = cytoscape({
                 "background-color": "#0074D9",
                 "label": "data(label)",
                 "text-valign": "center",
+                "text-halign": "center",
                 "color": "#fff",
                 "font-size": "14px",
-                "text-outline-color": "#0074D9",
+                "background-fit": "cover cover",
+                "background-image": "none",
+                "text-outline-color": "#ffffffff",
                 "text-outline-width": 2,
+                "text-wrap": "wrap",
                 "shape": "ellipse"
             }
         },
@@ -69,8 +73,6 @@ export const cy = cytoscape({
             style: {
                 "border-width": 4,
                 "border-color": "#FF851B",
-                "background-color": "#FFDC00",
-                "text-outline-color": "#FF851B",
                 "text-outline-width": 2
             }
         },
@@ -123,71 +125,71 @@ export const cy = cytoscape({
         {
             selector: 'node[type="person"]',
             style:{
-                "background-color": "#1ABC9C",
-                "shape": "star"
+                "background-color": "#ff0000",
+                "shape": "ellipse"
             }
         },
         {
             selector: 'node[type="event"]',
             style:{
-                "background-color": "#9B59B6",
-                "shape": "hexagon"
+                "background-color": "#60009a",
+                "shape": "cutrectangle"
             }
         },
         {
             selector: 'node[type="organization"]',
             style:{
-                "background-color": "#E67E22",
+                "background-color": "#ff72dd",
                 "shape": "rectangle"
             }
         },
         {
             selector: 'node[type="username"]',
             style:{
-                "background-color": "#2980B9",
+                "background-color": "#00ffff",
                 "shape": "ellipse"
             }
         },
         {
             selector: 'node[type="custom"]',
             style:{
-                "background-color": "#2ECC71",
-                "shape": "triangle"
+                "background-color": "#ff0090",
+                "shape": "star"
             }
         },
         {
             selector: 'node[type="address"]',
             style:{
-                "background-color": "#34495E",
-                "shape": "diamond"
+                "background-color": "#00ff00",
+                "shape": "pentagon"
             }
         },
         {
             selector: 'node[type="ip"]',
             style:{
-                "background-color": "#E74C3C",
-                "shape": "pentagon"
+                "background-color": "#ff8000",
+                "shape": "hexagon"
             }
         },
         {
             selector: 'node[type="email"]',
             style:{
-                "background-color": "#8E44AD",
-                "shape": "vee"
+                "background-color": "#ffff00",
+                "shape": "diamond"
             }
         },
         {
             selector: 'node[type="geo"]',
             style:{
-                "background-color": "#D35400",
-                "shape": "octagon"
+                "background-color": "#005f5f",
+                "shape": "heptagon"
             }
         },
         {
             selector: 'node[type="database"]',
             style:{
-                "background-color": "#7F8C8D",
-                "shape": "barrel"
+                "background-color": "#7f6bff",
+                "shape": "octagon"
             }
         }
     ],

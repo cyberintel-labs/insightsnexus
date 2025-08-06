@@ -76,6 +76,20 @@ body {
     font-size: 14px;
 }
 
+.scroll-node {
+    width: 150px;
+    height: 100px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 5px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    text-align: left;
+    box-sizing: border-box;
+}
+
 #cy {
     position: absolute;
     top: 48px;
