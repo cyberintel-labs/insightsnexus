@@ -17,6 +17,7 @@
 import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
+import { runDomainToIp } from "./transforms/domainToIp.js";
 import { embedContentInNode } from './fileUploadHandler.js';
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 
@@ -135,6 +136,9 @@ function handleContextAction(action){
     }else if(action === "sherlock"){
         console.log("Calling sherlock")
         runSherlock(node);
+    }else if(action === "domain-to-ip"){
+        console.log("Calling domain to IP")
+        runDomainToIp(node);
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");

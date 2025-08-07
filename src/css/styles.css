@@ -151,6 +151,20 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+#domain-to-ip-status {
+    position: absolute;
+    bottom: 50px;
+    right: 12px;
+    padding: 8px 12px;
+    background: #f0f8ff;
+    border: 1px solid #add8e6;
+    border-radius: 6px;
+    color: #0066cc;
+    font-size: 14px;
+    z-index: 1001;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 #zoom-slider {
     position: absolute;
     bottom: 12px;

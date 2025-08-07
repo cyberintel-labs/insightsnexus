@@ -19,6 +19,8 @@ const child_process_1 = require("child_process");
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const express_1 = __importDefault(require("express"));
+const dns_1 = __importDefault(require("dns"));
+const util_1 = require("util");
 /**
  * Sherlock Path Detection
  *
@@ -130,6 +132,51 @@ app.post("/sherlock", (req, res) => {
             if (err)
                 console.warn('Failed to cache Sherlock result:', err);
         });
+    });
+});
+/**
+ * Domain to IP Address Resolution Endpoint
+ *
+ * POST /domain-to-ip
+ *
+ * Resolves domain names to their corresponding IP addresses using DNS lookup.
+ *
+ * Input:
+ * - domain: string - The domain name to resolve
+ *
+ * Output:
+ * - ips: string[] - Array of resolved IP addresses
+ * - error: string - Error message if resolution fails
+ *
+ * Process:
+ * 1. Validates domain input
+ * 2. Performs DNS lookup using Node.js dns module
+ * 3. Returns both IPv4 and IPv6 addresses if available
+ * 4. Handles errors gracefully with appropriate status codes
+ */
+app.post("/domain-to-ip", (req, res) => {
+    const { domain } = req.body;
+    if (!domain) {
+        res.status(400).json({ error: "Domain is required" });
+        return;
+    }
+    // Use imported dns module for DNS resolution
+    const resolve4 = (0, util_1.promisify)(dns_1.default.resolve4);
+    const resolve6 = (0, util_1.promisify)(dns_1.default.resolve6);
+    console.log(`Resolving domain: ${domain}`);
+    // Resolve both IPv4 and IPv6 addresses
+    Promise.all([
+        resolve4(domain).catch(() => []),
+        resolve6(domain).catch(() => [])
+    ])
+        .then(([ipv4Addresses, ipv6Addresses]) => {
+        const allIps = [...ipv4Addresses, ...ipv6Addresses];
+        console.log(`Domain ${domain} resolved to:`, allIps);
+        res.json({ ips: allIps });
+    })
+        .catch(err => {
+        console.error("Error resolving domain:", err);
+        res.status(500).json({ error: "Failed to resolve domain" });
     });
 });
 /**
