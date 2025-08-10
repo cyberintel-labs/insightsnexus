@@ -20,6 +20,7 @@ import { runSherlock } from "./transforms/sherlock.js";
 import { runDomainToIp } from "./transforms/domainToIp.js";
 import { embedContentInNode } from './fileUploadHandler.js';
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
+import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 
 /**
  * Global State Management
@@ -211,17 +212,21 @@ document.addEventListener("click", () => document.getElementById("context-menu")
  * Node Creation Handler
  * 
  * Double-tap on empty space creates a new node.
- * Prompts user for node name and adds it to the graph.
+ * Prompts user for node name and adds it to the graph with overlap prevention.
  */
 cy.on("dbltap", (evt) => {
     if(evt.target === cy){
         const name = prompt("Enter node name:");
         if(!name) return;
         const newId = "n" + idCounter++;
+        
+        // Apply overlap prevention to ensure new node doesn't overlap existing nodes
+        const safePosition = resolveNodeOverlap(null, evt.position);
+        
         ur.do("add", {
             group: "nodes",
             data: {id: newId, label: name},
-            position: evt.position
+            position: safePosition
         });
     }
 });
@@ -447,6 +452,29 @@ window.toggleSection = function(id){
         section.style.display = section.style.display === "block" ? "none" : "block";
     }
 };
+
+/**
+ * Node Drag End Handler
+ * 
+ * Prevents node overlap when a user finishes dragging a node.
+ * If the dragged node would overlap with another node, moves the underlying node instead
+ * to allow the user to place the dragged node exactly where they want it.
+ */
+cy.on("dragfreeon", "node", (evt) => {
+    const draggedNode = evt.target;
+    const currentPosition = draggedNode.position();
+    
+    // Try to resolve overlap by moving the underlying node instead of the dragged node
+    const overlapResolved = resolveOverlapByMovingUnderlying(draggedNode, currentPosition);
+    
+    if (overlapResolved) {
+        // The underlying node was moved, so the dragged node can stay at the user's intended position
+        console.log(`Overlap resolved by moving underlying node. Dragged node "${draggedNode.data("label")}" remains at (${currentPosition.x}, ${currentPosition.y})`);
+    } else {
+        // No overlap occurred, so no action was needed
+        console.log(`No overlap detected. Node "${draggedNode.data("label")}" is at (${currentPosition.x}, ${currentPosition.y})`);
+    }
+});
 
 /**
  * Module Exports

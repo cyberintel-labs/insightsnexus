@@ -19,6 +19,7 @@
  */
 
 import { ur, cy } from "../main.js";
+import { resolveNodeOverlap } from "../nodePositioning.js";
 
 /**
  * Execute Domain to IP Address Resolution
@@ -100,18 +101,23 @@ export function runDomainToIp(node){
                      * - group: "nodes" - Identifies as a node element
                      * - data.id: Unique identifier for the node
                      * - data.label: Human-readable label showing IP address
-                     * - position: Random offset from original node for visual separation
+                     * - position: Non-overlapping position near original node
                      */
+                    const proposedPosition = {
+                        x: node.position("x") + Math.random() * 100 - 50,
+                        y: node.position("y") + Math.random() * 100 - 50
+                    };
+                    
+                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
+                    const safePosition = resolveNodeOverlap(null, proposedPosition);
+                    
                     const newNode = {
                         group: "nodes",
                         data: {
                             id: newId,
                             label: `IP: ${ip}`
                         },
-                        position: {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        }
+                        position: safePosition
                     };
                     
                     /**
