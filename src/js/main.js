@@ -18,7 +18,7 @@ import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
 import { runDomainToIp } from "./transforms/domainToIp.js";
-import { embedContentInNode } from './fileUploadHandler.js';
+import { uploadFiles, embedFilesInNode, nextImage, prevImage, deleteCurrentImage } from './fileUploadHandler.js';
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 
@@ -143,17 +143,12 @@ function handleContextAction(action){
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");
-    }else if(action === "upload"){
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = "image/*,text/plain";
-
-        fileInput.onchange = (e) => {
-            const file = e.target.files[0];
-            if(file) embedContentInNode(rightClickedNode, file);
-        };
-
-        fileInput.click();
+    } else if(action === "upload"){
+        uploadFiles(node);
+    } else if(action === "next-image"){
+        nextImage(node);
+    } else if(action === "prev-image"){
+        prevImage(node);
     }
 
     document.getElementById("context-menu").style.display = "none";
@@ -347,11 +342,6 @@ document.addEventListener("click", function(evt){
  * 4. Updates UI state for mode changes
  */
 document.addEventListener("keydown", function(evt){
-    // if(evt.key === "Escape"){
-    //     cy.nodes().unselect();
-    //     document.getElementById("context-menu").style.display = "none";
-    // }
-
     const selected = cy.$(":selected");
 
     if(evt.key === "Delete" && selected.length){
@@ -375,6 +365,28 @@ document.addEventListener("keydown", function(evt){
 
     if(evt.key.toLowerCase() === "c" && orderedSelection.length >= 2){
         connectSelectedInOrder();
+    }
+
+    if(!selected.length) return;
+    const node = selected[0]; // Only act on the first selected node
+    if(!node.data("images") || node.data("images").length < 2) return;
+
+    if(evt.key === "ArrowRight"){
+        console.log("Change Image (right key)")
+        evt.preventDefault();
+        nextImage(node);
+    }else if(evt.key === "ArrowLeft"){
+        console.log("Change Image (left key)")
+        evt.preventDefault();
+        prevImage(node);
+    }else if(evt.key === "ArrowDown"){
+        if(!selected.length) return;
+        const node = selected[0];
+        if(!node.data("images") || !node.data("images").length) return;
+
+        console.log("Delete Current Image (down key)");
+        evt.preventDefault();
+        deleteCurrentImage(node);
     }
 });
 
