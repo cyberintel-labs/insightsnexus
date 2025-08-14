@@ -1,0 +1,37 @@
+{
+  "elements": {
+    "nodes": [
+      {
+        "data": {
+          "id": "n1",
+          "label": "Node 1"
+        },
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "data": {
+          "id": "n2",
+          "label": "Node 2"
+        },
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "data": {
+          "id": "n3",
+          "label": "Node 3"
+        },
+        "position": {
+          "x": 150,
+          "y": 100
+        }
+      }
+    ],
+    "edges": []
+  }
+}
