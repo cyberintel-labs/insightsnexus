@@ -18,6 +18,7 @@ import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
 import { runDomainToIp } from "./transforms/domainToIp.js";
+import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { embedContentInNode } from './fileUploadHandler.js';
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
@@ -140,6 +141,9 @@ function handleContextAction(action){
     }else if(action === "domain-to-ip"){
         console.log("Calling domain to IP")
         runDomainToIp(node);
+    }else if(action === "website-to-domain"){
+        console.log("Calling website to domain")
+        runWebsiteToDomain(node);
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");
