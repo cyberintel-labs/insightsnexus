@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <title>Cytoscape Node Editor</title>
-    <link rel="stylesheet" href="css/styles.css"/>
+    <link rel="stylesheet" href="css/styles.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
 
 </head>
+
 <body>
     <div id="toolbar">
         <div class="menu">
@@ -36,8 +38,6 @@
         </div>
     </div>
 
-    <p id="status"></p>
-
     <div id="side-panel">
         <button id="toggle-panel">+</button>
         <div id="panel-content">
@@ -63,7 +63,7 @@
             <div class="panel-section">
                 <div class="section-header" onclick="toggleSection('section-1-body')">Section 1</div>
                 <div class="section-body" id="section-1-body">
-                    <button>Section 1 Button</button>
+                    <button class="section-button">Section 1 Button</button>
                 </div>
             </div>
 
@@ -71,20 +71,57 @@
             <div class="panel-section">
                 <div class="section-header" onclick="toggleSection('section-2-body')">Section 2</div>
                 <div class="section-body" id="section-2-body">
-                    <button>Section 2 Button</button>
+                    <button class="section-button">Section 2 Button</button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <div id="cy"></div>
 
-    <div id="sherlock-status"></div>
-    <div id="domain-to-ip-status"></div>
-    <div id="website-to-domain-status"></div>
-    
+    <div id="node-properties-menu" class="side-panel right-panel">
+        <div id="properties-content">
+
+            <p id="no-node-message">Please select a node to display its properties.</p>
+
+            <div class="properties-section panel-section">
+                <h3 class="section-header">Node Info</h3>
+                <div id="node-details" class="node-info">
+                    <label class="section-header field-row">Name: <input type="text" id="node-name"></label>
+                    <label class="section-header">Type:
+                        <select id="node-type-select">
+                            <option value="default">Default</option>
+                            <option value="person">Person</option>
+                            <option value="event">Event</option>
+                            <option value="organization">Organization</option>
+                            <option value="username">Username</option>
+                            <option value="custom">Custom</option>
+                            <option value="address">Address</option>
+                            <option value="IP">IP</option>
+                            <option value="email">Email</option>
+                            <option value="geo">Geo Data</option>
+                            <option value="database">Database</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="properties-section panel-section">
+                <h3 class="section-header">Images</h3>
+                <div id="node-images" class="file-list"></div>
+                <button id="upload-image-btn" class="section-button">Upload Image</button>
+            </div>
+
+            <div class="properties-section panel-section">
+                <h3 class="section-header">Text Files</h3>
+                <div id="node-texts" class="file-list"></div>
+                <button id="upload-text-btn" class="section-button">Upload Text File</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-bar"></div>
+
     <div id="zoom-slider">
-        <input type="range" min="0.1" max="2" step="0.01" value="1" id="zoom-control"/>
+        <input type="range" min="0.1" max="2" step="0.01" value="1" id="zoom-control" />
         <span id="zoom-label">100%</span>
     </div>
 
@@ -94,9 +131,12 @@
         <li onclick="handleContextAction('sherlock')">Run Sherlock</li>
         <li onclick="handleContextAction('domain-to-ip')">Domain to IP</li>
         <li onclick="handleContextAction('website-to-domain')">Website to Domain</li>
+        <!-- <li onclick="handleContextAction('domain-to-subdomain')">Domain to Subdomain</li> -->
         <li onclick="handleContextAction('connect')">Create Connection</li>
         <li onclick="handleContextAction('upload')">Upload File</li>
     </ul>
+
+    <div id="cy"></div>
 
     <script src="https://unpkg.com/cytoscape-node-html-label/cytoscape-node-html-label.js"></script>
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
@@ -104,4 +144,5 @@
     <script src="https://unpkg.com/cytoscape-undo-redo/cytoscape-undo-redo.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>
+
 </html>

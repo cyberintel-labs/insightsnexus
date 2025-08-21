@@ -56,6 +56,8 @@ export const cy = cytoscape({
                 "text-outline-color": "#ffffffff",
                 "text-outline-width": 2,
                 "text-wrap": "wrap",
+                "width": 30,
+                "height": 30,
                 "shape": "ellipse"
             }
         },

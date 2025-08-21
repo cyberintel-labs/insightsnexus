@@ -1,122 +1,82 @@
-import { ur } from "./changeDataHandler.js";
+/**
+ * Handles uploading and embedding files into a node.
+ * Supports images (base64 data URLs) and text files.
+ * Data is stored in node.data('images') and node.data('texts').
+ */
+export function uploadFiles(node, files){
+    if(!node) return;
 
-// Check if file is image
-function isImageFile(file){
-    return file.type.startsWith("image/");
-}
+    // Case 1: If no files are passed (context menu), open file picker
+    if(!files){
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*,.txt"; // allow images + txt
+        input.multiple = true;
+        input.onchange = (e) => uploadFiles(node, e.target.files);
+        input.click();
+        return;
+    }
 
-// Read file as Data URL (for images) or text
-function readFile(file){
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
+    // Case 2: files exist (properties menu or from picker)
+    let images = node.data('images') || [];
+    let texts = node.data('texts') || [];
 
-        if(isImageFile(file)){
-            reader.readAsDataURL(file);
+    Array.from(files).forEach((file) => {
+        if(file.type.startsWith("image/")){
+            if(images.length >= 10){
+                alert("Max 10 images per node.");
+                return;
+            }
+            embedImageFile(file, (imageData) => {
+                images.push(imageData);
+                node.data('images', images);
+                node.data('currentImageIndex', images.length - 1);
+                node.trigger('filesUpdated'); 
+                showCurrentImage(node); // update node’s background
+            });
+        }else if(file.type === "text/plain"){
+            if(texts.length >= 10){
+                alert("Max 10 text files per node.");
+                return;
+            }
+            embedTextFile(file, (textData) => {
+                texts.push({ name: file.name, content: textData });
+                node.data('texts', texts);
+                node.trigger('filesUpdated');
+            });
         }else{
-            reader.readAsText(file);
+            alert(`Unsupported file type: ${file.type}`);
         }
     });
 }
 
-/**
- * Embed multiple files into a node
- * - Adds images to node.data("images") array
- * - Updates currentImageIndex to display last added image
- */
-async function embedFilesInNode(node, file) {
-    try{
-        if(!file.type.startsWith("image/")){
-            alert("Only image files are supported at the moment.");
-            return;
-        }
-
-        // Keep the original label untouched
-        if(!node.data("baseLabel")){
-            node.data("baseLabel", node.data("label"));
-        }
-
-        const oldBackground = node.style("background-image");
-        const content = await readFile(file);
-
-        const img = new Image();
-        img.onload = () => {
-            const maxSize = 512; // maximum dimension
-            let { width, height } = img;
-
-            let resizedDataUrl = content;
-            if(width > maxSize || height > maxSize){
-                const scale = Math.min(maxSize / width, maxSize / height);
-                width *= scale;
-                height *= scale;
-
-                const canvas = document.createElement("canvas");
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext("2d");
-                ctx.drawImage(img, 0, 0, width, height);
-                resizedDataUrl = canvas.toDataURL(file.type);
-            }
-
-            // Add image to node's images array
-            const images = node.data("images") || [];
-            images.push(resizedDataUrl);
-            node.data("images", images);
-            node.data("currentImageIndex", images.length - 1);
-
-            // Update display without touching label
-            showCurrentImage(node);
-
-            // Undo/redo entry for background change
-            ur.do("changeData", {
-                id: node.id(),
-                name: "background-image",
-                oldValue: oldBackground,
-                newValue: resizedDataUrl
-            });
-        };
-        img.src = content;
-
-    }catch(err){
-        console.error("Failed to embed image into node:", err);
-    }
-}
-
-/**
- * Display the current image in a node
- * - Updates label to show node name and current image index
- * - Moves text to top center when images exist
- */
-function showCurrentImage(node) {
+function showCurrentImage(node){
     const images = node.data("images") || [];
     const index = node.data("currentImageIndex") ?? 0;
 
-    const currentName = node.data("label") || "Node";
-
-    if(images.length){
+    if (images.length) {
         node.style({
             "background-image": `url(${images[index]})`,
-            "background-fit": "contain",
+            "background-fit": "cover",
             "background-opacity": 1,
             "width": 128,
             "height": 128,
             "text-valign": "top",
             "text-halign": "center",
-            "font-size": 14,
-            "label": `${currentName} (${index + 1}/${images.length})`
+            "font-size": 14
         });
-    }else{
+    } else {
         node.style({
             "background-image": "none",
+            "width": 30,
+            "height": 30,
             "text-valign": "center",
-            "text-halign": "center",
-            "label": currentName 
+            "text-halign": "center"
         });
     }
 }
 
-function nextImage(node) {
+export function nextImage(node) {
     const images = node.data("images");
     if(!images || images.length < 2) return;
 
@@ -133,7 +93,7 @@ function nextImage(node) {
     showCurrentImage(node);
 }
 
-function prevImage(node) {
+export function prevImage(node) {
     const images = node.data("images");
     if(!images || images.length < 2) return;
 
@@ -150,73 +110,88 @@ function prevImage(node) {
     showCurrentImage(node);
 }
 
-function deleteCurrentImage(node) {
-    const images = [...(node.data("images") || [])];
-    if(!images.length) return;
+/**
+ * Reads an image file and converts it to a base64 data URL.
+ * Also resizes to a max 512x512px thumbnail for performance.
+ */
+function embedImageFile(file, callback) {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        const img = new Image();
+        img.onload = function () {
+            const canvas = document.createElement("canvas");
+            const maxDim = 320;
+            let { width, height } = img;
 
-    const oldImages = [...images];
-    const index = node.data("currentImageIndex") ?? 0;
+            if(width > height){
+                if(width > maxDim){
+                    height *= maxDim / width;
+                    width = maxDim;
+                }
+            }else{
+                if(height > maxDim){
+                    width *= maxDim / height;
+                    height = maxDim;
+                }
+            }
 
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const resizedDataUrl = canvas.toDataURL("image/png");
+            callback(resizedDataUrl);
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+/**
+ * Reads a text file and returns its content as string.
+ */
+function embedTextFile(file, callback) {
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        callback(event.target.result);
+    };
+    reader.readAsText(file);
+}
+
+/**
+ * Removes an image at given index from a node.
+ */
+export function removeImageFromNode(node, index){
+    let images = node.data('images') || [];
+    if (index < 0 || index >= images.length) return;
+
+    // Remove selected image
     images.splice(index, 1);
 
-    ur.do("changeData", {
-        id: node.id(),
-        name: "images",
-        oldValue: oldImages,
-        newValue: images
-    });
+    // Update current index
+    let newIndex = Math.max(0, (node.data('currentImageIndex') || 0) - 1);
 
-    // Adjust currentImageIndex
-    const newIndex = Math.min(index, images.length - 1);
-    ur.do("changeData", {
-        id: node.id(),
-        name: "currentImageIndex",
-        oldValue: index,
-        newValue: newIndex
-    });
+    node.data('images', images);
+    node.data('currentImageIndex', newIndex);
 
+    // Refresh UI + node style
+    node.trigger('filesUpdated');
     showCurrentImage(node);
 }
 
 /**
- * Context Menu Integration
- * Call these from main.js handleContextAction
+ * Removes a text file at given index from a node.
  */
-function uploadFiles(node) {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "image/*";
-    fileInput.multiple = true;
+export function removeTextFromNode(node, index) {
+    let texts = node.data('texts') || [];
+    if(index < 0 || index >= texts.length) return;
 
-    fileInput.onchange = async (e) => {
-        const files = Array.from(e.target.files);
-        if(!files.length) return;
+    // Remove text file
+    texts.splice(index, 1);
 
-        const existingImages = node.data("images") || [];
-        const remainingSlots = 10 - existingImages.length;
-        if(remainingSlots <= 0){
-            alert("This node already has 10 images.");
-            return;
-        }
+    node.data('texts', texts);
 
-        const filesToUpload = files.slice(0, remainingSlots);
-        for(const file of filesToUpload){
-            await embedFilesInNode(node, file);
-        }
-
-        if(files.length > remainingSlots){
-            alert(`Only ${remainingSlots} images were uploaded. Maximum per node is 10.`);
-        }
-    };
-
-    fileInput.click();
+    // Refresh UI
+    node.trigger('filesUpdated');
 }
-
-export {
-    embedFilesInNode,
-    uploadFiles,
-    nextImage,
-    prevImage,
-    deleteCurrentImage,
-    showCurrentImage
-};

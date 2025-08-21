@@ -20,6 +20,7 @@
 
 import { ur, cy } from "../main.js";
 import { resolveNodeOverlap } from "../nodePositioning.js";
+import { setStatusMessage } from "../setStatusMessageHandler.js";
 
 /**
  * Execute Sherlock Username Search
@@ -69,7 +70,7 @@ import { resolveNodeOverlap } from "../nodePositioning.js";
  */
 export function runSherlock(node){
     const username = node.data("label");
-    document.getElementById("sherlock-status").innerText = `Sherlock: Searching "${username}"...`;
+    setStatusMessage(`Sherlock: Searching "${username}"...`);
 
     fetch("/sherlock", {
         method: "POST",
@@ -153,9 +154,11 @@ export function runSherlock(node){
              * - Shows completion message with number of new nodes added
              * - Indicates if no new nodes were found (duplicates filtered out)
              */
-            document.getElementById("sherlock-status").innerText = added
-                ? `Sherlock complete for "${username}"`
-                : `Sherlock complete (no new nodes)`;
+            if(added){
+                setStatusMessage(`Sherlock complete for "${username}"`);
+            }else{
+                setStatusMessage(`No new additions found for "${username}"`);
+            }
         })
         .catch(err => {
             /**
@@ -167,6 +170,6 @@ export function runSherlock(node){
              * - Preserves original node state
              */
             console.error("Sherlock error:", err);
-            document.getElementById("sherlock-status").innerText = `Sherlock failed for "${username}"`;
+            setStatusMessage(`Sherlock failed for "${username}"`);
         });
 }

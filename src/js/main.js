@@ -18,11 +18,15 @@ import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
 import { runDomainToIp } from "./transforms/domainToIp.js";
-import { uploadFiles, embedFilesInNode, nextImage, prevImage, deleteCurrentImage } from './fileUploadHandler.js';
+import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
-import { embedContentInNode } from './fileUploadHandler.js';
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
+import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
+import { setStatusMessage } from "./setStatusMessageHandler.js";
+// import { runFeroxbuster } from "./transforms/domainToSub.js";
+
+initNodePropertiesMenu(cy);
 
 /**
  * Global State Management
@@ -63,7 +67,7 @@ function setMode(mode){
     currentMode = mode;
     selectedNodes.forEach(n => n.unselect());
     selectedNodes = [];
-    document.getElementById("status").innerText = `Mode: ${mode}`;
+    setStatusMessage(`Mode: ${mode}`);
 }
 
 /**
@@ -145,15 +149,23 @@ function handleContextAction(action){
     }else if(action === "website-to-domain"){
         console.log("Calling website to domain")
         runWebsiteToDomain(node);
+    }else if(action === "domain-to-subdomain"){
+        console.log("Calling domain-to-subdomain")
+        runFeroxbuster(node);
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");
-    } else if(action === "upload"){
+    }else if(action === "upload"){
         uploadFiles(node);
-    } else if(action === "next-image"){
-        nextImage(node);
-    } else if(action === "prev-image"){
-        prevImage(node);
+    }else if(action === "next-image" || action === "prev-image"){
+        const images = node.data("images");
+        if(images && images.length > 1){
+            if(action === "next-image"){
+                nextImage(node);
+            }else{
+                prevImage(node);
+            }
+        }
     }
 
     document.getElementById("context-menu").style.display = "none";
@@ -384,14 +396,6 @@ document.addEventListener("keydown", function(evt){
         console.log("Change Image (left key)")
         evt.preventDefault();
         prevImage(node);
-    }else if(evt.key === "ArrowDown"){
-        if(!selected.length) return;
-        const node = selected[0];
-        if(!node.data("images") || !node.data("images").length) return;
-
-        console.log("Delete Current Image (down key)");
-        evt.preventDefault();
-        deleteCurrentImage(node);
     }
 });
 

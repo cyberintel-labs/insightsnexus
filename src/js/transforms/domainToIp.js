@@ -20,6 +20,7 @@
 
 import { ur, cy } from "../main.js";
 import { resolveNodeOverlap } from "../nodePositioning.js";
+import { setStatusMessage } from "../setStatusMessageHandler.js";
 
 /**
  * Execute Domain to IP Address Resolution
@@ -69,7 +70,7 @@ import { resolveNodeOverlap } from "../nodePositioning.js";
  */
 export function runDomainToIp(node){
     const domain = node.data("label");
-    document.getElementById("domain-to-ip-status").innerText = `Domain to IP: Resolving "${domain}"...`;
+    setStatusMessage(`Domain to IP: Resolving "${domain}"...`);
 
     fetch("/domain-to-ip", {
         method: "POST",
@@ -153,9 +154,7 @@ export function runDomainToIp(node){
              * - Shows completion message with number of new nodes added
              * - Indicates if no new nodes were found (duplicates filtered out)
              */
-            document.getElementById("domain-to-ip-status").innerText = added
-                ? `Domain to IP complete for "${domain}"`
-                : `Domain to IP complete (no new nodes)`;
+            setStatusMessage(`Domain to IP complete for "${domain}"`);
         })
         .catch(err => {
             /**
@@ -167,6 +166,6 @@ export function runDomainToIp(node){
              * - Preserves original node state
              */
             console.error("Domain to IP error:", err);
-            document.getElementById("domain-to-ip-status").innerText = `Domain to IP failed for "${domain}"`;
+            setStatusMessage(`Domain to IP failed for "${domain}"`);
         });
 } 

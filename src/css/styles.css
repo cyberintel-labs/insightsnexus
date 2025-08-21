@@ -99,18 +99,20 @@ body {
     z-index: 1;
 }
 
-#status {
+#status-bar {
     position: absolute;
     top: 52px;
-    right: 12px;
-    background: white;
-    color: #2c3e50;
-    padding: 6px 10px;
+    right: 352px;
+    background: #ffffff;
     border: 1px solid #ccc;
+    padding: 8px 12px;
     border-radius: 6px;
-    font-size: 13px;
-    z-index: 1001;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #2c3e50;
+    font-size: 14px;
+    z-index: 1002;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    max-width: 250px;
+    word-wrap: break-word;
 }
 
 #context-menu {
@@ -137,38 +139,10 @@ body {
     background-color: #ecf0f1;
 }
 
-#sherlock-status {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-    padding: 8px 12px;
-    background: #ecf6ff;
-    border: 1px solid #b3d4fc;
-    border-radius: 6px;
-    color: #1a73e8;
-    font-size: 14px;
-    z-index: 1001;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-#domain-to-ip-status {
-    position: absolute;
-    bottom: 50px;
-    right: 12px;
-    padding: 8px 12px;
-    background: #f0f8ff;
-    border: 1px solid #add8e6;
-    border-radius: 6px;
-    color: #0066cc;
-    font-size: 14px;
-    z-index: 1001;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
 #zoom-slider {
     position: absolute;
     bottom: 12px;
-    right: 12px;
+    right: 352px;
     z-index: 1001;
     background: #fff;
     border: 1px solid #ccc;
@@ -207,6 +181,20 @@ body {
     transform: translateX(0);
 }
 
+.side-panel.right-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    height: 100%;
+    width: 320px;
+    padding: 10px;
+    overflow-y: auto;
+    background: #f9f9f9;
+    border-left: 1px solid #ccc;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
 #toggle-panel {
     position: absolute;
     top: 10px;
@@ -225,6 +213,10 @@ body {
     border-bottom: 1px solid #ddd;
 }
 
+.properties-section {
+  display: none;
+}
+
 .section-header {
     font-weight: bold;
     cursor: pointer;
@@ -237,7 +229,7 @@ body {
     padding-left: 5px;
 }
 
-.section-body button {
+.section-button {
     display: block;
     margin-bottom: 5px;
     width: 90%;
@@ -248,6 +240,55 @@ body {
     border-radius: 4px;
 }
 
-.section-body button:hover {
+.section-button:hover {
     background: #ccc;
+}
+
+.file-item {
+  margin-bottom: 8px;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.text-file-label {
+  cursor: pointer;
+  font-weight: 600;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.text-file-content {
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  max-height: 200px;   /* prevent giant blocks */
+  overflow-y: auto;    /* scroll if too long */
+  white-space: pre-wrap; /* preserve formatting */
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.node-info .field-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.node-info label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.node-info input,
+.node-info select {
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: 95%;
+    box-sizing: border-box;
 }

@@ -7,7 +7,6 @@ You can find it here: https://github.com/sherlock-project/sherlock
 
 # Starting the application
 To start the server open command prompt in the main directory and execute the following:
-* npx tsc
 * node dist/server.js
 
 # Testing the application
@@ -20,7 +19,10 @@ If you run into access denied permission errors even when using sudo, run the fo
 * rm -rf ./node_modules; npm i
 
 # Progress so far
-* NEW: Added the ability to change node types: just select the node(s) and change type with the left plus button
+* NEW: Users can add files into nodes, just right click and upload files or use the right menu 
+* NEW: Implemented domain to ip, just right click and select the option
+* NEW: Implemented website to domain, just right click and select the option
+* Added the ability to change node types: just select the node(s) and change type with the left plus button
 * Users should be able to create nodes to their desired locations.
 * Edit and delete nodes on screen.
 * Shift + left click to create box selection.

@@ -46,7 +46,7 @@ export function saveGraph(){
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename, graphData })
     }).then(res => {
-        document.getElementById("status").innerText =
+        document.getElementById("status-bar").innerText =
             res.ok ? `Saved to "${filename}.json"` : `Failed to save "${filename}.json"`;
     });
 }
@@ -127,6 +127,6 @@ export function confirmLoad(){
         .then(res => res.json())
         .then(data => {
             cy.json(data);
-            document.getElementById("status").innerText = `Loaded: ${file}`;
+            document.getElementById("status-bar").innerText = `Loaded: ${file}`;
         });
 }

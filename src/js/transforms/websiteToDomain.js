@@ -22,6 +22,7 @@
 
 import { ur, cy } from "../main.js";
 import { resolveNodeOverlap } from "../nodePositioning.js";
+import { setStatusMessage } from "../setStatusMessageHandler.js";
 
 /**
  * Extract Domain from URL
@@ -106,7 +107,7 @@ function extractDomain(url) {
  */
 export function runWebsiteToDomain(node) {
     const url = node.data("label");
-    document.getElementById("website-to-domain-status").innerText = `Website to Domain: Extracting from "${url}"...`;
+    setStatusMessage(`Website to Domain: Extracting from "${url}"...`);
 
     try {
         /**
@@ -121,7 +122,7 @@ export function runWebsiteToDomain(node) {
          * and no extraction is needed.
          */
         if (url && url.includes('.') && !url.includes('/') && !url.includes('?')) {
-            document.getElementById("website-to-domain-status").innerText = `Website to Domain: Node already contains domain "${url}"`;
+            setStatusMessage(`Website to Domain: Node already contains domain "${url}"`);
             return;
         }
         
@@ -129,7 +130,7 @@ export function runWebsiteToDomain(node) {
         const domain = extractDomain(url);
         
         if (!domain) {
-            document.getElementById("website-to-domain-status").innerText = `Website to Domain: Invalid URL format`;
+            setStatusMessage(`Website to Domain: Invalid URL format`);
             return;
         }
 
@@ -138,7 +139,7 @@ export function runWebsiteToDomain(node) {
         
         // Check if domain node already exists
         if (cy.getElementById(domainId).length > 0) {
-            document.getElementById("website-to-domain-status").innerText = `Website to Domain: Domain "${domain}" already exists`;
+            setStatusMessage(`Website to Domain: Domain "${domain}" already exists`);
             return;
         }
 
@@ -198,7 +199,7 @@ export function runWebsiteToDomain(node) {
          * - Shows completion message with extracted domain
          * - Indicates successful domain extraction and node creation
          */
-        document.getElementById("website-to-domain-status").innerText = `Website to Domain: Extracted "${domain}" from URL`;
+        setStatusMessage(`Website to Domain: Extracted "${domain}" from URL`);
         
     } catch (error) {
         /**
@@ -210,6 +211,6 @@ export function runWebsiteToDomain(node) {
          * - Preserves original node state
          */
         console.error("Website to Domain error:", error);
-        document.getElementById("website-to-domain-status").innerText = `Website to Domain: Extraction failed`;
+        setStatusMessage(`Website to Domain: Extraction failed`);
     }
 } 
