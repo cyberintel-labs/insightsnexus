@@ -18,6 +18,7 @@ import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
 import { runDomainToIp } from "./transforms/domainToIp.js";
+import { runDomainToDns } from "./transforms/domainToDns.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
@@ -146,6 +147,9 @@ function handleContextAction(action){
     }else if(action === "domain-to-ip"){
         console.log("Calling domain to IP")
         runDomainToIp(node);
+    }else if(action === "domain-to-dns"){
+        console.log("Calling domain to DNS")
+        runDomainToDns(node);
     }else if(action === "website-to-domain"){
         console.log("Calling website to domain")
         runWebsiteToDomain(node);

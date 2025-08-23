@@ -219,6 +219,73 @@ app.post("/domain-to-ip", (req, res): void => {
     });
 });
 
+/**
+ * Domain to DNS Records Endpoint
+ * 
+ * POST /domain-to-dns
+ * 
+ * Retrieves comprehensive DNS information for a domain including MX, NS, A, CNAME, and TXT records.
+ * 
+ * Input:
+ * - domain: string - The domain name to query for DNS records
+ * 
+ * Output:
+ * - mx: string[] - Array of mail exchange records
+ * - ns: string[] - Array of name server records
+ * - a: string[] - Array of IPv4 address records
+ * - cname: string[] - Array of canonical name records
+ * - txt: string[] - Array of text records
+ * - error: string - Error message if query fails
+ * 
+ * Process:
+ * 1. Validates required domain parameter
+ * 2. Performs DNS lookups for various record types using Node.js dns module
+ * 3. Returns all discovered DNS records organized by type
+ * 4. Handles errors gracefully with appropriate status codes
+ */
+app.post("/domain-to-dns", (req, res): void => {
+    const { domain } = req.body;
+
+    if(!domain){
+        res.status(400).json({error: "Domain is required"});
+        return;
+    }
+
+    // Use imported dns module for DNS resolution
+    const resolveMx = promisify(dns.resolveMx);
+    const resolveNs = promisify(dns.resolveNs);
+    const resolve4 = promisify(dns.resolve4);
+    const resolveCname = promisify(dns.resolveCname);
+    const resolveTxt = promisify(dns.resolveTxt);
+
+    console.log(`Retrieving DNS records for domain: ${domain}`);
+
+    // Resolve all DNS record types
+    Promise.all([
+        resolveMx(domain).catch(() => []),
+        resolveNs(domain).catch(() => []),
+        resolve4(domain).catch(() => []),
+        resolveCname(domain).catch(() => []),
+        resolveTxt(domain).catch(() => [])
+    ])
+    .then(([mxRecords, nsRecords, aRecords, cnameRecords, txtRecords]) => {
+        const records = {
+            mx: mxRecords.map(record => record.exchange),
+            ns: nsRecords,
+            a: aRecords,
+            cname: cnameRecords,
+            txt: txtRecords.flat()
+        };
+        
+        console.log(`DNS records for ${domain}:`, records);
+        res.json(records);
+    })
+    .catch(err => {
+        console.error("Error retrieving DNS records:", err);
+        res.status(500).json({error: "Failed to retrieve DNS records"});
+    });
+});
+
 // POST /feroxbuster
 app.post("/feroxbuster", (req, res): void => {
     const { domain } = req.body;

@@ -38,15 +38,44 @@ try {
     sherlockPath = (0, child_process_1.execSync)("where sherlock", { encoding: "utf8" }).split("\n")[0].trim();
     console.log("Sherlock found at (Windows):", sherlockPath);
 }
-catch (_a) {
+catch {
     try {
         // Try finding for unix systems
         sherlockPath = (0, child_process_1.execSync)("which sherlock", { encoding: "utf8" }).trim();
         console.log("Sherlock found at (Unix):", sherlockPath);
     }
-    catch (_b) {
+    catch {
         console.error("Sherlock not found in path.");
         sherlockPath = ""; // No path detected
+    }
+}
+// Detect feroxbuster executable
+/**
+ * Feroxbuster Path Detection
+ *
+ * Attempts to automatically detect the feroxbuster executable in the main directory.
+ * Feroxbuster is used to search for subdomains from a domain in this project.
+ *
+ * Detection Strategy:
+ * 1. First tries Windows 'where' command
+ * 2. Falls back to Unix 'which' command
+ * 3. Sets empty string if not found (will cause API errors)
+ */
+let feroxPath = "";
+try {
+    // Attempt to find for windows systems
+    feroxPath = (0, child_process_1.execSync)("where feroxbuster", { encoding: "utf8" }).split("\n")[0].trim();
+    console.log("Feroxbuster found at (Windows):", feroxPath);
+}
+catch {
+    try {
+        // Try finding for unix systems
+        feroxPath = (0, child_process_1.execSync)("which feroxbuster", { encoding: "utf8" }).trim();
+        console.log("Feroxbuster found at (Unix):", feroxPath);
+    }
+    catch {
+        console.error("Feroxbuster not found in path.");
+        feroxPath = ""; // No path detected
     }
 }
 // const savesDir = path.join(__dirname, "../saves");
@@ -177,6 +206,101 @@ app.post("/domain-to-ip", (req, res) => {
         .catch(err => {
         console.error("Error resolving domain:", err);
         res.status(500).json({ error: "Failed to resolve domain" });
+    });
+});
+/**
+ * Domain to DNS Records Endpoint
+ *
+ * POST /domain-to-dns
+ *
+ * Retrieves comprehensive DNS information for a domain including MX, NS, A, CNAME, and TXT records.
+ *
+ * Input:
+ * - domain: string - The domain name to query for DNS records
+ *
+ * Output:
+ * - mx: string[] - Array of mail exchange records
+ * - ns: string[] - Array of name server records
+ * - a: string[] - Array of IPv4 address records
+ * - cname: string[] - Array of canonical name records
+ * - txt: string[] - Array of text records
+ * - error: string - Error message if query fails
+ *
+ * Process:
+ * 1. Validates required domain parameter
+ * 2. Performs DNS lookups for various record types using Node.js dns module
+ * 3. Returns all discovered DNS records organized by type
+ * 4. Handles errors gracefully with appropriate status codes
+ */
+app.post("/domain-to-dns", (req, res) => {
+    const { domain } = req.body;
+    if (!domain) {
+        res.status(400).json({ error: "Domain is required" });
+        return;
+    }
+    // Use imported dns module for DNS resolution
+    const resolveMx = (0, util_1.promisify)(dns_1.default.resolveMx);
+    const resolveNs = (0, util_1.promisify)(dns_1.default.resolveNs);
+    const resolve4 = (0, util_1.promisify)(dns_1.default.resolve4);
+    const resolveCname = (0, util_1.promisify)(dns_1.default.resolveCname);
+    const resolveTxt = (0, util_1.promisify)(dns_1.default.resolveTxt);
+    console.log(`Retrieving DNS records for domain: ${domain}`);
+    // Resolve all DNS record types
+    Promise.all([
+        resolveMx(domain).catch(() => []),
+        resolveNs(domain).catch(() => []),
+        resolve4(domain).catch(() => []),
+        resolveCname(domain).catch(() => []),
+        resolveTxt(domain).catch(() => [])
+    ])
+        .then(([mxRecords, nsRecords, aRecords, cnameRecords, txtRecords]) => {
+        const records = {
+            mx: mxRecords.map(record => record.exchange),
+            ns: nsRecords,
+            a: aRecords,
+            cname: cnameRecords,
+            txt: txtRecords.flat()
+        };
+        console.log(`DNS records for ${domain}:`, records);
+        res.json(records);
+    })
+        .catch(err => {
+        console.error("Error retrieving DNS records:", err);
+        res.status(500).json({ error: "Failed to retrieve DNS records" });
+    });
+});
+// POST /feroxbuster
+app.post("/feroxbuster", (req, res) => {
+    const { domain } = req.body;
+    if (!domain) {
+        res.status(400).json({ error: "Domain is required" });
+        return;
+    }
+    if (!feroxPath) {
+        res.status(500).json({ error: "Feroxbuster executable not found" });
+        return;
+    }
+    // Run feroxbuster silently, outputting discovered URLs to stdout
+    const command = `${feroxPath} -u https://${domain} -x html,php,txt,json -q --silent --output -`;
+    console.log(`Running Feroxbuster for domain: ${domain}`);
+    (0, child_process_1.exec)(command, { maxBuffer: 1024 * 1024 * 10 }, (err, stdout, stderr) => {
+        if (err) {
+            console.error("Feroxbuster error:", err, stderr);
+            return res.status(500).json({ error: "Failed to run Feroxbuster" });
+        }
+        try {
+            // Extract subdomains from stdout lines
+            const lines = stdout.split("\n");
+            const subdomains = Array.from(new Set(lines
+                .map(line => line.trim())
+                .filter(line => line.endsWith(domain) && line.length > domain.length)));
+            console.log(`Feroxbuster found ${subdomains.length} subdomains`);
+            return res.json({ subdomains });
+        }
+        catch (parseErr) {
+            console.error("Feroxbuster parse error:", parseErr);
+            return res.status(500).json({ error: "Failed to parse Feroxbuster output" });
+        }
     });
 });
 /**
