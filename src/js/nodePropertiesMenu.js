@@ -1,9 +1,9 @@
-import { uploadFiles, removeImageFromNode, removeTextFromNode } from "./fileUploadHandler.js";
+import { uploadFiles, removeImageFromNode, removeTextFromNode, showCurrentImage } from "./fileUploadHandler.js";
 
 let cy;
 let selectedNode = null;
 
-export function initNodePropertiesMenu(cytoscapeInstance) {
+export function initNodePropertiesMenu(cytoscapeInstance){
     cy = cytoscapeInstance;
 
     const nameInput = document.getElementById("node-name");
@@ -111,7 +111,18 @@ export function initNodePropertiesMenu(cytoscapeInstance) {
                 const img = document.createElement("img");
                 img.src = src;
                 img.classList.add("thumbnail");
-                img.addEventListener("click", () => selectedNode.data("currentImageIndex", i));
+
+                // This is to highlight selected thumbnail
+                if(i === (selectedNode.data("currentImageIndex") || 0)){
+                    img.classList.add("thumbnail-selected");
+                }
+
+                img.addEventListener("click", () => {
+                    selectedNode.data("currentImageIndex", i)
+                    showCurrentImage(selectedNode);
+                    selectedNode.emit("filesUpdated");
+                    updatePropertiesMenu(selectedNode);
+                });
 
                 const delBtn = document.createElement("button");
                 delBtn.textContent = "×";

@@ -50,7 +50,7 @@ export function uploadFiles(node, files){
     });
 }
 
-function showCurrentImage(node){
+export function showCurrentImage(node){
     const images = node.data("images") || [];
     const index = node.data("currentImageIndex") ?? 0;
 

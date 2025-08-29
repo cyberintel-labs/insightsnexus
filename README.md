@@ -4,6 +4,8 @@ This local web application will allow the user to manipulate and connect nodes o
 # Prerequisites
 * Users must install sherlock before usage.
 You can find it here: https://github.com/sherlock-project/sherlock
+* Users must install feroxbuster to search for endpoints (place exe in main directory.)
+You can find it here: https://github.com/epi052/feroxbuster
 
 # Starting the application
 To start the server open command prompt in the main directory and execute the following:

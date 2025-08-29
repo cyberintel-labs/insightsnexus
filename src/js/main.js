@@ -29,7 +29,7 @@ import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
-// import { runFeroxbuster } from "./transforms/domainToSub.js";
+import { runDomainToEnd } from "./transforms/domainToEnd.js";
 
 initNodePropertiesMenu(cy);
 
@@ -154,6 +154,9 @@ function handleContextAction(action){
     }else if(action === "domain-to-dns"){
         console.log("Calling domain to DNS")
         runDomainToDns(node);
+    }else if(action === "domain-to-endpoint"){
+        console.log("Calling domain to endpoint")
+        runDomainToEnd(node);
     }else if(action === "website-to-domain"){
         console.log("Calling website to domain")
         runWebsiteToDomain(node);

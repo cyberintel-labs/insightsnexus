@@ -307,6 +307,56 @@ app.post("/website-screenshot", async (req, res): Promise<void> => {
     }
 });
 
+// Domain to endpoint
+app.post("/domain-to-end", (req, res): void => {
+    const { domain } = req.body;
+
+    if(!domain){
+        res.status(400).json({ error: "Domain is required" });
+        return;
+    }
+    if(!feroxPath){
+        res.status(500).json({ error: "Feroxbuster executable not found" });
+        return;
+    }
+
+    // Use feroxbuster with a wordlist for endpoint discovery
+    const wordlistPath = path.join(__dirname, "../Datalist/raft-medium-directories.txt");
+    const command = `${feroxPath} -u https://${domain}/ -w ${wordlistPath} --silent`;
+
+    console.log(`Running Feroxbuster for domain: ${domain}`);
+    console.log("Executing command:", command);
+
+    exec(command, { maxBuffer: 1024 * 1024 * 20 }, (err, stdout, stderr) => {
+        if(err){
+            console.error("Feroxbuster error:", err, stderr);
+            return res.status(500).json({ error: "Failed to run Feroxbuster" });
+        }
+
+        try{
+            const lines = stdout.split("\n").map(l => l.trim()).filter(Boolean);
+
+            // Extract only the path part (/admin, /api/login)
+            const endpoints = lines.map(url => {
+                try{
+                    const u = new URL(url);
+                    return u.pathname; // just the path, not the whole domain
+                }catch{
+                    return null;
+                }
+            }).filter(Boolean);
+
+            const uniqueEndpoints = Array.from(new Set(endpoints));
+
+            console.log(`Feroxbuster found ${uniqueEndpoints.length} endpoints`);
+            return res.json({ endpoints: uniqueEndpoints });
+        }catch(parseErr){
+            console.error("Feroxbuster parse error:", parseErr);
+            return res.status(500).json({ error: "Failed to parse Feroxbuster output" });
+        }
+    });
+});
+
 /**
  * Domain to IP Address Resolution Endpoint
  * 
