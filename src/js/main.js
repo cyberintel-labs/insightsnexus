@@ -20,6 +20,7 @@ import { runSherlock } from "./transforms/sherlock.js";
 import { runDomainToIp } from "./transforms/domainToIp.js";
 import { runDomainToDns } from "./transforms/domainToDns.js";
 import { runWhois } from "./transforms/whois.js";
+import { runIpToNetblock } from "./transforms/ipToNetblock.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
@@ -157,6 +158,9 @@ function handleContextAction(action){
     }else if(action === "whois"){
         console.log("Calling whois")
         runWhois(node);
+    }else if(action === "ip-to-netblock"){
+        console.log("Calling IP to Netblock")
+        runIpToNetblock(node);
     }else if(action === "domain-to-subdomain"){
         console.log("Calling domain-to-subdomain")
         runFeroxbuster(node);

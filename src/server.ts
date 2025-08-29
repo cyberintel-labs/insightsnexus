@@ -553,6 +553,117 @@ app.get("/saves", (req, res) => {
 });
 
 /**
+ * IP to Netblock Network Analysis Endpoint
+ * 
+ * POST /ip-to-netblock
+ * 
+ * Analyzes IP addresses to identify network ranges and ownership information.
+ * Uses network analysis tools to discover CIDR blocks and ASN details.
+ * 
+ * Input:
+ * - ip: string - The IP address to analyze
+ * 
+ * Output:
+ * - netblocks: string[] - Array of CIDR network ranges containing the IP
+ * - owners: string[] - Array of network ownership and ASN information
+ * - error: string - Error message if analysis fails
+ * 
+ * Process:
+ * 1. Validates IP address input
+ * 2. Performs network analysis using whois and network tools
+ * 3. Extracts CIDR network ranges and ownership details
+ * 4. Returns structured network information
+ * 5. Handles errors gracefully with appropriate status codes
+ */
+app.post("/ip-to-netblock", (req, res): void => {
+    const { ip } = req.body;
+    if(!ip){
+        res.status(400).json({error: "IP address is required"});
+        return;
+    }
+
+    // Validate IP address format (basic validation)
+    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    if(!ipRegex.test(ip)){
+        res.status(400).json({error: "Invalid IP address format"});
+        return;
+    }
+
+    console.log(`Analyzing network information for IP: ${ip}`);
+
+    // Use whois to get network information
+    const command = `whois ${ip}`;
+    const timeout = 30000; // 30 second timeout
+
+    exec(command, { timeout }, (error, stdout, stderr) => {
+        if(error){
+            console.error("Error running IP analysis:", error);
+            return res.status(500).json({ error: "Failed to analyze IP address" });
+        }
+
+        try{
+            // Parse whois output to extract network information
+            const lines = stdout.split("\n");
+            const netblocks: string[] = [];
+            const owners: string[] = [];
+
+            for(const line of lines){
+                const lowerLine = line.toLowerCase();
+                
+                // Extract network blocks (CIDR ranges)
+                if(lowerLine.includes("inetnum:") || lowerLine.includes("netrange:") || lowerLine.includes("cidr:")){
+                    const match = line.match(/:\s*(.+)/);
+                    if(match && match[1]){
+                        const netblock = match[1].trim();
+                        if(netblock && !netblocks.includes(netblock)){
+                            netblocks.push(netblock);
+                        }
+                    }
+                }
+                
+                // Extract organization/owner information
+                if(lowerLine.includes("organization:") || lowerLine.includes("org-name:") || lowerLine.includes("descr:")){
+                    const match = line.match(/:\s*(.+)/);
+                    if(match && match[1]){
+                        const owner = match[1].trim();
+                        if(owner && !owners.includes(owner)){
+                            owners.push(owner);
+                        }
+                    }
+                }
+                
+                // Extract ASN information
+                if(lowerLine.includes("origin:") || lowerLine.includes("as-name:")){
+                    const match = line.match(/:\s*(.+)/);
+                    if(match && match[1]){
+                        const asn = match[1].trim();
+                        if(asn && !owners.includes(asn)){
+                            owners.push(asn);
+                        }
+                    }
+                }
+            }
+
+            // Remove duplicates
+            const uniqueNetblocks = [...new Set(netblocks)];
+            const uniqueOwners = [...new Set(owners)];
+
+            const networkInfo = {
+                netblocks: uniqueNetblocks,
+                owners: uniqueOwners
+            };
+            
+            console.log(`IP analysis completed for ${ip}:`, networkInfo);
+            res.json(networkInfo);
+            
+        }catch(parseErr){
+            console.error("Error parsing IP analysis output:", parseErr);
+            res.status(500).json({error: "Failed to parse network information"});
+        }
+    });
+});
+
+/**
  * Load Graph Endpoint
  * 
  * GET /load/:filename
