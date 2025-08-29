@@ -73,6 +73,34 @@ try{
     }
 }
 
+// Detect nmap executable
+/**
+ * Nmap Path Detection
+ * 
+ * Attempts to automatically detect the nmap executable in the system PATH.
+ * Nmap is used for port scanning to identify open ports on target systems.
+ * 
+ * Detection Strategy:
+ * 1. First tries Windows 'where' command
+ * 2. Falls back to Unix 'which' command
+ * 3. Sets empty string if not found (will cause API errors)
+ */
+let nmapPath = "";
+try{
+    // Attempt to find for windows systems
+    nmapPath = execSync("where nmap", { encoding: "utf8" }).split("\n")[0].trim();
+    console.log("Nmap found at (Windows):", nmapPath);
+}catch{
+    try{
+        // Try finding for unix systems
+        nmapPath = execSync("which nmap", {encoding: "utf8"}).trim();
+        console.log("Nmap found at (Unix):", nmapPath);
+    }catch{
+        console.error("Nmap not found in path.");
+        nmapPath = ""; // No path detected
+    }
+}
+
 // const savesDir = path.join(__dirname, "../saves");
 // if(!fs.existsSync(savesDir)) fs.mkdirSync(savesDir);
 
@@ -659,6 +687,92 @@ app.post("/ip-to-netblock", (req, res): void => {
         }catch(parseErr){
             console.error("Error parsing IP analysis output:", parseErr);
             res.status(500).json({error: "Failed to parse network information"});
+        }
+    });
+});
+
+/**
+ * Port Scan API Endpoint
+ * 
+ * POST /port-scan
+ * 
+ * Executes nmap port scan on target systems and returns discovered open ports.
+ * 
+ * Input:
+ * - target: string - The target IP address or hostname to scan
+ * 
+ * Output:
+ * - ports: Array<{port: number, service: string}> - Array of open ports with service names
+ * - error: string - Error message if scan fails
+ * 
+ * Process:
+ * 1. Validates target input
+ * 2. Checks if nmap is available
+ * 3. Executes nmap command with top 1000 ports scan
+ * 4. Parses output to extract open ports and services
+ * 5. Returns JSON response with discovered ports
+ * 
+ * Nmap Command:
+ * - Scans top 1000 ports (-F flag)
+ * - Identifies service names (-sV flag)
+ * - Provides machine-readable output (-oG flag)
+ * - Includes host discovery (-sn flag)
+ */
+app.post("/port-scan", (req, res): void => {
+    const { target } = req.body;
+    if(!target){
+        res.status(400).json({error: "Target is required"});
+        return;
+    }
+    if(!nmapPath){
+        res.status(500).json({error: "Nmap executable not found in system PATH."});
+        return;
+    }
+
+    // Use nmap to scan top 1000 ports with service detection
+    const command = `${nmapPath} -F -sV -oG - ${target}`;
+    const timeout = 60000; // 60 second timeout for port scanning
+
+    console.log(`Running port scan for target: ${target}`);
+
+    exec(command, { timeout }, (error, stdout, stderr) => {
+        if(error){
+            console.error("Error running port scan:", error);
+            return res.status(500).json({ error: "Failed to run port scan" });
+        }
+
+        try{
+            // Parse nmap output to extract open ports and services
+            const lines = stdout.split("\n");
+            const ports: Array<{port: number, service: string}> = [];
+
+            for(const line of lines){
+                // Look for lines containing port information (e.g., "22/open/tcp//ssh//OpenSSH")
+                if(line.includes("/open/")){
+                    const portMatch = line.match(/(\d+)\/open\/(tcp|udp)\/\/([^\/]+)/);
+                    if(portMatch && portMatch[1] && portMatch[3]){
+                        const port = parseInt(portMatch[1]);
+                        const service = portMatch[3].trim();
+                        
+                        if(port && service && !ports.some(p => p.port === port)){
+                            ports.push({
+                                port: port,
+                                service: service || "unknown"
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Sort ports by port number for consistent output
+            ports.sort((a, b) => a.port - b.port);
+            
+            console.log(`Port scan completed for ${target}. Found ${ports.length} open ports:`, ports);
+            res.json({ports: ports});
+            
+        }catch(parseErr){
+            console.error("Error parsing port scan output:", parseErr);
+            res.status(500).json({error: "Failed to parse port scan results"});
         }
     });
 });

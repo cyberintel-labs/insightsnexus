@@ -17,6 +17,7 @@
 import { ur } from "./changeDataHandler.js";
 import { cy } from "./cytoscapeConfig.js";
 import { runSherlock } from "./transforms/sherlock.js";
+import { runPortScan } from "./transforms/portScan.js";
 import { runDomainToIp } from "./transforms/domainToIp.js";
 import { runDomainToDns } from "./transforms/domainToDns.js";
 import { runWhois } from "./transforms/whois.js";
@@ -161,6 +162,9 @@ function handleContextAction(action){
     }else if(action === "ip-to-netblock"){
         console.log("Calling IP to Netblock")
         runIpToNetblock(node);
+    }else if(action === "port-scan"){
+        console.log("Calling port scan")
+        runPortScan(node);
     }else if(action === "domain-to-subdomain"){
         console.log("Calling domain-to-subdomain")
         runFeroxbuster(node);
