@@ -38,13 +38,13 @@ try {
     sherlockPath = (0, child_process_1.execSync)("where sherlock", { encoding: "utf8" }).split("\n")[0].trim();
     console.log("Sherlock found at (Windows):", sherlockPath);
 }
-catch {
+catch (_a) {
     try {
         // Try finding for unix systems
         sherlockPath = (0, child_process_1.execSync)("which sherlock", { encoding: "utf8" }).trim();
         console.log("Sherlock found at (Unix):", sherlockPath);
     }
-    catch {
+    catch (_b) {
         console.error("Sherlock not found in path.");
         sherlockPath = ""; // No path detected
     }
@@ -67,13 +67,13 @@ try {
     feroxPath = (0, child_process_1.execSync)("where feroxbuster", { encoding: "utf8" }).split("\n")[0].trim();
     console.log("Feroxbuster found at (Windows):", feroxPath);
 }
-catch {
+catch (_c) {
     try {
         // Try finding for unix systems
         feroxPath = (0, child_process_1.execSync)("which feroxbuster", { encoding: "utf8" }).trim();
         console.log("Feroxbuster found at (Unix):", feroxPath);
     }
-    catch {
+    catch (_d) {
         console.error("Feroxbuster not found in path.");
         feroxPath = ""; // No path detected
     }
@@ -268,6 +268,140 @@ app.post("/domain-to-dns", (req, res) => {
         console.error("Error retrieving DNS records:", err);
         res.status(500).json({ error: "Failed to retrieve DNS records" });
     });
+});
+/**
+ * Whois Information Endpoint
+ *
+ * POST /whois
+ *
+ * Retrieves domain registration information using the whois command including registrar,
+ * name servers, creation date, and expiry date.
+ *
+ * Input:
+ * - domain: string - The domain name to query for WHOIS information
+ *
+ * Output:
+ * - registrar: string - Domain registrar information
+ * - nameServers: string[] - Array of name server records (duplicates removed)
+ * - creationDate: string - Domain creation date
+ * - expiryDate: string - Domain expiry date
+ * - error: string - Error message if query fails
+ *
+ * Process:
+ * 1. Validates required domain parameter
+ * 2. Executes whois command with timeout and retry logic
+ * 3. Parses output to extract relevant domain information
+ * 4. Removes duplicate name servers
+ * 5. Returns structured domain information
+ * 6. Handles errors gracefully with appropriate status codes
+ */
+app.post("/whois", (req, res) => {
+    const { domain } = req.body;
+    if (!domain) {
+        res.status(400).json({ error: "Domain is required" });
+        return;
+    }
+    const command = `whois ${domain}`;
+    const timeout = 30000; // 30 second timeout
+    const maxRetries = 3;
+    let retryCount = 0;
+    /**
+     * Execute Whois Command with Retry Logic
+     *
+     * Attempts to execute the whois command with exponential backoff retry logic.
+     * Implements timeout handling and graceful error recovery.
+     * Maximum of 3 retry attempts before giving up.
+     */
+    const executeWhois = () => {
+        console.log(`Running whois for domain: ${domain} (attempt ${retryCount + 1}/${maxRetries + 1})`);
+        const childProcess = (0, child_process_1.exec)(command, { timeout }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Whois error for ${domain}:`, error);
+                // Retry logic with exponential backoff - maximum 3 retries
+                if (retryCount < maxRetries && (String(error.code) === 'ETIMEDOUT' || error.signal === 'SIGTERM')) {
+                    retryCount++;
+                    const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s, 8s
+                    console.log(`Retrying whois for ${domain} in ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
+                    setTimeout(executeWhois, delay);
+                    return;
+                }
+                console.log(`Whois failed for ${domain} after ${retryCount + 1} attempts`);
+                return res.status(500).json({ error: "Failed to retrieve WHOIS information" });
+            }
+            try {
+                // Parse whois output to extract relevant information
+                const lines = stdout.split("\n");
+                let registrar = "";
+                const nameServers = [];
+                let creationDate = "";
+                let expiryDate = "";
+                for (const line of lines) {
+                    const lowerLine = line.toLowerCase();
+                    // Extract registrar information
+                    if (lowerLine.includes("registrar:") || lowerLine.includes("registrar name:")) {
+                        const match = line.match(/:\s*(.+)/);
+                        if (match && match[1]) {
+                            registrar = match[1].trim();
+                        }
+                    }
+                    // Extract name servers
+                    if (lowerLine.includes("name server:") || lowerLine.includes("nserver:")) {
+                        const match = line.match(/:\s*(.+)/);
+                        if (match && match[1]) {
+                            const ns = match[1].trim();
+                            if (ns && !nameServers.includes(ns)) {
+                                nameServers.push(ns);
+                            }
+                        }
+                    }
+                    // Extract creation date
+                    if (lowerLine.includes("creation date:") || lowerLine.includes("created:")) {
+                        const match = line.match(/:\s*(.+)/);
+                        if (match && match[1]) {
+                            creationDate = match[1].trim();
+                        }
+                    }
+                    // Extract expiry date
+                    if (lowerLine.includes("expiry date:") || lowerLine.includes("expires:")) {
+                        const match = line.match(/:\s*(.+)/);
+                        if (match && match[1]) {
+                            expiryDate = match[1].trim();
+                        }
+                    }
+                }
+                // Remove duplicate name servers
+                const uniqueNameServers = [...new Set(nameServers)];
+                const whoisInfo = {
+                    registrar: registrar || "Unknown",
+                    nameServers: uniqueNameServers,
+                    creationDate: creationDate || "Unknown",
+                    expiryDate: expiryDate || "Unknown"
+                };
+                console.log(`Whois completed for ${domain}:`, whoisInfo);
+                res.json(whoisInfo);
+            }
+            catch (parseErr) {
+                console.error("Error parsing whois output:", parseErr);
+                res.status(500).json({ error: "Failed to parse WHOIS information" });
+            }
+        });
+        // Handle process termination for cleanup
+        childProcess.on('error', (err) => {
+            console.error(`Whois process error for ${domain}:`, err);
+            if (retryCount < maxRetries) {
+                retryCount++;
+                const delay = Math.pow(2, retryCount) * 1000;
+                console.log(`Retrying whois for ${domain} in ${delay}ms (attempt ${retryCount + 1}/${maxRetries + 1})`);
+                setTimeout(executeWhois, delay);
+            }
+            else {
+                console.log(`Whois failed for ${domain} after ${retryCount + 1} attempts (process error)`);
+                res.status(500).json({ error: "Failed to retrieve WHOIS information" });
+            }
+        });
+    };
+    // Start the whois execution process
+    executeWhois();
 });
 // POST /feroxbuster
 app.post("/feroxbuster", (req, res) => {
