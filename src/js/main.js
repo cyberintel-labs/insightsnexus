@@ -24,6 +24,7 @@ import { runWhois } from "./transforms/whois.js";
 import { runIpToNetblock } from "./transforms/ipToNetblock.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
+import { runWebsiteScreenshot } from "./transforms/websiteScreenshot.js";
 import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
@@ -156,6 +157,9 @@ function handleContextAction(action){
     }else if(action === "website-to-domain"){
         console.log("Calling website to domain")
         runWebsiteToDomain(node);
+    }else if(action === "website-screenshot"){
+        console.log("Calling website screenshot")
+        runWebsiteScreenshot(node);
     }else if(action === "whois"){
         console.log("Calling whois")
         runWhois(node);

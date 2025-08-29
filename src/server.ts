@@ -198,6 +198,116 @@ app.post("/sherlock", (req, res): void => {
 });
 
 /**
+ * Website Screenshot Capture Endpoint
+ * 
+ * POST /website-screenshot
+ * 
+ * Captures a visual snapshot of a website using Puppeteer and returns the image as base64 data.
+ * 
+ * Input:
+ * - url: string - The website URL to capture (must include valid domain and TLD)
+ * 
+ * Output:
+ * - screenshot: string - Base64 encoded PNG image data
+ * - error: string - Error message if capture fails
+ * 
+ * Process:
+ * 1. Validates URL input and domain structure
+ * 2. Launches Puppeteer browser instance
+ * 3. Navigates to the specified URL
+ * 4. Captures full webpage screenshot at 1280x720 resolution
+ * 5. Converts screenshot to base64 PNG format
+ * 6. Returns image data for frontend processing
+ * 7. Handles errors gracefully with appropriate status codes
+ * 
+ * Screenshot Configuration:
+ * - Viewport: 1280x720 pixels for consistent capture
+ * - Format: PNG for lossless quality
+ * - Full page: Captures entire webpage content
+ * - Timeout: 30 seconds for page load and rendering
+ */
+app.post("/website-screenshot", async (req, res): Promise<void> => {
+    const { url } = req.body;
+    
+    if (!url) {
+        res.status(400).json({ error: "URL is required" });
+        return;
+    }
+
+    // Validate URL format
+    try {
+        const urlObj = new URL(url);
+        const hostnameParts = urlObj.hostname.split('.');
+        
+        if (hostnameParts.length < 2) {
+            res.status(400).json({ error: "Invalid URL format - Must include domain and TLD" });
+            return;
+        }
+        
+        // Check if we have at least a second-level domain and top-level domain
+        if (hostnameParts.length < 2 || hostnameParts[hostnameParts.length - 1].length < 2) {
+            res.status(400).json({ error: "Invalid URL format - Must include valid domain and TLD" });
+            return;
+        }
+        
+    } catch (error) {
+        res.status(400).json({ error: "Invalid URL format" });
+        return;
+    }
+
+    console.log(`Capturing website screenshot for: ${url}`);
+
+    try {
+        // Dynamic import to avoid loading Puppeteer if not needed
+        const puppeteer = await import('puppeteer');
+        const browser = await puppeteer.default.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        });
+
+        const page = await browser.newPage();
+        
+        // Set viewport for consistent screenshot size
+        await page.setViewport({ width: 1280, height: 720 });
+        
+        // Set timeout for page load
+        await page.setDefaultNavigationTimeout(30000);
+        
+        // Navigate to the URL
+        await page.goto(url, { waitUntil: 'networkidle2' });
+        
+        // Wait a bit for any dynamic content to load
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Capture screenshot
+        const screenshot = await page.screenshot({
+            type: 'png',
+            fullPage: true
+        });
+        
+        // Ensure we have a Buffer and convert to base64
+        let base64Screenshot;
+        if (screenshot instanceof Buffer) {
+            base64Screenshot = screenshot.toString('base64');
+        } else if (screenshot instanceof Uint8Array) {
+            base64Screenshot = Buffer.from(screenshot).toString('base64');
+        } else {
+            throw new Error(`Unexpected screenshot type: ${typeof screenshot}`);
+        }
+        
+        await browser.close();
+        
+        console.log(`Website screenshot captured successfully for: ${url}`);
+        res.json({ screenshot: base64Screenshot });
+        
+    } catch (error) {
+        console.error("Error capturing website screenshot:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        res.status(500).json({ error: `Failed to capture screenshot: ${errorMessage}` });
+    }
+});
+
+/**
  * Domain to IP Address Resolution Endpoint
  * 
  * POST /domain-to-ip
