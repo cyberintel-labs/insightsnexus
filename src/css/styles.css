@@ -354,7 +354,7 @@ body {
 
 #context-menu li:hover {
     background-color: rgba(102, 126, 234, 0.1);
-    color: var(--primary-color);
+    color: white;
     transform: translateX(4px);
 }
 
