@@ -59,19 +59,42 @@ export function showCurrentImage(node){
             "background-image": `url(${images[index]})`,
             "background-fit": "cover",
             "background-opacity": 1,
-            "width": 128,
-            "height": 128,
+            "width": 140,
+            "height": 140,
             "text-valign": "top",
             "text-halign": "center",
-            "font-size": 14
+            "font-size": 12,
+            "font-weight": "600",
+            "text-outline-color": "#2c3e50",
+            "text-outline-width": 3,
+            "text-outline-opacity": 0.8,
+            "border-width": 3,
+            "border-color": "rgba(255, 255, 255, 0.5)",
+            "border-opacity": 1,
+            "shadow-blur": 15,
+            "shadow-color": "rgba(0, 0, 0, 0.3)",
+            "shadow-offset-x": 3,
+            "shadow-offset-y": 6
         });
     } else {
         node.style({
             "background-image": "none",
-            "width": 30,
-            "height": 30,
+            "width": 40,
+            "height": 40,
             "text-valign": "center",
-            "text-halign": "center"
+            "text-halign": "center",
+            "font-size": 12,
+            "font-weight": "600",
+            "text-outline-color": "#2c3e50",
+            "text-outline-width": 3,
+            "text-outline-opacity": 0.8,
+            "border-width": 2,
+            "border-color": "rgba(255, 255, 255, 0.3)",
+            "border-opacity": 0.8,
+            "shadow-blur": 10,
+            "shadow-color": "rgba(0, 0, 0, 0.2)",
+            "shadow-offset-x": 2,
+            "shadow-offset-y": 4
         });
     }
 }
