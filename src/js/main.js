@@ -25,7 +25,7 @@ import { runIpToNetblock } from "./transforms/ipToNetblock.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { runWebsiteScreenshot } from "./transforms/websiteScreenshot.js";
-import { saveGraph, loadGraph, confirmLoad, autoLoadLastSave, saveToCurrentFile, saveAsNewFile } from "./dataManagement.js";
+import { saveGraph, loadGraph, confirmLoad, autoLoadLastSave, saveToCurrentFile, saveAsNewFile, newProject } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
@@ -579,6 +579,7 @@ window.loadGraph = loadGraph;
 window.confirmLoad = confirmLoad;
 window.toggleDropdown = toggleDropdown;
 window.handleContextAction = handleContextAction;
+window.newProject = newProject;
 
 /**
  * Auto-load Last Saved Graph on Page Load

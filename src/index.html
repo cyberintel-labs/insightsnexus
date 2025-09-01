@@ -15,6 +15,7 @@
         <div class="menu">
             <button onclick="toggleDropdown('file-dropdown')">File</button>
             <div id="file-dropdown" class="dropdown">
+                <button onclick="newProject()">New Project</button>
                 <button onclick="event.stopPropagation(); toggleDropdown('load-dropdown')">Load</button>
                 <div id="load-dropdown" class="sub-dropdown">
                     <select id="file-picker"></select>

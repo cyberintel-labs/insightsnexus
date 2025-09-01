@@ -310,3 +310,35 @@ function loadMostRecentFromServer(){
             setStatusMessage('Starting with empty graph');
         });
 }
+
+/**
+ * New Project Function
+ * 
+ * newProject()
+ * 
+ * Clears the current graph and resets the project state to treat it as a new project.
+ * This function removes all nodes and edges from the graph and clears the current file
+ * tracking, allowing the user to start fresh with a new investigation.
+ * 
+ * Process:
+ * 1. Removes all elements from the Cytoscape graph
+ * 2. Clears the lastSavedFile from localStorage
+ * 3. Resets the graph to its initial empty state
+ * 4. Updates status display to confirm new project creation
+ * 
+ * New Project Behavior:
+ * - Graph is completely cleared of all nodes and edges
+ * - No current file is associated with the project
+ * - Next save operation will prompt for a new filename
+ * - Auto-load functionality will not load any previous file
+ */
+export function newProject(){
+    // Clear all elements from the graph
+    cy.elements().remove();
+    
+    // Clear the current file tracking from localStorage
+    localStorage.removeItem('lastSavedFile');
+    
+    // Update status to confirm new project creation
+    setStatusMessage('New project created - graph cleared');
+}
