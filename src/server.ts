@@ -73,6 +73,35 @@ try{
     }
 }
 
+// Detect ffuf executable
+/**
+ * ffuf Path Detection
+ * 
+ * Attempts to automatically detect the ffuf executable in the system PATH.
+ * ffuf is used for fuzzing and subdomain discovery in this project.
+ * 
+ * Detection Strategy:
+ * 1. First tries Windows 'where' command
+ * 2. Falls back to Unix 'which' command
+ * 3. Sets empty string if not found (will cause API errors)
+ */
+let ffufPath = "";
+try{
+    // Attempt to find for windows systems
+    ffufPath = execSync("where ffuf", { encoding: "utf8" }).split("\n")[0].trim();
+    console.log("ffuf found at (Windows):", ffufPath);
+}catch{
+    try{
+        // Try finding for unix systems
+        ffufPath = execSync("which ffuf", { encoding: "utf8" }).trim();
+        console.log("ffuf found at (Unix):", ffufPath);
+    }catch{
+        console.error("ffuf not found in path.");
+        ffufPath = ""; // No path detected
+    }
+}
+
+
 // Detect nmap executable
 /**
  * Nmap Path Detection
@@ -305,6 +334,57 @@ app.post("/website-screenshot", async (req, res): Promise<void> => {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         res.status(500).json({ error: `Failed to capture screenshot: ${errorMessage}` });
     }
+});
+
+// Domain to Subdomain Enumeration
+app.post("/domain-to-sub", (req, res): void => {
+    const { domain } = req.body;
+
+    if(!domain){
+        res.status(400).json({ error: "Domain is required" });
+        return;
+    }
+    if(!ffufPath){
+        res.status(500).json({ error: "ffuf executable not found" });
+        return;
+    }
+
+    // Use ffuf with a wordlist for subdomain discovery
+    const wordlistPath = path.join(__dirname, "../Datalist/subdomains-top1million-110000.txt");
+    const command = `${ffufPath} -u https://FUZZ.${domain} -w ${wordlistPath} -mc 200,301,302 -v -of csv -o -`;
+
+    console.log(`Running ffuf for subdomains of: ${domain}`);
+    console.log("Executing command:", command);
+
+    exec(command, { maxBuffer: 1024 * 1024 * 20 }, (err, stdout, stderr) => {
+        if(err){
+            console.error("ffuf error:", err, stderr);
+            return res.status(500).json({ error: "Failed to run ffuf" });
+        }
+
+        try{
+            const lines = stdout.split("\n").map(l => l.trim()).filter(Boolean);
+
+            // ffuf CSV output → parse out valid subdomains
+            const subdomains: string[] = [];
+            for(const line of lines){
+                if(line.startsWith("input")) continue; // skip header
+                const cols = line.split(",");
+                if(cols.length > 0){
+                    const host = cols[0].replace("https://", "").replace("/", "");
+                    if(host.includes(".")) subdomains.push(host);
+                }
+            }
+
+            const uniqueSubs = Array.from(new Set(subdomains));
+
+            console.log(`ffuf found ${uniqueSubs.length} subdomains`);
+            return res.json({ subdomains: uniqueSubs });
+        }catch (parseErr){
+            console.error("ffuf parse error:", parseErr);
+            return res.status(500).json({ error: "Failed to parse ffuf output" });
+        }
+    });
 });
 
 // Domain to endpoint
@@ -626,48 +706,6 @@ app.post("/whois", (req, res): void => {
     executeWhois();
 });
 
-// POST /feroxbuster
-app.post("/feroxbuster", (req, res): void => {
-    const { domain } = req.body;
-
-    if(!domain){
-        res.status(400).json({ error: "Domain is required" });
-        return;
-    }
-    if(!feroxPath){
-        res.status(500).json({ error: "Feroxbuster executable not found" });
-        return;
-    }
-
-    // Run feroxbuster silently, outputting discovered URLs to stdout
-    const command = `${feroxPath} -u https://${domain} -x html,php,txt,json -q --silent --output -`; 
-
-    console.log(`Running Feroxbuster for domain: ${domain}`);
-
-    exec(command, { maxBuffer: 1024 * 1024 * 10 }, (err, stdout, stderr) => {
-        if(err){
-            console.error("Feroxbuster error:", err, stderr);
-            return res.status(500).json({ error: "Failed to run Feroxbuster" });
-        }
-
-        try{
-            // Extract subdomains from stdout lines
-            const lines = stdout.split("\n");
-            const subdomains = Array.from(new Set(
-                lines
-                    .map(line => line.trim())
-                    .filter(line => line.endsWith(domain) && line.length > domain.length)
-            ));
-
-            console.log(`Feroxbuster found ${subdomains.length} subdomains`);
-            return res.json({ subdomains });
-        }catch (parseErr){
-            console.error("Feroxbuster parse error:", parseErr);
-            return res.status(500).json({ error: "Failed to parse Feroxbuster output" });
-        }
-    });
-});
-
 /**
  * Graph Save Endpoint
  * 
@@ -973,53 +1011,6 @@ app.get("/load/:filename", (req, res) => {
             console.error("Invalid JSON:", e);
             res.status(500).json({ error: "Corrupted save file" });
         }
-    });
-});
-
-/**
- * Get Most Recent Save Endpoint
- * 
- * GET /last-save
- * 
- * Returns the most recently saved graph file based on file modification time.
- * 
- * Output:
- * - filename: string - Name of the most recent save file
- * - error: string - Error message if no saves found
- * 
- * Process:
- * 1. Reads the graph save directory
- * 2. Filters for .json files only
- * 3. Finds the file with the most recent modification time
- * 4. Returns the filename of the most recent save
- */
-app.get("/last-save", (req, res) => {
-    fs.readdir(graphSaveDir, (err, files) => {
-        if(err){
-            console.error("Failed to list saves:", err);
-            return res.status(500).json({ error: "Failed to list saves" });
-        }
-
-        // Only consider .json files
-        const jsonFiles = files.filter(file => file.endsWith(".json"));
-        
-        if(jsonFiles.length === 0){
-            return res.status(404).json({ error: "No saved files found" });
-        }
-
-        // Get file stats to find the most recent
-        const fileStats = jsonFiles.map(filename => {
-            const filePath = path.join(graphSaveDir, filename);
-            const stats = fs.statSync(filePath);
-            return { filename, mtime: stats.mtime };
-        });
-
-        // Sort by modification time (most recent first)
-        fileStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-        
-        const mostRecent = fileStats[0];
-        console.log(`Most recent save file: ${mostRecent.filename}`);
-        res.json({ filename: mostRecent.filename });
     });
 });
 

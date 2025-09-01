@@ -6,6 +6,8 @@ This local web application will allow the user to manipulate and connect nodes o
 You can find it here: https://github.com/sherlock-project/sherlock
 * Users must install feroxbuster to search for endpoints (place exe in main directory.)
 You can find it here: https://github.com/epi052/feroxbuster
+* Users must install ffuf to search for subdomains (place exe in main directory.)
+You can find it here: https://github.com/ffuf/ffuf
 
 # Starting the application
 To start the server open command prompt in the main directory and execute the following:
@@ -21,9 +23,11 @@ If you run into access denied permission errors even when using sudo, run the fo
 * rm -rf ./node_modules; npm i
 
 # Progress so far
-* NEW: Users can add files into nodes, just right click and upload files or use the right menu 
-* NEW: Implemented domain to ip, just right click and select the option
-* NEW: Implemented website to domain, just right click and select the option
+* NEW: Users can add files into nodes (right click -> Upload Files ~OR~ left click and use node menu on right)
+* NEW: Implemented domain to ip (right click -> transform -> select Domain to ip)
+* NEW: Implemented website to domain (right click -> transform -> select Website to Domain)
+* NEW: Implemented domain to subdomain (right click -> transform -> select Domain to Subdomain)
+* NEW: Implemented domain to endpoint (right click -> transform -> select Domain to Endpoint)
 * Added the ability to change node types: just select the node(s) and change type with the left plus button
 * Users should be able to create nodes to their desired locations.
 * Edit and delete nodes on screen.
