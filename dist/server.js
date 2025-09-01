@@ -330,6 +330,49 @@ app.post("/website-screenshot", (req, res) => __awaiter(void 0, void 0, void 0, 
         res.status(500).json({ error: `Failed to capture screenshot: ${errorMessage}` });
     }
 }));
+// Domain to endpoint
+app.post("/domain-to-end", (req, res) => {
+    const { domain } = req.body;
+    if (!domain) {
+        res.status(400).json({ error: "Domain is required" });
+        return;
+    }
+    if (!feroxPath) {
+        res.status(500).json({ error: "Feroxbuster executable not found" });
+        return;
+    }
+    // Use feroxbuster with a wordlist for endpoint discovery
+    const wordlistPath = path_1.default.join(__dirname, "../Datalist/raft-medium-directories.txt");
+    const command = `${feroxPath} -u https://${domain}/ -w ${wordlistPath} --silent`;
+    console.log(`Running Feroxbuster for domain: ${domain}`);
+    console.log("Executing command:", command);
+    (0, child_process_1.exec)(command, { maxBuffer: 1024 * 1024 * 20 }, (err, stdout, stderr) => {
+        if (err) {
+            console.error("Feroxbuster error:", err, stderr);
+            return res.status(500).json({ error: "Failed to run Feroxbuster" });
+        }
+        try {
+            const lines = stdout.split("\n").map(l => l.trim()).filter(Boolean);
+            // Extract only the path part (/admin, /api/login)
+            const endpoints = lines.map(url => {
+                try {
+                    const u = new URL(url);
+                    return u.pathname; // just the path, not the whole domain
+                }
+                catch (_a) {
+                    return null;
+                }
+            }).filter(Boolean);
+            const uniqueEndpoints = Array.from(new Set(endpoints));
+            console.log(`Feroxbuster found ${uniqueEndpoints.length} endpoints`);
+            return res.json({ endpoints: uniqueEndpoints });
+        }
+        catch (parseErr) {
+            console.error("Feroxbuster parse error:", parseErr);
+            return res.status(500).json({ error: "Failed to parse Feroxbuster output" });
+        }
+    });
+});
 /**
  * Domain to IP Address Resolution Endpoint
  *
@@ -879,6 +922,47 @@ app.get("/load/:filename", (req, res) => {
             console.error("Invalid JSON:", e);
             res.status(500).json({ error: "Corrupted save file" });
         }
+    });
+});
+/**
+ * Get Most Recent Save Endpoint
+ *
+ * GET /last-save
+ *
+ * Returns the most recently saved graph file based on file modification time.
+ *
+ * Output:
+ * - filename: string - Name of the most recent save file
+ * - error: string - Error message if no saves found
+ *
+ * Process:
+ * 1. Reads the graph save directory
+ * 2. Filters for .json files only
+ * 3. Finds the file with the most recent modification time
+ * 4. Returns the filename of the most recent save
+ */
+app.get("/last-save", (req, res) => {
+    fs_1.default.readdir(graphSaveDir, (err, files) => {
+        if (err) {
+            console.error("Failed to list saves:", err);
+            return res.status(500).json({ error: "Failed to list saves" });
+        }
+        // Only consider .json files
+        const jsonFiles = files.filter(file => file.endsWith(".json"));
+        if (jsonFiles.length === 0) {
+            return res.status(404).json({ error: "No saved files found" });
+        }
+        // Get file stats to find the most recent
+        const fileStats = jsonFiles.map(filename => {
+            const filePath = path_1.default.join(graphSaveDir, filename);
+            const stats = fs_1.default.statSync(filePath);
+            return { filename, mtime: stats.mtime };
+        });
+        // Sort by modification time (most recent first)
+        fileStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
+        const mostRecent = fileStats[0];
+        console.log(`Most recent save file: ${mostRecent.filename}`);
+        res.json({ filename: mostRecent.filename });
     });
 });
 /**

@@ -25,7 +25,7 @@ import { runIpToNetblock } from "./transforms/ipToNetblock.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { runWebsiteScreenshot } from "./transforms/websiteScreenshot.js";
-import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
+import { saveGraph, loadGraph, confirmLoad, autoLoadLastSave } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
@@ -577,3 +577,16 @@ window.loadGraph = loadGraph;
 window.confirmLoad = confirmLoad;
 window.toggleDropdown = toggleDropdown;
 window.handleContextAction = handleContextAction;
+
+/**
+ * Auto-load Last Saved Graph on Page Load
+ * 
+ * Automatically loads the most recently saved graph when the page loads.
+ * This ensures users can continue their investigation from where they left off.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure Cytoscape is fully initialized
+    setTimeout(() => {
+        autoLoadLastSave();
+    }, 100);
+});

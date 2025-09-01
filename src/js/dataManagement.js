@@ -28,6 +28,7 @@ import { setStatusMessage } from './setStatusMessageHandler.js';
  * 2. Exports current graph data using Cytoscape's json() method
  * 3. Sends data to server via POST request to /save endpoint
  * 4. Updates status display with success/failure message
+ * 5. Stores the filename in localStorage for auto-load functionality
  * 
  * Graph Data Structure:
  * - nodes: Array of node objects with positions, data, and styling
@@ -47,9 +48,13 @@ export function saveGraph(){
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename, graphData })
     }).then(res => {
-        setStatusMessage(
-            res.ok ? `Saved to "${filename}.json"` : `Failed to save "${filename}.json"`
-        );
+        if(res.ok) {
+            // Store the filename in localStorage for auto-load functionality
+            localStorage.setItem('lastSavedFile', `${filename}.json`);
+            setStatusMessage(`Saved to "${filename}.json"`);
+        } else {
+            setStatusMessage(`Failed to save "${filename}.json"`);
+        }
     });
 }
 
@@ -66,6 +71,7 @@ export function saveGraph(){
  * 2. Receives array of available .json filenames
  * 3. Clears existing dropdown options
  * 4. Populates dropdown with retrieved filenames
+ * 5. Selects the last saved file by default if available
  * 
  * Server Response:
  * - Success: Returns string[] of available filenames
@@ -74,6 +80,7 @@ export function saveGraph(){
  * UI Integration:
  * - Updates the file-picker dropdown element
  * - Called automatically when load dropdown is opened
+ * - Pre-selects the most recently saved file
  */
 export function loadGraph(){
     fetch("/saves")
@@ -81,10 +88,16 @@ export function loadGraph(){
         .then(files => {
             const picker = document.getElementById("file-picker");
             picker.innerHTML = "";
+            const lastSavedFile = localStorage.getItem('lastSavedFile');
+            
             files.forEach(file => {
                 const opt = document.createElement("option");
                 opt.value = file;
                 opt.text = file;
+                // Select the last saved file by default
+                if(file === lastSavedFile) {
+                    opt.selected = true;
+                }
                 picker.appendChild(opt);
             });
         });
@@ -104,6 +117,7 @@ export function loadGraph(){
  * 3. Receives complete graph data in Cytoscape format
  * 4. Applies the data to the current graph using cy.json()
  * 5. Updates status display with load confirmation
+ * 6. Stores the loaded filename in localStorage for future auto-load
  * 
  * Input:
  * - Selected filename from dropdown (must be a valid saved file)
@@ -129,6 +143,99 @@ export function confirmLoad(){
         .then(res => res.json())
         .then(data => {
             cy.json(data);
+            // Store the loaded filename in localStorage for future auto-load
+            localStorage.setItem('lastSavedFile', file);
             setStatusMessage(`Loaded: ${file}`);
+        });
+}
+
+/**
+ * Auto Load Last Saved Graph
+ * 
+ * autoLoadLastSave()
+ * 
+ * Automatically loads the most recently saved graph file when the page loads.
+ * Uses localStorage to remember the last saved file, or fetches the most recent
+ * from the server if no localStorage entry exists.
+ * 
+ * Process:
+ * 1. Checks localStorage for last saved filename
+ * 2. If found, attempts to load that file
+ * 3. If not found or load fails, fetches most recent save from server
+ * 4. Loads the most recent save file automatically
+ * 5. Updates status display with auto-load confirmation
+ * 
+ * Auto-load Behavior:
+ * - Called automatically when page loads
+ * - Silently loads the last saved graph state
+ * - Provides user feedback via status message
+ * - Gracefully handles cases where no saves exist
+ */
+export function autoLoadLastSave(){
+    // First try to load from localStorage
+    const lastSavedFile = localStorage.getItem('lastSavedFile');
+    
+    if(lastSavedFile) {
+        // Try to load the file from localStorage
+        fetch(`/load/${lastSavedFile}`)
+            .then(res => {
+                if(res.ok) {
+                    return res.json();
+                } else {
+                    // If localStorage file doesn't exist, get most recent from server
+                    throw new Error('File not found');
+                }
+            })
+            .then(data => {
+                cy.json(data);
+                setStatusMessage(`Auto-loaded: ${lastSavedFile}`);
+            })
+            .catch(() => {
+                // Fallback to server's most recent save
+                loadMostRecentFromServer();
+            });
+    } else {
+        // No localStorage entry, get most recent from server
+        loadMostRecentFromServer();
+    }
+}
+
+/**
+ * Load Most Recent Save from Server
+ * 
+ * loadMostRecentFromServer()
+ * 
+ * Helper function to fetch and load the most recently saved graph from the server.
+ * Used as a fallback when localStorage doesn't have a valid entry.
+ * 
+ * Process:
+ * 1. Fetches the most recent save filename from /last-save endpoint
+ * 2. Loads the graph data for that file
+ * 3. Applies the data to the current graph
+ * 4. Updates status display with load confirmation
+ */
+function loadMostRecentFromServer(){
+    fetch("/last-save")
+        .then(res => {
+            if(res.ok) {
+                return res.json();
+            } else {
+                throw new Error('No saved files found');
+            }
+        })
+        .then(data => {
+            const filename = data.filename;
+            return fetch(`/load/${filename}`).then(res => res.json()).then(graphData => ({ filename, graphData }));
+        })
+        .then(data => {
+            cy.json(data.graphData);
+            // Store the loaded filename in localStorage for future auto-load
+            localStorage.setItem('lastSavedFile', data.filename);
+            setStatusMessage(`Auto-loaded: ${data.filename}`);
+        })
+        .catch(error => {
+            // No saved files exist, start with empty graph
+            console.log('No saved files found, starting with empty graph');
+            setStatusMessage('Starting with empty graph');
         });
 }

@@ -977,6 +977,53 @@ app.get("/load/:filename", (req, res) => {
 });
 
 /**
+ * Get Most Recent Save Endpoint
+ * 
+ * GET /last-save
+ * 
+ * Returns the most recently saved graph file based on file modification time.
+ * 
+ * Output:
+ * - filename: string - Name of the most recent save file
+ * - error: string - Error message if no saves found
+ * 
+ * Process:
+ * 1. Reads the graph save directory
+ * 2. Filters for .json files only
+ * 3. Finds the file with the most recent modification time
+ * 4. Returns the filename of the most recent save
+ */
+app.get("/last-save", (req, res) => {
+    fs.readdir(graphSaveDir, (err, files) => {
+        if(err){
+            console.error("Failed to list saves:", err);
+            return res.status(500).json({ error: "Failed to list saves" });
+        }
+
+        // Only consider .json files
+        const jsonFiles = files.filter(file => file.endsWith(".json"));
+        
+        if(jsonFiles.length === 0){
+            return res.status(404).json({ error: "No saved files found" });
+        }
+
+        // Get file stats to find the most recent
+        const fileStats = jsonFiles.map(filename => {
+            const filePath = path.join(graphSaveDir, filename);
+            const stats = fs.statSync(filePath);
+            return { filename, mtime: stats.mtime };
+        });
+
+        // Sort by modification time (most recent first)
+        fileStats.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
+        
+        const mostRecent = fileStats[0];
+        console.log(`Most recent save file: ${mostRecent.filename}`);
+        res.json({ filename: mostRecent.filename });
+    });
+});
+
+/**
  * Server Startup
  * 
  * Starts the Express server on the configured port.
