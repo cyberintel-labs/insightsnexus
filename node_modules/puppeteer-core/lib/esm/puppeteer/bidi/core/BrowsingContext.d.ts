@@ -44,6 +44,10 @@ export type GetCookiesOptions = Omit<Bidi.Storage.GetCookiesParameters, 'partiti
 /**
  * @internal
  */
+export type SetGeoLocationOverrideOptions = Bidi.Emulation.SetGeolocationOverrideParameters;
+/**
+ * @internal
+ */
 export declare class BrowsingContext extends EventEmitter<{
     /** Emitted when this context is closed. */
     closed: {
@@ -60,6 +64,8 @@ export declare class BrowsingContext extends EventEmitter<{
         /** The navigation that occurred. */
         navigation: Navigation;
     };
+    /** Emitted whenever a file dialog is opened occurs. */
+    filedialogopened: Bidi.Input.FileDialogInfo;
     /** Emitted whenever a request is made. */
     request: {
         /** The request that was made. */
@@ -118,6 +124,8 @@ export declare class BrowsingContext extends EventEmitter<{
     addPreloadScript(functionDeclaration: string, options?: AddPreloadScriptOptions): Promise<string>;
     addIntercept(options: AddInterceptOptions): Promise<string>;
     removePreloadScript(script: string): Promise<void>;
+    setGeolocationOverride(options: SetGeoLocationOverrideOptions): Promise<void>;
+    setTimezoneOverride(timezoneId?: string): Promise<void>;
     getCookies(options?: GetCookiesOptions): Promise<Bidi.Network.Cookie[]>;
     setCookie(cookie: Bidi.Storage.PartialCookie): Promise<void>;
     setFiles(element: Bidi.Script.SharedReference, files: string[]): Promise<void>;
@@ -126,5 +134,7 @@ export declare class BrowsingContext extends EventEmitter<{
     [disposeSymbol](): void;
     deleteCookie(...cookieFilters: Bidi.Storage.CookieFilter[]): Promise<void>;
     locateNodes(locator: Bidi.BrowsingContext.Locator, startNodes: [Bidi.Script.SharedReference, ...Bidi.Script.SharedReference[]]): Promise<Bidi.Script.NodeRemoteValue[]>;
+    setJavaScriptEnabled(enabled: boolean): Promise<void>;
+    isJavaScriptEnabled(): boolean;
 }
 //# sourceMappingURL=BrowsingContext.d.ts.map

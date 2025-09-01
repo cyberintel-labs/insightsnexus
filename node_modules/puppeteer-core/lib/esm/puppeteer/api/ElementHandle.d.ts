@@ -10,6 +10,7 @@ import type { KeyInput } from '../common/USKeyboardLayout.js';
 import { _isElementHandle } from './ElementHandleSymbol.js';
 import type { KeyboardTypeOptions, KeyPressOptions, MouseClickOptions, TouchHandle } from './Input.js';
 import { JSHandle } from './JSHandle.js';
+import type { Locator } from './locators/locators.js';
 import type { QueryOptions, ScreenshotOptions, WaitForSelectorOptions } from './Page.js';
 /**
  * @public
@@ -60,6 +61,14 @@ export interface ClickOptions extends MouseClickOptions {
      * Offset for the clickable point relative to the top-left corner of the border box.
      */
     offset?: Offset;
+    /**
+     * An experimental debugging feature. If true, inserts an element into the
+     * page to highlight the click location for 10 seconds. Might not work on all
+     * pages and does not persist across navigations.
+     *
+     * @experimental
+     */
+    debugHighlight?: boolean;
 }
 /**
  * @public
@@ -196,7 +205,7 @@ export declare abstract class ElementHandle<ElementType extends Node = Element> 
      * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
      * can be passed as-is and a
      * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-     * allows quering by
+     * allows querying by
      * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
      * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
      * and
@@ -218,7 +227,7 @@ export declare abstract class ElementHandle<ElementType extends Node = Element> 
      * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
      * can be passed as-is and a
      * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-     * allows quering by
+     * allows querying by
      * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
      * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
      * and
@@ -256,7 +265,7 @@ export declare abstract class ElementHandle<ElementType extends Node = Element> 
      * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
      * can be passed as-is and a
      * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-     * allows quering by
+     * allows querying by
      * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
      * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
      * and
@@ -304,7 +313,7 @@ export declare abstract class ElementHandle<ElementType extends Node = Element> 
      * {@link https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors | CSS selectors}
      * can be passed as-is and a
      * {@link https://pptr.dev/guides/page-interactions#non-css-selectors | Puppeteer-specific selector syntax}
-     * allows quering by
+     * allows querying by
      * {@link https://pptr.dev/guides/page-interactions#text-selectors--p-text | text},
      * {@link https://pptr.dev/guides/page-interactions#aria-selectors--p-aria | a11y role and name},
      * and
@@ -604,6 +613,12 @@ export declare abstract class ElementHandle<ElementType extends Node = Element> 
      */
     scrollIntoView(this: ElementHandle<Element>): Promise<void>;
     /**
+     * Creates a locator based on an ElementHandle. This would not allow
+     * refreshing the element handle if it is stale but it allows re-using other
+     * locator pre-conditions.
+     */
+    asLocator(this: ElementHandle<Element>): Locator<Element>;
+    /**
      * If the element is a form input, you can use {@link ElementHandle.autofill}
      * to test if the form is compatible with the browser's autofill
      * implementation. Throws an error if the form cannot be autofilled.
@@ -639,6 +654,9 @@ export declare abstract class ElementHandle<ElementType extends Node = Element> 
  * @public
  */
 export interface AutofillData {
+    /**
+     * See {@link https://chromedevtools.github.io/devtools-protocol/tot/Autofill/#type-CreditCard | Autofill.CreditCard}.
+     */
     creditCard: {
         number: string;
         name: string;

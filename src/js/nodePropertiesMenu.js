@@ -125,8 +125,8 @@ export function initNodePropertiesMenu(cytoscapeInstance){
                 });
 
                 const delBtn = document.createElement("button");
-                delBtn.textContent = "×";
-                delBtn.classList.add("delete-btn");
+                delBtn.classList.add("delete-btn", "material-delete-btn");
+                delBtn.innerHTML = '<span class="delete-icon">×</span>';
                 delBtn.addEventListener("click", () => removeImageFromNode(selectedNode, i));
 
                 wrapper.appendChild(img);
@@ -166,8 +166,8 @@ export function initNodePropertiesMenu(cytoscapeInstance){
 
                 // Delete button
                 const delBtn = document.createElement("button");
-                delBtn.textContent = "×";
-                delBtn.classList.add("delete-btn");
+                delBtn.classList.add("delete-btn", "material-delete-btn");
+                delBtn.innerHTML = '<span class="delete-icon">×</span>';
                 delBtn.addEventListener("click", () => removeTextFromNode(selectedNode, i));
 
                 wrapper.appendChild(textLabel);

@@ -211,19 +211,10 @@ async function getReadableAsTypedArray(readable, path) {
 async function getReadableFromProtocolStream(client, handle) {
     return new ReadableStream({
         async pull(controller) {
-            function getUnit8Array(data, isBase64) {
-                if (isBase64) {
-                    return Uint8Array.from(atob(data), m => {
-                        return m.codePointAt(0);
-                    });
-                }
-                const encoder = new TextEncoder();
-                return encoder.encode(data);
-            }
             const { data, base64Encoded, eof } = await client.send('IO.read', {
                 handle,
             });
-            controller.enqueue(getUnit8Array(data, base64Encoded ?? false));
+            controller.enqueue((0, encoding_js_1.stringToTypedArray)(data, base64Encoded ?? false));
             if (eof) {
                 await client.send('IO.close', { handle });
                 controller.close();
@@ -297,7 +288,7 @@ function parsePDFOptions(options = {}, lengthUnit = 'in') {
     let width = 8.5;
     let height = 11;
     if (options.format) {
-        const format = PDFOptions_js_1.paperFormats[options.format.toLowerCase()];
+        const format = PDFOptions_js_1.paperFormats[options.format.toLowerCase()][lengthUnit];
         (0, assert_js_1.assert)(format, 'Unknown paper format: ' + options.format);
         width = format.width;
         height = format.height;

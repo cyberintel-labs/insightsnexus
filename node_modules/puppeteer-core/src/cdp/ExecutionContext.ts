@@ -235,9 +235,8 @@ export class ExecutionContext
     try {
       await this.#addBinding(binding);
     } catch (err) {
-      // If the binding cannot be added, then either the browser doesn't support
-      // bindings (e.g. Firefox) or the context is broken. Either breakage is
-      // okay, so we ignore the error.
+      // If the binding cannot be added, the context is broken. We cannot
+      // recover so we ignore the error.
       debugError(err);
     }
   }
@@ -401,9 +400,13 @@ export class ExecutionContext
         throw createEvaluationError(exceptionDetails);
       }
 
-      return returnByValue
-        ? valueFromRemoteObject(remoteObject)
-        : this.#world.createCdpHandle(remoteObject);
+      if (returnByValue) {
+        return valueFromRemoteObject(remoteObject);
+      }
+
+      return this.#world.createCdpHandle(remoteObject) as HandleFor<
+        Awaited<ReturnType<Func>>
+      >;
     }
 
     const functionDeclaration = stringifyFunction(pageFunction);
@@ -448,9 +451,14 @@ export class ExecutionContext
     if (exceptionDetails) {
       throw createEvaluationError(exceptionDetails);
     }
-    return returnByValue
-      ? valueFromRemoteObject(remoteObject)
-      : this.#world.createCdpHandle(remoteObject);
+
+    if (returnByValue) {
+      return valueFromRemoteObject(remoteObject);
+    }
+
+    return this.#world.createCdpHandle(remoteObject) as HandleFor<
+      Awaited<ReturnType<Func>>
+    >;
 
     async function convertArgumentAsync(
       context: ExecutionContext,

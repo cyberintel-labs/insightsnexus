@@ -228,9 +228,8 @@ class ExecutionContext extends EventEmitter_js_1.EventEmitter {
             await this.#addBinding(binding);
         }
         catch (err) {
-            // If the binding cannot be added, then either the browser doesn't support
-            // bindings (e.g. Firefox) or the context is broken. Either breakage is
-            // okay, so we ignore the error.
+            // If the binding cannot be added, the context is broken. We cannot
+            // recover so we ignore the error.
             (0, util_js_1.debugError)(err);
         }
     }
@@ -350,9 +349,10 @@ class ExecutionContext extends EventEmitter_js_1.EventEmitter {
             if (exceptionDetails) {
                 throw (0, utils_js_1.createEvaluationError)(exceptionDetails);
             }
-            return returnByValue
-                ? (0, utils_js_1.valueFromRemoteObject)(remoteObject)
-                : this.#world.createCdpHandle(remoteObject);
+            if (returnByValue) {
+                return (0, utils_js_1.valueFromRemoteObject)(remoteObject);
+            }
+            return this.#world.createCdpHandle(remoteObject);
         }
         const functionDeclaration = (0, Function_js_1.stringifyFunction)(pageFunction);
         const functionDeclarationWithSourceUrl = util_js_1.SOURCE_URL_REGEX.test(functionDeclaration)
@@ -390,9 +390,10 @@ class ExecutionContext extends EventEmitter_js_1.EventEmitter {
         if (exceptionDetails) {
             throw (0, utils_js_1.createEvaluationError)(exceptionDetails);
         }
-        return returnByValue
-            ? (0, utils_js_1.valueFromRemoteObject)(remoteObject)
-            : this.#world.createCdpHandle(remoteObject);
+        if (returnByValue) {
+            return (0, utils_js_1.valueFromRemoteObject)(remoteObject);
+        }
+        return this.#world.createCdpHandle(remoteObject);
         async function convertArgumentAsync(context, arg) {
             if (arg instanceof LazyArg_js_1.LazyArg) {
                 arg = await arg.get(context);

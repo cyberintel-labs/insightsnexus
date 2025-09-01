@@ -77,6 +77,12 @@ export type GetCookiesOptions = Omit<
 /**
  * @internal
  */
+export type SetGeoLocationOverrideOptions =
+  Bidi.Emulation.SetGeolocationOverrideParameters;
+
+/**
+ * @internal
+ */
 export class BrowsingContext extends EventEmitter<{
   /** Emitted when this context is closed. */
   closed: {
@@ -93,6 +99,8 @@ export class BrowsingContext extends EventEmitter<{
     /** The navigation that occurred. */
     navigation: Navigation;
   };
+  /** Emitted whenever a file dialog is opened occurs. */
+  filedialogopened: Bidi.Input.FileDialogInfo;
   /** Emitted whenever a request is made. */
   request: {
     /** The request that was made. */
@@ -150,6 +158,9 @@ export class BrowsingContext extends EventEmitter<{
   readonly parent: BrowsingContext | undefined;
   readonly userContext: UserContext;
   readonly originalOpener: string | null;
+  readonly #emulationState: {
+    javaScriptEnabled: boolean;
+  } = {javaScriptEnabled: true};
 
   private constructor(
     context: UserContext,
@@ -180,6 +191,12 @@ export class BrowsingContext extends EventEmitter<{
     const sessionEmitter = this.#disposables.use(
       new EventEmitter(this.#session),
     );
+    sessionEmitter.on('input.fileDialogOpened', info => {
+      if (this.id !== info.context) {
+        return;
+      }
+      this.emit('filedialogopened', info);
+    });
     sessionEmitter.on('browsingContext.contextCreated', info => {
       if (info.parent !== this.id) {
         return;
@@ -551,6 +568,44 @@ export class BrowsingContext extends EventEmitter<{
     // SAFETY: Disposal implies this exists.
     return context.#reason!;
   })
+  async setGeolocationOverride(
+    options: SetGeoLocationOverrideOptions,
+  ): Promise<void> {
+    if (!('coordinates' in options)) {
+      throw new Error('Missing coordinates');
+    }
+    await this.userContext.browser.session.send(
+      'emulation.setGeolocationOverride',
+      {
+        coordinates: options.coordinates,
+        contexts: [this.id],
+      },
+    );
+  }
+
+  @throwIfDisposed<BrowsingContext>(context => {
+    // SAFETY: Disposal implies this exists.
+    return context.#reason!;
+  })
+  async setTimezoneOverride(timezoneId?: string): Promise<void> {
+    if (timezoneId?.startsWith('GMT')) {
+      // CDP requires `GMT` prefix before timezone offset, while BiDi does not. Remove the
+      // `GMT` for interop between CDP and BiDi.
+      timezoneId = timezoneId?.replace('GMT', '');
+    }
+    await this.userContext.browser.session.send(
+      'emulation.setTimezoneOverride',
+      {
+        timezone: timezoneId ?? null,
+        contexts: [this.id],
+      },
+    );
+  }
+
+  @throwIfDisposed<BrowsingContext>(context => {
+    // SAFETY: Disposal implies this exists.
+    return context.#reason!;
+  })
   async getCookies(
     options: GetCookiesOptions = {},
   ): Promise<Bidi.Network.Cookie[]> {
@@ -655,5 +710,21 @@ export class BrowsingContext extends EventEmitter<{
       startNodes: startNodes.length ? startNodes : undefined,
     });
     return result.result.nodes;
+  }
+
+  async setJavaScriptEnabled(enabled: boolean): Promise<void> {
+    await this.userContext.browser.session.send(
+      'emulation.setScriptingEnabled',
+      {
+        // Enabled `null` means `default`, `false` means `disabled`.
+        enabled: enabled ? null : false,
+        contexts: [this.id],
+      },
+    );
+    this.#emulationState.javaScriptEnabled = enabled;
+  }
+
+  isJavaScriptEnabled(): boolean {
+    return this.#emulationState.javaScriptEnabled;
   }
 }

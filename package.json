@@ -26,7 +26,7 @@
   "dependencies": {
     "cytoscape": "^3.32.0",
     "express": "^5.1.0",
-    "puppeteer": "^23.11.1",
+    "puppeteer": "^24.9.0",
     "whois": "^2.15.0"
   }
 }
