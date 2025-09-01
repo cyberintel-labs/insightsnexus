@@ -59,18 +59,68 @@ export function saveGraph(){
 }
 
 /**
- * Save to Current File Function
+ * Load Save Files List
+ * 
+ * loadSaveFiles()
+ * 
+ * Retrieves the list of available saved graph files from the server
+ * and populates the save dropdown menu with the file names.
+ * 
+ * Process:
+ * 1. Sends GET request to /saves endpoint
+ * 2. Receives array of available .json filenames
+ * 3. Clears existing dropdown options
+ * 4. Populates dropdown with retrieved filenames
+ * 5. Selects the current loaded file by default if available
+ * 
+ * Server Response:
+ * - Success: Returns string[] of available filenames
+ * - Error: Returns empty array []
+ * 
+ * UI Integration:
+ * - Updates the save-file-picker dropdown element
+ * - Called automatically when save dropdown is opened
+ * - Pre-selects the currently loaded file
+ */
+export function loadSaveFiles(){
+    fetch("/saves")
+        .then(res => res.json())
+        .then(files => {
+            const picker = document.getElementById("save-file-picker");
+            picker.innerHTML = "";
+            const currentLoadedFile = localStorage.getItem('lastSavedFile');
+            
+            files.forEach(file => {
+                const opt = document.createElement("option");
+                opt.value = file;
+                opt.text = file;
+                // Select the current loaded file by default
+                if(file === currentLoadedFile) {
+                    opt.selected = true;
+                }
+                picker.appendChild(opt);
+            });
+        });
+}
+
+/**
+ * Save to Current File
  * 
  * saveToCurrentFile()
  * 
  * Saves the current graph state to the currently loaded file.
- * If no file is currently loaded, prompts for a new filename.
+ * Uses the filename stored in localStorage from the last load operation.
  * 
  * Process:
- * 1. Checks if there's a currently loaded file from localStorage
- * 2. If found, saves to that file without prompting for filename
- * 3. If no current file, prompts for filename and saves as new file
+ * 1. Gets the current loaded filename from localStorage
+ * 2. Exports current graph data using Cytoscape's json() method
+ * 3. Sends data to server via POST request to /save endpoint
  * 4. Updates status display with success/failure message
+ * 
+ * Behavior:
+ * - If no current file exists, prompts user to create new file
+ * - Uses the same filename as the currently loaded graph
+ * - Provides immediate feedback on save operation
  */
 export function saveToCurrentFile(){
     const currentFile = localStorage.getItem('lastSavedFile');
@@ -80,8 +130,8 @@ export function saveToCurrentFile(){
         return;
     }
     
+    const filename = currentFile.replace('.json', '');
     const graphData = cy.json();
-    const filename = currentFile.replace('.json', ''); // Remove .json extension for server
     
     fetch("/save", {
         method: "POST",
@@ -97,11 +147,12 @@ export function saveToCurrentFile(){
 }
 
 /**
- * Save as New File Function
+ * Save as New File
  * 
  * saveAsNewFile()
  * 
  * Prompts the user for a new filename and saves the current graph state.
+ * Creates a new file with the specified name.
  * 
  * Process:
  * 1. Prompts user for filename using browser's prompt dialog
@@ -109,10 +160,16 @@ export function saveToCurrentFile(){
  * 3. Sends data to server via POST request to /save endpoint
  * 4. Updates status display with success/failure message
  * 5. Stores the filename in localStorage for auto-load functionality
+ * 
+ * Behavior:
+ * - Always creates a new file with user-specified name
+ * - Updates localStorage with new filename
+ * - Provides immediate feedback on save operation
  */
 export function saveAsNewFile(){
     const filename = prompt("Enter a filename:");
     if(!filename) return;
+    
     const graphData = cy.json();
     fetch("/save", {
         method: "POST",
@@ -316,29 +373,36 @@ function loadMostRecentFromServer(){
  * 
  * newProject()
  * 
- * Clears the current graph and resets the project state to treat it as a new project.
- * This function removes all nodes and edges from the graph and clears the current file
- * tracking, allowing the user to start fresh with a new investigation.
+ * Creates a new empty project by clearing the current graph and resetting the application state.
+ * Prompts the user for confirmation before clearing any existing work.
  * 
  * Process:
- * 1. Removes all elements from the Cytoscape graph
- * 2. Clears the lastSavedFile from localStorage
- * 3. Resets the graph to its initial empty state
- * 4. Updates status display to confirm new project creation
+ * 1. Prompts user for confirmation to clear current graph
+ * 2. If confirmed, clears all nodes and edges from the graph
+ * 3. Resets the graph to initial empty state
+ * 4. Clears localStorage of last saved file reference
+ * 5. Updates status display with confirmation
  * 
- * New Project Behavior:
- * - Graph is completely cleared of all nodes and edges
- * - No current file is associated with the project
- * - Next save operation will prompt for a new filename
- * - Auto-load functionality will not load any previous file
+ * Behavior:
+ * - Always prompts for confirmation before clearing
+ * - Completely resets the graph to empty state
+ * - Removes reference to previously loaded file
+ * - Provides user feedback via status message
  */
 export function newProject(){
-    // Clear all elements from the graph
+    const confirmClear = confirm("Are you sure you want to create a new project? This will clear the current graph.");
+    if(!confirmClear) return;
+    
+    // Clear the graph
     cy.elements().remove();
     
-    // Clear the current file tracking from localStorage
+    // Clear localStorage reference to last saved file
     localStorage.removeItem('lastSavedFile');
     
-    // Update status to confirm new project creation
-    setStatusMessage('New project created - graph cleared');
+    // Reset any mode or selection state
+    if(window.setMode) {
+        window.setMode("none");
+    }
+    
+    setStatusMessage("New project created - graph cleared");
 }

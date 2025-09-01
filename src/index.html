@@ -15,12 +15,18 @@
         <div class="menu">
             <button onclick="toggleDropdown('file-dropdown')">File</button>
             <div id="file-dropdown" class="dropdown">
+                <button onclick="newProject()">New Project</button>
                 <button onclick="event.stopPropagation(); toggleDropdown('load-dropdown')">Load</button>
                 <div id="load-dropdown" class="sub-dropdown">
                     <select id="file-picker"></select>
                     <button onclick="confirmLoad()">Load Selected</button>
                 </div>
-                <button onclick="saveGraph()">Save</button>
+                <button onclick="event.stopPropagation(); toggleDropdown('save-dropdown')">Save</button>
+                <div id="save-dropdown" class="sub-dropdown">
+                    <select id="save-file-picker"></select>
+                    <button onclick="saveToCurrentFile()">Save to Current</button>
+                    <button onclick="saveAsNewFile()">New File</button>
+                </div>
             </div>
         </div>
         <div class="menu">
@@ -131,7 +137,7 @@
             <li onclick="handleContextAction('sherlock')">Run Sherlock</li>
             <li onclick="handleContextAction('domain-to-ip')">Domain to IP</li>
             <li onclick="handleContextAction('domain-to-dns')">Domain to DNS</li>
-            <li onclick="handleContextAction('domain-to-subdomain')">Domain to Subdomain</li>
+            <!-- <li onclick="handleContextAction('domain-to-subdomain')">Domain to Subdomain</li> -->
             <li onclick="handleContextAction('domain-to-endpoint')">Domain to Endpoint</li>
             <li onclick="handleContextAction('whois')">Whois Information</li>
             <li onclick="handleContextAction('ip-to-netblock')">IP to Netblock</li>

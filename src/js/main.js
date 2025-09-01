@@ -25,12 +25,11 @@ import { runIpToNetblock } from "./transforms/ipToNetblock.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { runWebsiteScreenshot } from "./transforms/websiteScreenshot.js";
-import { saveGraph, loadGraph, confirmLoad } from "./dataManagement.js";
+import { saveGraph, loadGraph, confirmLoad, autoLoadLastSave, loadSaveFiles, saveToCurrentFile, saveAsNewFile, newProject } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
 import { runDomainToEnd } from "./transforms/domainToEnd.js";
-import { runDomainToSub } from "./transforms/domainToSub.js";
 
 initNodePropertiesMenu(cy);
 
@@ -103,6 +102,7 @@ function toggleDropdown(id){
     if(el){
         el.style.display = el.style.display === "block" ? "none" : "block";
         if(id === "load-dropdown") loadGraph();
+        if(id === "save-dropdown") loadSaveFiles();
     }
 }
 
@@ -155,9 +155,6 @@ function handleContextAction(action){
     }else if(action === "domain-to-dns"){
         console.log("Calling domain to DNS")
         runDomainToDns(node);
-    }else if(action === "domain-to-subdomain"){
-        console.log("Calling doamin to subdomain")
-        runDomainToSub(node);
     }else if(action === "domain-to-endpoint"){
         console.log("Calling domain to endpoint")
         runDomainToEnd(node);
@@ -176,6 +173,9 @@ function handleContextAction(action){
     }else if(action === "port-scan"){
         console.log("Calling port scan")
         runPortScan(node);
+    }else if(action === "domain-to-subdomain"){
+        console.log("Calling domain-to-subdomain")
+        runFeroxbuster(node);
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");
@@ -576,5 +576,22 @@ window.setMode = setMode;
 window.saveGraph = saveGraph;
 window.loadGraph = loadGraph;
 window.confirmLoad = confirmLoad;
+window.loadSaveFiles = loadSaveFiles;
+window.saveToCurrentFile = saveToCurrentFile;
+window.saveAsNewFile = saveAsNewFile;
+window.newProject = newProject;
 window.toggleDropdown = toggleDropdown;
 window.handleContextAction = handleContextAction;
+
+/**
+ * Auto-load Last Saved Graph on Page Load
+ * 
+ * Automatically loads the most recently saved graph when the page loads.
+ * This ensures users can continue their investigation from where they left off.
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    // Small delay to ensure Cytoscape is fully initialized
+    setTimeout(() => {
+        autoLoadLastSave();
+    }, 100);
+});
