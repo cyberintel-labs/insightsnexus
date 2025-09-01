@@ -240,8 +240,30 @@ function connectSelectedInOrder(){
  */
 
 // Hide context menu on click (TODO: allow the user to click anywhere to close menu (you have to click the button again))
-cy.on("tap", () => document.getElementById("context-menu").style.display = "none");
-document.addEventListener("click", () => document.getElementById("context-menu").style.display = "none");
+cy.on("tap", () => {
+    document.getElementById("context-menu").style.display = "none";
+    // Also close any open submenus
+    const submenu = document.getElementById("transform-submenu");
+    const trigger = document.querySelector(".submenu-trigger");
+    if (submenu && submenu.classList.contains("show")) {
+        submenu.classList.remove("show");
+        trigger.classList.remove("active");
+    }
+});
+document.addEventListener("click", (evt) => {
+    // Don't close if clicking on the submenu trigger or submenu items
+    if (evt.target.closest("#context-menu .submenu-trigger") || evt.target.closest("#context-menu .submenu")) {
+        return;
+    }
+    document.getElementById("context-menu").style.display = "none";
+    // Also close any open submenus
+    const submenu = document.getElementById("transform-submenu");
+    const trigger = document.querySelector(".submenu-trigger");
+    if (submenu && submenu.classList.contains("show")) {
+        submenu.classList.remove("show");
+        trigger.classList.remove("active");
+    }
+});
 
 /**
  * Node Creation Handler
@@ -519,6 +541,27 @@ cy.on("dragfreeon", "node", (evt) => {
         console.log(`No overlap detected. Node "${draggedNode.data("label")}" is at (${currentPosition.x}, ${currentPosition.y})`);
     }
 });
+
+/**
+ * Transform Submenu Toggle
+ * 
+ * toggleTransformSubmenu()
+ * 
+ * Toggles the visibility of the transforms submenu in the context menu.
+ * Handles the show/hide animation and updates the trigger button state.
+ */
+window.toggleTransformSubmenu = function() {
+    const submenu = document.getElementById("transform-submenu");
+    const trigger = document.querySelector(".submenu-trigger");
+    
+    if (submenu.classList.contains("show")) {
+        submenu.classList.remove("show");
+        trigger.classList.remove("active");
+    } else {
+        submenu.classList.add("show");
+        trigger.classList.add("active");
+    }
+};
 
 /**
  * Module Exports
