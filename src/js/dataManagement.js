@@ -59,6 +59,77 @@ export function saveGraph(){
 }
 
 /**
+ * Save to Current File Function
+ * 
+ * saveToCurrentFile()
+ * 
+ * Saves the current graph state to the currently loaded file.
+ * If no file is currently loaded, prompts for a new filename.
+ * 
+ * Process:
+ * 1. Checks if there's a currently loaded file from localStorage
+ * 2. If found, saves to that file without prompting for filename
+ * 3. If no current file, prompts for filename and saves as new file
+ * 4. Updates status display with success/failure message
+ */
+export function saveToCurrentFile(){
+    const currentFile = localStorage.getItem('lastSavedFile');
+    if(!currentFile) {
+        // No current file, prompt for new filename
+        saveAsNewFile();
+        return;
+    }
+    
+    const graphData = cy.json();
+    const filename = currentFile.replace('.json', ''); // Remove .json extension for server
+    
+    fetch("/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename, graphData })
+    }).then(res => {
+        if(res.ok) {
+            setStatusMessage(`Saved to "${currentFile}"`);
+        } else {
+            setStatusMessage(`Failed to save "${currentFile}"`);
+        }
+    });
+}
+
+/**
+ * Save as New File Function
+ * 
+ * saveAsNewFile()
+ * 
+ * Prompts the user for a new filename and saves the current graph state.
+ * 
+ * Process:
+ * 1. Prompts user for filename using browser's prompt dialog
+ * 2. Exports current graph data using Cytoscape's json() method
+ * 3. Sends data to server via POST request to /save endpoint
+ * 4. Updates status display with success/failure message
+ * 5. Stores the filename in localStorage for auto-load functionality
+ */
+export function saveAsNewFile(){
+    const filename = prompt("Enter a filename:");
+    if(!filename) return;
+    const graphData = cy.json();
+    fetch("/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename, graphData })
+    }).then(res => {
+        if(res.ok) {
+            // Store the filename in localStorage for auto-load functionality
+            localStorage.setItem('lastSavedFile', `${filename}.json`);
+            setStatusMessage(`Saved to "${filename}.json"`);
+        } else {
+            setStatusMessage(`Failed to save "${filename}.json"`);
+        }
+    });
+}
+
+/**
  * Load Graph Files List
  * 
  * loadGraph()

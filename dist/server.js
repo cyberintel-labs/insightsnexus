@@ -713,6 +713,31 @@ app.get("/saves", (req, res) => {
     });
 });
 /**
+ * Check File Exists Endpoint
+ *
+ * GET /file-exists/:filename
+ *
+ * Checks if a specific graph file exists in the saves directory.
+ *
+ * Input:
+ * - filename: string (URL parameter) - Name of the file to check
+ *
+ * Output:
+ * - exists: boolean - Whether the file exists
+ * - error: string - Error message if check fails
+ *
+ * Process:
+ * 1. Constructs file path from filename parameter
+ * 2. Checks if file exists using fs.existsSync
+ * 3. Returns boolean result
+ */
+app.get("/file-exists/:filename", (req, res) => {
+    const filename = req.params.filename;
+    const filePath = path_1.default.join(graphSaveDir, filename);
+    const exists = fs_1.default.existsSync(filePath);
+    res.json({ exists });
+});
+/**
  * IP to Netblock Network Analysis Endpoint
  *
  * POST /ip-to-netblock

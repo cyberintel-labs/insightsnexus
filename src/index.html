@@ -20,7 +20,11 @@
                     <select id="file-picker"></select>
                     <button onclick="confirmLoad()">Load Selected</button>
                 </div>
-                <button onclick="saveGraph()">Save</button>
+                <button onclick="event.stopPropagation(); toggleDropdown('save-dropdown')">Save</button>
+                <div id="save-dropdown" class="sub-dropdown">
+                    <button onclick="saveToCurrentFile()">Save to Current File</button>
+                    <button onclick="saveAsNewFile()">Save as New File</button>
+                </div>
             </div>
         </div>
         <div class="menu">
