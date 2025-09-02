@@ -15,6 +15,14 @@
 import { cy } from './cytoscapeConfig.js';
 import { setStatusMessage } from './setStatusMessageHandler.js';
 
+// Import updateIdCounter function from main.js
+let updateIdCounter = null;
+
+// Function to set the updateIdCounter reference
+export function setUpdateIdCounterFunction(func) {
+    updateIdCounter = func;
+}
+
 /**
  * Save Graph Function
  * 
@@ -271,6 +279,8 @@ export function confirmLoad(){
         .then(res => res.json())
         .then(data => {
             cy.json(data);
+            // Update ID counter to prevent duplicate ID errors
+            if(updateIdCounter) updateIdCounter();
             // Store the loaded filename in localStorage for future auto-load
             localStorage.setItem('lastSavedFile', file);
             setStatusMessage(`Loaded: ${file}`);
@@ -316,6 +326,8 @@ export function autoLoadLastSave(){
             })
             .then(data => {
                 cy.json(data);
+                // Update ID counter to prevent duplicate ID errors
+                if(updateIdCounter) updateIdCounter();
                 setStatusMessage(`Auto-loaded: ${lastSavedFile}`);
             })
             .catch(() => {
@@ -357,6 +369,8 @@ function loadMostRecentFromServer(){
         })
         .then(data => {
             cy.json(data.graphData);
+            // Update ID counter to prevent duplicate ID errors
+            if(updateIdCounter) updateIdCounter();
             // Store the loaded filename in localStorage for future auto-load
             localStorage.setItem('lastSavedFile', data.filename);
             setStatusMessage(`Auto-loaded: ${data.filename}`);
@@ -395,6 +409,9 @@ export function newProject(){
     
     // Clear the graph
     cy.elements().remove();
+    
+    // Reset ID counter since graph is empty
+    if(updateIdCounter) updateIdCounter();
     
     // Clear localStorage reference to last saved file
     localStorage.removeItem('lastSavedFile');

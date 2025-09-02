@@ -667,6 +667,18 @@ body {
     box-shadow: var(--shadow-light);
 }
 
+/* Thumbnail image styles */
+.thumbnail {
+    max-width: 100%;
+    max-height: 200px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: var(--border-radius-small);
+    display: block;
+    margin: 0 auto;
+}
+
 .text-file-label {
     cursor: pointer;
     font-weight: 600;

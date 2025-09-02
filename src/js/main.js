@@ -25,7 +25,7 @@ import { runIpToNetblock } from "./transforms/ipToNetblock.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { runWebsiteScreenshot } from "./transforms/websiteScreenshot.js";
-import { saveGraph, loadGraph, confirmLoad, autoLoadLastSave, loadSaveFiles, saveToCurrentFile, saveAsNewFile, newProject } from "./dataManagement.js";
+import { saveGraph, loadGraph, confirmLoad, autoLoadLastSave, loadSaveFiles, saveToCurrentFile, saveAsNewFile, newProject, setUpdateIdCounterFunction } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
 import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
@@ -50,6 +50,38 @@ let selectedNodes = [];
 let orderedSelection = [];
 let rightClickedNode = null;
 let shiftDown = false;
+
+/**
+ * Update ID Counter Function
+ * 
+ * updateIdCounter()
+ * 
+ * Updates the idCounter to be higher than any existing node ID in the graph.
+ * This prevents duplicate ID errors when creating new nodes after loading a graph.
+ * 
+ * Process:
+ * 1. Gets all existing node IDs from the graph
+ * 2. Extracts numeric parts from IDs that start with 'n'
+ * 3. Finds the highest numeric value
+ * 4. Sets idCounter to one higher than the maximum found
+ * 5. If no existing 'n' IDs found, resets counter to 0
+ */
+function updateIdCounter() {
+    const existingIds = cy.nodes().map(node => node.id());
+    const numericIds = existingIds
+        .filter(id => id.startsWith('n'))
+        .map(id => parseInt(id.substring(1)))
+        .filter(num => !isNaN(num));
+    
+    if (numericIds.length > 0) {
+        idCounter = Math.max(...numericIds) + 1;
+    } else {
+        idCounter = 0;
+    }
+}
+
+// Register the updateIdCounter function with data management module
+setUpdateIdCounterFunction(updateIdCounter);
 
 /**
  * Mode Management Function
