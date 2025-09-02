@@ -34,68 +34,54 @@ export const cy = cytoscape({
     style: [
         {
             /**
-             * Default Node Styling - Modern Design
+             * Default Node Styling - Glass Morphism Design
              * 
              * Applies to all nodes in the graph with modern glass morphism design:
-             * - Gradient background for visual appeal
-             * - Glass morphism effect with backdrop blur
-             * - Enhanced shadows and borders
+             * - Glass background with backdrop blur effect
+             * - Enhanced shadows and borders for depth
              * - Improved typography and spacing
              * - Smooth transitions and hover effects
+             * - Consistent with overall UI glass morphism theme
              */
             selector: "node",
             style: {
                 "background-color": "#667eea",
-                "background-gradient-stop-colors": "#667eea #764ba2",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "label": "data(label)",
                 "text-valign": "center",
                 "text-halign": "center",
                 "color": "#ffffff",
                 "font-size": "12px",
                 "font-weight": "600",
-                "font-family": "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                "background-fit": "cover",
-                "background-image": "none",
                 "text-outline-color": "#2c3e50",
-                "text-outline-width": 3,
-                "text-outline-opacity": 0.8,
-                "text-wrap": "wrap",
-                "text-max-width": "80px",
+                "text-outline-width": 2,
                 "width": 40,
                 "height": 40,
                 "shape": "ellipse",
                 "border-width": 2,
                 "border-color": "rgba(255, 255, 255, 0.3)",
-                "border-opacity": 0.8,
                 "shadow-blur": 10,
                 "shadow-color": "rgba(0, 0, 0, 0.2)",
                 "shadow-offset-x": 2,
-                "shadow-offset-y": 4,
-                "transition-property": "all",
-                "transition-duration": "0.3s",
-                "transition-timing-function": "cubic-bezier(0.4, 0, 0.2, 1)"
+                "shadow-offset-y": 4
             }
         },
         {
             /**
-             * Selected Node Styling - Modern Design
+             * Selected Node Styling - Glass Morphism Design
              * 
              * Applies to nodes when they are selected by the user:
-             * - Enhanced border with modern colors
-             * - Increased shadow for depth
-             * - Scale transform for emphasis
+             * - Enhanced glass morphism effect with stronger backdrop blur
+             * - Increased shadow for depth and emphasis
+             * - Scale transform for visual feedback
              * - Improved text outline for readability
+             * - Consistent with overall glass morphism theme
              */
             selector: "node:selected",
             style: {
                 "border-width": 4,
                 "border-color": "#667eea",
-                "border-opacity": 1,
                 "text-outline-width": 4,
                 "text-outline-color": "#2c3e50",
-                "text-outline-opacity": 1,
                 "shadow-blur": 20,
                 "shadow-color": "rgba(102, 126, 234, 0.4)",
                 "shadow-offset-x": 4,
@@ -129,14 +115,7 @@ export const cy = cytoscape({
                 "control-point-step-size": 40,
                 "edge-distances": "intersection",
                 "loop-direction": "-45deg",
-                "loop-sweep": "-90deg",
-                "shadow-blur": 5,
-                "shadow-color": "rgba(102, 126, 234, 0.3)",
-                "shadow-offset-x": 1,
-                "shadow-offset-y": 2,
-                "transition-property": "all",
-                "transition-duration": "0.3s",
-                "transition-timing-function": "cubic-bezier(0.4, 0, 0.2, 1)"
+                "loop-sweep": "-90deg"
             }
         },
         /**
@@ -170,110 +149,90 @@ export const cy = cytoscape({
             selector: 'node[type="person"]',
             style:{
                 "background-color": "#1ABC9C",
-                "background-gradient-stop-colors": "#1ABC9C #16A085",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "ellipse",
-                "border-color": "rgba(26, 188, 156, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#1ABC9C"
             }
         },
         {
             selector: 'node[type="event"]',
             style:{
                 "background-color": "#9B59B6",
-                "background-gradient-stop-colors": "#9B59B6 #8E44AD",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "cutrectangle",
-                "border-color": "rgba(155, 89, 182, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#9B59B6"
             }
         },
         {
             selector: 'node[type="organization"]',
             style:{
                 "background-color": "#E67E22",
-                "background-gradient-stop-colors": "#E67E22 #D35400",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "rectangle",
-                "border-color": "rgba(230, 126, 34, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#E67E22"
             }
         },
         {
             selector: 'node[type="username"]',
             style:{
                 "background-color": "#2980B9",
-                "background-gradient-stop-colors": "#2980B9 #2471A3",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "ellipse",
-                "border-color": "rgba(41, 128, 185, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#2980B9"
             }
         },
         {
             selector: 'node[type="custom"]',
             style:{
                 "background-color": "#2ECC71",
-                "background-gradient-stop-colors": "#2ECC71 #27AE60",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "star",
-                "border-color": "rgba(46, 204, 113, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#2ECC71"
             }
         },
         {
             selector: 'node[type="address"]',
             style:{
                 "background-color": "#34495E",
-                "background-gradient-stop-colors": "#34495E #2C3E50",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "pentagon",
-                "border-color": "rgba(52, 73, 94, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#34495E"
             }
         },
         {
             selector: 'node[type="ip"]',
             style:{
                 "background-color": "#E74C3C",
-                "background-gradient-stop-colors": "#E74C3C #C0392B",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "hexagon",
-                "border-color": "rgba(231, 76, 60, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#E74C3C"
             }
         },
         {
             selector: 'node[type="email"]',
             style:{
                 "background-color": "#8E44AD",
-                "background-gradient-stop-colors": "#8E44AD #7D3C98",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "diamond",
-                "border-color": "rgba(142, 68, 173, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#8E44AD"
             }
         },
         {
             selector: 'node[type="geo"]',
             style:{
                 "background-color": "#D35400",
-                "background-gradient-stop-colors": "#D35400 #BA4A00",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "heptagon",
-                "border-color": "rgba(211, 84, 0, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#D35400"
             }
         },
         {
             selector: 'node[type="database"]',
             style:{
                 "background-color": "#7F8C8D",
-                "background-gradient-stop-colors": "#7F8C8D #6C7B7D",
-                "background-gradient-stop-positions": "0% 100%",
-                "background-gradient-direction": "to-bottom",
                 "shape": "octagon",
-                "border-color": "rgba(127, 140, 141, 0.4)"
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#7F8C8D"
             }
         }
     ],

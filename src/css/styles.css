@@ -228,19 +228,22 @@ body {
 #cy node:hover {
     transform: scale(1.1);
     z-index: 1000;
+    filter: brightness(1.1) contrast(1.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
 /* Enhanced node selection feedback */
 #cy node:selected {
     animation: nodePulse 2s infinite;
+    filter: brightness(1.15) contrast(1.1);
 }
 
 @keyframes nodePulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+        box-shadow: 0 0 0 15px rgba(102, 126, 234, 0);
     }
     100% {
         box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
