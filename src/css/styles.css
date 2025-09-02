@@ -486,7 +486,7 @@ body {
     right: 400px;
     z-index: 1001;
     background: var(--glass-bg);
-    border: 2px solid #000000;
+    border: 1px solid var(--glass-border);
     padding: 12px 16px;
     border-radius: var(--border-radius);
     display: flex;
