@@ -565,6 +565,73 @@ window.toggleTransformSubmenu = function() {
 };
 
 /**
+ * Dark Mode Toggle Functionality
+ * 
+ * toggleDarkMode()
+ * 
+ * Handles the switching between light and dark mode themes.
+ * Toggles the 'dark-mode' class on the document body and updates
+ * the toggle button icon accordingly.
+ * 
+ * Process:
+ * 1. Toggles the 'dark-mode' class on document.body
+ * 2. Updates the toggle button icon (moon/sun)
+ * 3. Saves the preference to localStorage
+ * 4. Updates Cytoscape graph styling if needed
+ */
+function toggleDarkMode() {
+    const body = document.body;
+    const toggleButton = document.getElementById('dark-mode-toggle');
+    const icon = toggleButton.querySelector('.icon');
+    
+    // Toggle dark mode class
+    body.classList.toggle('dark-mode');
+    
+    // Update icon based on current mode
+    if (body.classList.contains('dark-mode')) {
+        icon.textContent = '☀️'; // Sun icon for dark mode
+    } else {
+        icon.textContent = '🌙'; // Moon icon for light mode
+    }
+    
+    // Save preference to localStorage
+    localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+    
+    // Update Cytoscape styling if graph exists
+    if (cy && cy.style) {
+        // Force a style refresh to apply new theme colors
+        cy.style().update();
+    }
+}
+
+/**
+ * Initialize Dark Mode on Page Load
+ * 
+ * Checks localStorage for saved dark mode preference and applies it.
+ * This ensures the theme persists across page reloads.
+ */
+function initDarkMode() {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const body = document.body;
+    const toggleButton = document.getElementById('dark-mode-toggle');
+    const icon = toggleButton.querySelector('.icon');
+    
+    if (savedDarkMode === 'true') {
+        body.classList.add('dark-mode');
+        icon.textContent = '☀️';
+    } else {
+        body.classList.remove('dark-mode');
+        icon.textContent = '🌙';
+    }
+}
+
+// Initialize dark mode when the page loads
+document.addEventListener('DOMContentLoaded', initDarkMode);
+
+// Make toggleDarkMode function globally available
+window.toggleDarkMode = toggleDarkMode;
+
+/**
  * Module Exports
  * 
  * Exports key functions and objects for use by other modules.
