@@ -474,6 +474,55 @@ document.getElementById("zoom-control").addEventListener("input", function(){
     document.getElementById("zoom-label").innerText = `${percent}%`;
 });
 
+/**
+ * Mouse Wheel Zoom Handler
+ * 
+ * Syncs the zoom slider with mouse wheel zooming.
+ * Updates the slider position and percentage label when user zooms with mouse wheel.
+ */
+cy.on("zoom", function(evt){
+    const zoomLevel = cy.zoom();
+    const zoomSlider = document.getElementById("zoom-control");
+    const zoomLabel = document.getElementById("zoom-label");
+    
+    // Update slider value to match current zoom level
+    zoomSlider.value = zoomLevel;
+    
+    // Update percentage label
+    const percent = Math.round(zoomLevel * 100);
+    zoomLabel.innerText = `${percent}%`;
+});
+
+/**
+ * Direct Mouse Wheel Event Handler
+ * 
+ * Ensures mouse wheel events are properly handled for zooming.
+ * This provides a fallback in case the Cytoscape zoom event doesn't fire.
+ */
+cy.container().addEventListener("wheel", function(evt) {
+    // Prevent default browser behavior
+    evt.preventDefault();
+    
+    // Get current zoom level
+    const currentZoom = cy.zoom();
+    
+    // Calculate new zoom level based on wheel delta
+    const zoomFactor = 0.1;
+    const delta = evt.deltaY > 0 ? -zoomFactor : zoomFactor;
+    const newZoom = Math.max(0.1, Math.min(2, currentZoom + delta));
+    
+    // Apply zoom
+    cy.zoom({ level: newZoom, renderedPosition: { x: evt.clientX, y: evt.clientY } });
+    
+    // Update slider and label
+    const zoomSlider = document.getElementById("zoom-control");
+    const zoomLabel = document.getElementById("zoom-label");
+    
+    zoomSlider.value = newZoom;
+    const percent = Math.round(newZoom * 100);
+    zoomLabel.innerText = `${percent}%`;
+}, { passive: false });
+
 
 // Panel toggle (Plan to add other features into this slider menu)
 document.getElementById("toggle-panel").addEventListener("click", () => {

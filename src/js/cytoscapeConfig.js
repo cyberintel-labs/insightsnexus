@@ -274,6 +274,6 @@ export const cy = cytoscape({
      * - userPanningEnabled: if true - Allows dragging to pan around the graph
      */
     boxSelectionEnabled: false,
-    userZoomingEnabled: false,
+    userZoomingEnabled: true,
     userPanningEnabled: true
 });
