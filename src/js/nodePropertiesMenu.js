@@ -3,6 +3,56 @@ import { uploadFiles, removeImageFromNode, removeTextFromNode, showCurrentImage 
 let cy;
 let selectedNode = null;
 
+/**
+ * Toggle Properties Menu Function
+ * 
+ * togglePropertiesMenu()
+ * 
+ * Toggles the visibility of the node properties menu.
+ * Opens the menu if it's closed, closes it if it's open.
+ */
+function togglePropertiesMenu() {
+    const menu = document.getElementById("node-properties-menu");
+    const isOpen = menu.classList.contains("open");
+    
+    if (isOpen) {
+        closePropertiesMenu();
+    } else {
+        openPropertiesMenu();
+    }
+}
+
+/**
+ * Open Properties Menu Function
+ * 
+ * openPropertiesMenu()
+ * 
+ * Opens the node properties menu by adding the 'open' class.
+ */
+function openPropertiesMenu() {
+    const menu = document.getElementById("node-properties-menu");
+    menu.classList.add("open");
+}
+
+/**
+ * Close Properties Menu Function
+ * 
+ * closePropertiesMenu()
+ * 
+ * Closes the node properties menu by removing the 'open' class.
+ */
+function closePropertiesMenu() {
+    const menu = document.getElementById("node-properties-menu");
+    menu.classList.remove("open");
+}
+
+// Immediately assign functions to global scope
+if (typeof window !== 'undefined') {
+    window.togglePropertiesMenu = togglePropertiesMenu;
+    window.openPropertiesMenu = openPropertiesMenu;
+    window.closePropertiesMenu = closePropertiesMenu;
+}
+
 export function initNodePropertiesMenu(cytoscapeInstance){
     cy = cytoscapeInstance;
 
@@ -25,6 +75,9 @@ export function initNodePropertiesMenu(cytoscapeInstance){
 
         updatePropertiesMenu(selectedNode);
         selectedNode.on("filesUpdated", handler);
+        
+        // Auto-open the properties menu when a node is selected
+        openPropertiesMenu();
     });
 
     // Hide details when deselected
@@ -178,3 +231,6 @@ export function initNodePropertiesMenu(cytoscapeInstance){
         }
     }
 }
+
+// Export functions for use in other modules
+export { togglePropertiesMenu, openPropertiesMenu, closePropertiesMenu };

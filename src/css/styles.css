@@ -16,6 +16,7 @@
     --panel-hover-bg: rgba(255, 255, 255, 0.9);
     --input-bg: rgba(255, 255, 255, 0.9);
     --dropdown-bg: rgba(255, 255, 255, 0.95);
+    --properties-menu-width: 340px;
 }
 
 /* Dark mode variables */
@@ -551,21 +552,7 @@ body {
     transform: translateX(0);
 }
 
-.side-panel.right-panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    z-index: 1000;
-    height: 100%;
-    width: 340px;
-    padding: 20px;
-    overflow-y: auto;
-    background: var(--glass-bg);
-    border-left: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-heavy);
-    backdrop-filter: blur(20px);
-    border-radius: var(--border-radius) 0 0 var(--border-radius);
-}
+/* Removed old right-panel styles - replaced with new collapsible properties menu */
 
 #toggle-panel {
     position: absolute;
@@ -822,5 +809,71 @@ body {
 }
 
 .dark-mode #dark-mode-toggle .icon {
+    transform: rotate(180deg);
+}
+
+#node-properties-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+    height: 100%;
+    width: var(--properties-menu-width);
+    padding: 20px;
+    overflow-y: auto;
+    background: var(--glass-bg);
+    border-left: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-heavy);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    transform: translateX(100%);
+    transition: var(--transition-smooth);
+}
+
+#node-properties-menu.open {
+    transform: translateX(0);
+}
+
+#properties-toggle-btn {
+    position: fixed;
+    top: 35%;
+    right: 0;
+    width: 40px;
+    height: 80px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--border-radius-small) 0 0 var(--border-radius-small);
+    font-size: 18px;
+    font-weight: bold;
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-light);
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--glass-border);
+}
+
+#properties-toggle-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-heavy);
+}
+
+#properties-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+#properties-toggle-btn .toggle-icon {
+    transition: var(--transition-smooth);
+}
+
+#node-properties-menu.open + #properties-toggle-btn {
+    right: calc(var(--properties-menu-width) + 40px);
+}
+
+#node-properties-menu.open + #properties-toggle-btn .toggle-icon {
     transform: rotate(180deg);
 }

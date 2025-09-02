@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <div id="node-properties-menu" class="side-panel right-panel">
+    <div id="node-properties-menu">
         <div id="properties-content">
 
             <p id="no-node-message">Please select a node to display its properties.</p>
@@ -124,6 +124,10 @@
         </div>
     </div>
 
+    <button id="properties-toggle-btn" onclick="togglePropertiesMenu()">
+        <span class="toggle-icon">◀</span>
+    </button>
+
     <div id="status-bar"></div>
 
     <div id="zoom-slider">
@@ -162,6 +166,24 @@
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
     <script src="https://unpkg.com/cytoscape-edgehandles/cytoscape-edgehandles.min.js"></script>
     <script src="https://unpkg.com/cytoscape-undo-redo/cytoscape-undo-redo.js"></script>
+    
+    <!-- Fallback functions to prevent errors before modules load -->
+    <script>
+        // Temporary fallback functions
+        window.togglePropertiesMenu = function() {
+            console.log('togglePropertiesMenu called - waiting for module to load');
+        };
+        window.toggleDropdown = function() {
+            console.log('toggleDropdown called - waiting for module to load');
+        };
+        window.handleContextAction = function() {
+            console.log('handleContextAction called - waiting for module to load');
+        };
+        window.toggleDarkMode = function() {
+            console.log('toggleDarkMode called - waiting for module to load');
+        };
+    </script>
+    
     <script type="module" src="js/main.js"></script>
 </body>
 

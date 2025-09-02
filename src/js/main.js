@@ -27,7 +27,7 @@ import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { runWebsiteScreenshot } from "./transforms/websiteScreenshot.js";
 import { saveGraph, loadGraph, confirmLoad, autoLoadLastSave, loadSaveFiles, saveToCurrentFile, saveAsNewFile, newProject, setUpdateIdCounterFunction } from "./dataManagement.js";
 import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePositioning.js";
-import { initNodePropertiesMenu } from './nodePropertiesMenu.js';
+import { initNodePropertiesMenu, togglePropertiesMenu, openPropertiesMenu, closePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
 import { runDomainToEnd } from "./transforms/domainToEnd.js";
 
@@ -207,7 +207,7 @@ function handleContextAction(action){
         runPortScan(node);
     }else if(action === "domain-to-subdomain"){
         console.log("Calling domain-to-subdomain")
-        runFeroxbuster(node);
+        // runFeroxbuster(node); // Function not implemented yet
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");
@@ -709,9 +709,6 @@ function initDarkMode() {
 // Initialize dark mode when the page loads
 document.addEventListener('DOMContentLoaded', initDarkMode);
 
-// Make toggleDarkMode function globally available
-window.toggleDarkMode = toggleDarkMode;
-
 /**
  * Module Exports
  * 
@@ -719,17 +716,32 @@ window.toggleDarkMode = toggleDarkMode;
  * Also makes some functions available globally for HTML event handlers.
  */
 export { ur, cy };
-window.ur = ur;
-window.setMode = setMode;
-window.saveGraph = saveGraph;
-window.loadGraph = loadGraph;
-window.confirmLoad = confirmLoad;
-window.loadSaveFiles = loadSaveFiles;
-window.saveToCurrentFile = saveToCurrentFile;
-window.saveAsNewFile = saveAsNewFile;
-window.newProject = newProject;
-window.toggleDropdown = toggleDropdown;
-window.handleContextAction = handleContextAction;
+
+/**
+ * Initialize Global Functions
+ * 
+ * Makes all necessary functions available globally for HTML event handlers.
+ * This ensures functions are available when the DOM is ready.
+ */
+function initializeGlobalFunctions() {
+    window.ur = ur;
+    window.setMode = setMode;
+    window.saveGraph = saveGraph;
+    window.loadGraph = loadGraph;
+    window.confirmLoad = confirmLoad;
+    window.loadSaveFiles = loadSaveFiles;
+    window.saveToCurrentFile = saveToCurrentFile;
+    window.saveAsNewFile = saveAsNewFile;
+    window.newProject = newProject;
+    window.toggleDropdown = toggleDropdown;
+    window.handleContextAction = handleContextAction;
+    window.togglePropertiesMenu = togglePropertiesMenu;
+    window.openPropertiesMenu = openPropertiesMenu;
+    window.closePropertiesMenu = closePropertiesMenu;
+    window.toggleDarkMode = toggleDarkMode;
+    
+    console.log('Global functions initialized successfully');
+}
 
 /**
  * Auto-load Last Saved Graph on Page Load
@@ -738,6 +750,9 @@ window.handleContextAction = handleContextAction;
  * This ensures users can continue their investigation from where they left off.
  */
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize global functions first
+    initializeGlobalFunctions();
+    
     // Small delay to ensure Cytoscape is fully initialized
     setTimeout(() => {
         autoLoadLastSave();
