@@ -669,10 +669,13 @@ body {
 .text-file-label {
     cursor: pointer;
     font-weight: 600;
-    display: inline-block;
+    display: block;
     margin-right: 12px;
     color: var(--primary-color);
     transition: var(--transition-smooth);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
 }
 
 .text-file-label:hover {
