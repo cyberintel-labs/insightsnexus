@@ -24,6 +24,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "axios": "^1.7.9",
     "cytoscape": "^3.32.0",
     "express": "^5.1.0",
     "puppeteer": "^24.9.0",

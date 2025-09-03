@@ -22,6 +22,7 @@ import { runDomainToIp } from "./transforms/domainToIp.js";
 import { runDomainToDns } from "./transforms/domainToDns.js";
 import { runWhois } from "./transforms/whois.js";
 import { runIpToNetblock } from "./transforms/ipToNetblock.js";
+import { runIpToLocation } from "./transforms/ipToLocation.js";
 import { uploadFiles, nextImage, prevImage } from './fileUploadHandler.js';
 import { runWebsiteToDomain } from "./transforms/websiteToDomain.js";
 import { runWebsiteScreenshot } from "./transforms/websiteScreenshot.js";
@@ -202,6 +203,9 @@ function handleContextAction(action){
     }else if(action === "ip-to-netblock"){
         console.log("Calling IP to Netblock")
         runIpToNetblock(node);
+    }else if(action === "ip-to-location"){
+        console.log("Calling IP to Location")
+        runIpToLocation(node);
     }else if(action === "port-scan"){
         console.log("Calling port scan")
         runPortScan(node);

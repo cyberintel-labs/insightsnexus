@@ -63,6 +63,7 @@ const fs_1 = __importDefault(require("fs"));
 const express_1 = __importDefault(require("express"));
 const dns_1 = __importDefault(require("dns"));
 const util_1 = require("util");
+const axios_1 = __importDefault(require("axios"));
 /**
  * Sherlock Path Detection
  *
@@ -850,6 +851,83 @@ app.post("/ip-to-netblock", (req, res) => {
         }
     });
 });
+/**
+ * IP to Location Geographic Analysis Endpoint
+ *
+ * POST /ip-to-location
+ *
+ * Performs geolocation analysis on IP addresses using the free.freeipapi.com API.
+ * Returns detailed geographic information including country, city, region, coordinates,
+ * and network information.
+ *
+ * Input:
+ * - ip: string - The IP address to analyze for geographic location
+ *
+ * Output:
+ * - countryName: string - Country name where the IP is located
+ * - countryCode: string - Two-letter country code
+ * - cityName: string - City name where the IP is located
+ * - regionName: string - Region/state name
+ * - latitude: number - Geographic latitude coordinate
+ * - longitude: number - Geographic longitude coordinate
+ * - zipCode: string - Postal/ZIP code
+ * - asn: string - Autonomous System Number
+ * - asnOrganization: string - Organization name for the ASN
+ * - isProxy: boolean - Whether the IP is detected as a proxy
+ * - error: string - Error message if analysis fails
+ *
+ * Process:
+ * 1. Validates IP address input format
+ * 2. Makes HTTP request to free.freeipapi.com API
+ * 3. Parses JSON response to extract location data
+ * 4. Returns structured geographic information
+ * 5. Handles errors gracefully with appropriate status codes
+ *
+ * API Details:
+ * - Uses free.freeipapi.com for geolocation data
+ * - No API key required for basic usage
+ * - Returns comprehensive location and network information
+ * - Includes proxy detection capabilities
+ */
+app.post("/ip-to-location", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { ip } = req.body;
+    if (!ip) {
+        res.status(400).json({ error: "IP address is required" });
+        return;
+    }
+    // Validate IP address format (basic validation)
+    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    if (!ipRegex.test(ip)) {
+        res.status(400).json({ error: "Invalid IP address format" });
+        return;
+    }
+    console.log(`Performing geolocation analysis for IP: ${ip}`);
+    try {
+        const url = `https://free.freeipapi.com/api/json/${ip}`;
+        const response = yield axios_1.default.get(url);
+        const data = response.data;
+        // Extract and format the response data
+        const locationInfo = {
+            countryName: data.countryName || "Unknown",
+            countryCode: data.countryCode || "Unknown",
+            cityName: data.cityName || "Unknown",
+            regionName: data.regionName || "Unknown",
+            latitude: data.latitude || "Unknown",
+            longitude: data.longitude || "Unknown",
+            zipCode: data.zipCode || "Unknown",
+            asn: data.asn || "Unknown",
+            asnOrganization: data.asnOrganization || "Unknown",
+            isProxy: data.isProxy || false
+        };
+        console.log(`Geolocation analysis completed for ${ip}:`, locationInfo);
+        res.json(locationInfo);
+    }
+    catch (error) {
+        console.error("Error performing geolocation analysis:", error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        res.status(500).json({ error: `Failed to perform geolocation analysis: ${errorMessage}` });
+    }
+}));
 /**
  * Port Scan API Endpoint
  *
