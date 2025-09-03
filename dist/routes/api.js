@@ -368,4 +368,26 @@ router.get("/load/:filename", (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.status(500).json((0, dataProcessing_js_1.formatErrorResponse)(error, "Failed to load file"));
     }
 }));
+/**
+ * Automatic Node Type Detection Endpoint
+ *
+ * POST /detect-node-type
+ *
+ * Automatically detects the appropriate node type based on the provided label.
+ */
+router.post("/detect-node-type", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { label } = req.body;
+    if (!label) {
+        res.status(400).json((0, dataProcessing_js_1.formatErrorResponse)(null, "Label is required"));
+        return;
+    }
+    try {
+        const nodeType = (0, dataProcessing_js_1.detectNodeType)(label);
+        res.json((0, dataProcessing_js_1.formatSuccessResponse)({ nodeType }));
+    }
+    catch (error) {
+        console.error("Error detecting node type:", error);
+        res.status(500).json((0, dataProcessing_js_1.formatErrorResponse)(error, "Failed to detect node type"));
+    }
+}));
 exports.default = router;

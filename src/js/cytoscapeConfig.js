@@ -158,7 +158,7 @@ export const cy = cytoscape({
             selector: 'node[type="event"]',
             style:{
                 "background-color": "#9B59B6",
-                "shape": "cutrectangle",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#9B59B6"
             }
@@ -167,7 +167,7 @@ export const cy = cytoscape({
             selector: 'node[type="organization"]',
             style:{
                 "background-color": "#E67E22",
-                "shape": "rectangle",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#E67E22"
             }
@@ -185,7 +185,7 @@ export const cy = cytoscape({
             selector: 'node[type="custom"]',
             style:{
                 "background-color": "#2ECC71",
-                "shape": "star",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#2ECC71"
             }
@@ -194,7 +194,7 @@ export const cy = cytoscape({
             selector: 'node[type="address"]',
             style:{
                 "background-color": "#34495E",
-                "shape": "pentagon",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#34495E"
             }
@@ -203,7 +203,7 @@ export const cy = cytoscape({
             selector: 'node[type="ip"]',
             style:{
                 "background-color": "#E74C3C",
-                "shape": "hexagon",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#E74C3C"
             }
@@ -212,7 +212,7 @@ export const cy = cytoscape({
             selector: 'node[type="email"]',
             style:{
                 "background-color": "#8E44AD",
-                "shape": "diamond",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#8E44AD"
             }
@@ -221,7 +221,7 @@ export const cy = cytoscape({
             selector: 'node[type="geo"]',
             style:{
                 "background-color": "#D35400",
-                "shape": "heptagon",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#D35400"
             }
@@ -230,7 +230,7 @@ export const cy = cytoscape({
             selector: 'node[type="database"]',
             style:{
                 "background-color": "#7F8C8D",
-                "shape": "octagon",
+                "shape": "ellipse",
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#7F8C8D"
             }

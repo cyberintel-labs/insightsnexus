@@ -149,7 +149,7 @@ export function initNodePropertiesMenu(cytoscapeInstance){
         const typeSelect = document.getElementById("node-type-select");
 
         if(nameInput) nameInput.value = selectedNode.data("label") || "";
-        if(typeSelect) typeSelect.value = selectedNode.data("type") || "default";
+        if(typeSelect) typeSelect.value = selectedNode.data("type") || "custom";
 
         // Clear + rebuild images list
         if(imagesContainer){

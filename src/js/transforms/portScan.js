@@ -18,8 +18,8 @@
  */
 
 import { ur, cy } from "../main.js";
-import { resolveNodeOverlap } from "../nodePositioning.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Execute Port Scan
@@ -68,19 +68,22 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * - Error messages for failed scans
  * - Status message when no open ports are found
  */
-export function runPortScan(node){
+export async function runPortScan(node){
     const target = node.data("label");
     setStatusMessage(`Port Scan: Scanning "${target}"...`);
 
-    fetch("/port-scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target })
-    })
-        .then(res => res.json())
-        .then(data => {
-            const parentId = node.id();
-            let added = false;
+    const transformBase = new TransformBase();
+    const parentId = node.id();
+
+    try {
+        const response = await fetch("/port-scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ target })
+        });
+        
+        const data = await response.json();
+        let added = false;
 
             /**
              * Process Each Found Open Port
@@ -92,60 +95,14 @@ export function runPortScan(node){
              * 4. Creates edge connecting to original target node
              * 5. Uses undo/redo system for all graph modifications
              */
-            data.ports.forEach(portInfo => {
-                const newId = `${target}:${portInfo.port}`;
-                if(!cy.getElementById(newId).length){
-                    /**
-                     * New Node Configuration
-                     * 
-                     * Creates a node representing an open port:
-                     * - group: "nodes" - Identifies as a node element
-                     * - data.id: Unique identifier for the node
-                     * - data.label: Human-readable label showing port, service, and target
-                     * - position: Non-overlapping position near original node
-                     */
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `Port ${portInfo.port} (${portInfo.service}) on ${target}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    /**
-                     * Edge Configuration
-                     * 
-                     * Creates a directed edge from the original target node
-                     * to the newly discovered open port:
-                     * - group: "edges" - Identifies as an edge element
-                     * - data.id: Unique identifier for the edge
-                     * - data.source: ID of the original target node
-                     * - data.target: ID of the new open port node
-                     */
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+            for (const portInfo of data.ports) {
+                const newId = transformBase.createNodeId("port", `${target}:${portInfo.port}`);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Port ${portInfo.port} (${portInfo.service}) on ${target}`, position, parentId);
+                    if(createdNode) added = true;
                 }
-            });
+            }
 
             /**
              * Update UI Status
@@ -162,8 +119,7 @@ export function runPortScan(node){
             }else{
                 setStatusMessage(`No new additions found for "${target}"`);
             }
-        })
-        .catch(err => {
+        } catch (err) {
             /**
              * Error Handling
              * 
@@ -174,5 +130,5 @@ export function runPortScan(node){
              */
             console.error("Port scan error:", err);
             setStatusMessage(`Port scan failed for "${target}"`);
-        });
+        }
 }

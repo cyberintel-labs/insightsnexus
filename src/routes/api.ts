@@ -39,6 +39,7 @@ import {
     getDnsRecords,
     getGeolocation,
     captureScreenshot,
+    detectNodeType,
     formatErrorResponse,
     formatSuccessResponse
 } from "../services/dataProcessing.js";
@@ -413,6 +414,30 @@ router.get("/load/:filename", async (req: Request, res: Response): Promise<void>
     } catch (error) {
         console.error("Error loading file:", error);
         res.status(500).json(formatErrorResponse(error, "Failed to load file"));
+    }
+});
+
+/**
+ * Automatic Node Type Detection Endpoint
+ * 
+ * POST /detect-node-type
+ * 
+ * Automatically detects the appropriate node type based on the provided label.
+ */
+router.post("/detect-node-type", async (req: Request, res: Response): Promise<void> => {
+    const { label } = req.body;
+    
+    if (!label) {
+        res.status(400).json(formatErrorResponse(null, "Label is required"));
+        return;
+    }
+
+    try {
+        const nodeType = detectNodeType(label);
+        res.json(formatSuccessResponse({ nodeType }));
+    } catch (error) {
+        console.error("Error detecting node type:", error);
+        res.status(500).json(formatErrorResponse(error, "Failed to detect node type"));
     }
 });
 

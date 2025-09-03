@@ -19,8 +19,8 @@
  */
 
 import { ur, cy } from "../main.js";
-import { resolveNodeOverlap } from "../nodePositioning.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Execute IP to Location Geographic Analysis
@@ -68,19 +68,22 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * - Completion message with number of new nodes added
  * - Error messages for failed lookups
  */
-export function runIpToLocation(node){
+export async function runIpToLocation(node){
     const ipAddress = node.data("label");
     setStatusMessage(`IP to Location: Analyzing "${ipAddress}"...`);
 
-    fetch("/ip-to-location", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ip: ipAddress })
-    })
-        .then(res => res.json())
-        .then(data => {
-            const parentId = node.id();
-            let added = false;
+    const transformBase = new TransformBase();
+    const parentId = node.id();
+
+    try {
+        const response = await fetch("/ip-to-location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ip: ipAddress })
+        });
+        
+        const data = await response.json();
+        let added = false;
 
             /**
              * Process Each Discovered Location Detail
@@ -95,223 +98,61 @@ export function runIpToLocation(node){
             
             // Create country node
             if(data.countryName && data.countryName !== "Unknown"){
-                const newId = `country:${ipAddress}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `Country: ${data.countryName}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("country", ipAddress);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Country: ${data.countryName}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
             // Create city node
             if(data.cityName && data.cityName !== "Unknown"){
-                const newId = `city:${ipAddress}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `City: ${data.cityName}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("city", ipAddress);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `City: ${data.cityName}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
             // Create region/state node
             if(data.regionName && data.regionName !== "Unknown"){
-                const newId = `region:${ipAddress}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `Region: ${data.regionName}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("region", ipAddress);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Region: ${data.regionName}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
             // Create coordinates node
             if(data.latitude && data.longitude && data.latitude !== "Unknown" && data.longitude !== "Unknown"){
-                const newId = `coordinates:${ipAddress}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `Coordinates: ${data.latitude}, ${data.longitude}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("coordinates", ipAddress);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Coordinates: ${data.latitude}, ${data.longitude}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
             // Create ASN node
             if(data.asn && data.asn !== "Unknown"){
-                const newId = `asn:${ipAddress}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `ASN: ${data.asn}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("asn", ipAddress);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `ASN: ${data.asn}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
             // Create ASN Organization node
             if(data.asnOrganization && data.asnOrganization !== "Unknown"){
-                const newId = `asnOrg:${ipAddress}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `ASN Org: ${data.asnOrganization}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("asnOrg", ipAddress);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `ASN Org: ${data.asnOrganization}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
@@ -327,8 +168,7 @@ export function runIpToLocation(node){
             }else{
                 setStatusMessage(`No new location data found for "${ipAddress}"`);
             }
-        })
-        .catch(err => {
+        } catch (err) {
             /**
              * Error Handling
              * 
@@ -339,5 +179,5 @@ export function runIpToLocation(node){
              */
             console.error("IP to Location error:", err);
             setStatusMessage(`IP to Location failed for "${ipAddress}"`);
-        });
+        }
 }

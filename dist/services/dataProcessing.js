@@ -64,6 +64,7 @@ exports.resolveDomain = resolveDomain;
 exports.getDnsRecords = getDnsRecords;
 exports.getGeolocation = getGeolocation;
 exports.captureScreenshot = captureScreenshot;
+exports.detectNodeType = detectNodeType;
 exports.formatErrorResponse = formatErrorResponse;
 exports.formatSuccessResponse = formatSuccessResponse;
 const dns_1 = __importDefault(require("dns"));
@@ -341,6 +342,116 @@ function captureScreenshot(url) {
             yield browser.close();
         }
     });
+}
+/**
+ * Automatic Node Type Detection
+ *
+ * detectNodeType(label: string): string
+ *
+ * Automatically detects the appropriate node type based on the label content.
+ * Uses regex patterns to match different data types and assigns corresponding node types.
+ *
+ * Input:
+ * - label: string - The node label to analyze
+ *
+ * Returns:
+ * - string - The detected node type
+ *
+ * Detection Patterns:
+ * - IP Address: IPv4 format (x.x.x.x)
+ * - Email: email@domain.com format
+ * - Domain: domain.com format
+ * - Username: alphanumeric with common username patterns
+ * - Address: street address patterns
+ * - Person: name patterns (first last, title patterns)
+ * - Organization: company/organization indicators
+ * - Event: date/time patterns or event keywords
+ * - Geo: geographic location patterns
+ * - Database: database-related keywords
+ * - Custom: fallback for unrecognized patterns
+ */
+function detectNodeType(label) {
+    if (!label || typeof label !== 'string') {
+        return 'custom';
+    }
+    const trimmedLabel = label.trim().toLowerCase();
+    // IP Address detection
+    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+    if (ipRegex.test(trimmedLabel)) {
+        return 'ip';
+    }
+    // Email detection
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (emailRegex.test(trimmedLabel)) {
+        return 'email';
+    }
+    // Domain detection
+    const domainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/;
+    if (domainRegex.test(trimmedLabel) && trimmedLabel.includes('.')) {
+        return 'address'; // Using 'address' for domains as there's no specific 'domain' type
+    }
+    // Coordinates detection (check before organization to avoid false positives)
+    const coordinatesRegex = /coordinates:\s*[-+]?\d+\.?\d*,\s*[-+]?\d+\.?\d*/i;
+    if (coordinatesRegex.test(label)) {
+        return 'geo';
+    }
+    // Organization detection - improved pattern (check before username)
+    // Check for LLC, Corp, C-Corp, S-Corp in the name
+    const orgKeywords = ['inc', 'corp', 'corporation', 'company', 'co', 'ltd', 'llc', 'organization', 'org', 'foundation', 'institute', 'university', 'college', 'school', 'hospital', 'clinic', 'agency', 'department', 'ministry', 'government'];
+    const orgPatterns = ['llc', 'corp', 'c-corp', 's-corp'];
+    const hasOrgKeyword = orgKeywords.some(keyword => trimmedLabel.includes(keyword));
+    const hasOrgPattern = orgPatterns.some(pattern => label.toLowerCase().includes(pattern));
+    if (hasOrgKeyword || hasOrgPattern) {
+        return 'organization';
+    }
+    // Address detection
+    const addressRegex = /^\d+\s+[a-zA-Z\s]+(street|st|avenue|ave|road|rd|boulevard|blvd|lane|ln|drive|dr|court|ct|way|plaza|plz)/i;
+    if (addressRegex.test(trimmedLabel)) {
+        return 'address';
+    }
+    // Database detection - improved pattern (check before person)
+    // Check for SQL or NoSQL (including sql and nosql)
+    const dbKeywords = ['database', 'db', 'table', 'schema', 'record', 'entry', 'data', 'dataset', 'collection', 'repository', 'archive'];
+    const sqlPatterns = ['sql', 'nosql'];
+    const hasDbKeyword = dbKeywords.some(keyword => trimmedLabel.includes(keyword));
+    const hasSqlPattern = sqlPatterns.some(pattern => label.toLowerCase().includes(pattern));
+    if (hasDbKeyword || hasSqlPattern) {
+        return 'database';
+    }
+    // Person detection - improved to avoid catching organizations and databases
+    const personRegex = /^(mr\.|mrs\.|ms\.|dr\.|prof\.|sir|madam|miss)\s+[a-zA-Z]+\s+[a-zA-Z]+$/i;
+    const nameRegex = /^[a-zA-Z]+\s+[a-zA-Z]+$/;
+    // Only detect as person if it's exactly two words and doesn't contain organization or database keywords
+    if ((personRegex.test(trimmedLabel) || (nameRegex.test(trimmedLabel) && trimmedLabel.split(' ').length === 2)) &&
+        !orgKeywords.some(keyword => trimmedLabel.includes(keyword)) &&
+        !dbKeywords.some(keyword => trimmedLabel.includes(keyword)) &&
+        !sqlPatterns.some(pattern => label.toLowerCase().includes(pattern))) {
+        return 'person';
+    }
+    // Username detection - improved pattern (check after organization)
+    // Check for mix of uppercase/lowercase/numbers or just lowercase with numbers
+    const hasMixedCase = /[a-z]/.test(label) && /[A-Z]/.test(label);
+    const hasNumbers = /\d/.test(label);
+    const isAlphanumeric = /^[a-zA-Z0-9_]+$/.test(label);
+    const isLowercaseWithNumbers = /^[a-z0-9_]+$/.test(label);
+    if (isAlphanumeric && !label.includes('@') && !label.includes('.') &&
+        (hasMixedCase || (isLowercaseWithNumbers && hasNumbers))) {
+        return 'username';
+    }
+    // Event detection
+    const eventKeywords = ['conference', 'meeting', 'summit', 'workshop', 'seminar', 'event', 'party', 'celebration', 'ceremony', 'launch', 'announcement', 'press', 'briefing'];
+    const hasEventKeyword = eventKeywords.some(keyword => trimmedLabel.includes(keyword));
+    if (hasEventKeyword) {
+        return 'event';
+    }
+    // Geo detection
+    const geoKeywords = ['country', 'city', 'state', 'province', 'region', 'district', 'county', 'town', 'village', 'continent', 'ocean', 'sea', 'river', 'mountain', 'lake'];
+    const hasGeoKeyword = geoKeywords.some(keyword => trimmedLabel.includes(keyword));
+    if (hasGeoKeyword) {
+        return 'geo';
+    }
+    // Default to custom if no pattern matches
+    return 'custom';
 }
 /**
  * Error Response Formatter

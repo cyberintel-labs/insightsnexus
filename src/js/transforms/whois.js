@@ -21,8 +21,8 @@
  */
 
 import { ur, cy } from "../main.js";
-import { resolveNodeOverlap } from "../nodePositioning.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Execute Whois Information Lookup
@@ -71,19 +71,22 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * - Completion message with number of new nodes added
  * - Error messages for failed lookups
  */
-export function runWhois(node){
+export async function runWhois(node){
     const domain = node.data("label");
     setStatusMessage(`Whois: Looking up "${domain}"...`);
 
-    fetch("/whois", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ domain })
-    })
-        .then(res => res.json())
-        .then(data => {
-            const parentId = node.id();
-            let added = false;
+    const transformBase = new TransformBase();
+    const parentId = node.id();
+
+    try {
+        const response = await fetch("/whois", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ domain })
+        });
+        
+        const data = await response.json();
+        let added = false;
 
             /**
              * Process Each Piece of Domain Information
@@ -98,38 +101,11 @@ export function runWhois(node){
             
             // Process registrar information
             if(data.registrar){
-                const newId = `registrar:${data.registrar}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `Registrar: ${data.registrar}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("registrar", data.registrar);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Registrar: ${data.registrar}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
@@ -137,114 +113,33 @@ export function runWhois(node){
             if(data.nameServers && data.nameServers.length > 0){
                 const uniqueNameServers = [...new Set(data.nameServers)];
                 
-                uniqueNameServers.forEach(nameServer => {
-                    const newId = `nameserver:${nameServer}`;
-                    if(!cy.getElementById(newId).length){
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `Name Server: ${nameServer}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        // Add both node and edge to graph using undo/redo system
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const nameServer of uniqueNameServers) {
+                    const newId = transformBase.createNodeId("nameserver", nameServer);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `Name Server: ${nameServer}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             // Process creation date
             if(data.creationDate){
-                const newId = `creation:${data.creationDate}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `Created: ${data.creationDate}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("creation", data.creationDate);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Created: ${data.creationDate}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
             // Process expiry date
             if(data.expiryDate){
-                const newId = `expiry:${data.expiryDate}`;
-                if(!cy.getElementById(newId).length){
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `Expires: ${data.expiryDate}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+                const newId = transformBase.createNodeId("expiry", data.expiryDate);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Expires: ${data.expiryDate}`, position, parentId);
+                    if(createdNode) added = true;
                 }
             }
 
@@ -260,8 +155,7 @@ export function runWhois(node){
             }else{
                 setStatusMessage(`No new additions found for "${domain}"`);
             }
-        })
-        .catch(err => {
+        } catch (err) {
             /**
              * Error Handling
              * 
@@ -272,5 +166,5 @@ export function runWhois(node){
              */
             console.error("Whois error:", err);
             setStatusMessage(`Whois failed for "${domain}"`);
-        });
+        }
 }

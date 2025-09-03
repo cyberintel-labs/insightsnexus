@@ -31,6 +31,7 @@ import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePosi
 import { initNodePropertiesMenu, togglePropertiesMenu, openPropertiesMenu, closePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
 import { runDomainToEnd } from "./transforms/domainToEnd.js";
+import { createNodeWithType } from "./utils/nodeTypeDetection.js";
 
 initNodePropertiesMenu(cy);
 
@@ -307,6 +308,7 @@ document.addEventListener("click", (evt) => {
  * 
  * Double-tap on empty space creates a new node.
  * Prompts user for node name and adds it to the graph with overlap prevention.
+ * Automatically detects node type based on the label content.
  */
 cy.on("dbltap", (evt) => {
     if(evt.target === cy){
@@ -317,10 +319,32 @@ cy.on("dbltap", (evt) => {
         // Apply overlap prevention to ensure new node doesn't overlap existing nodes
         const safePosition = resolveNodeOverlap(null, evt.position);
         
-        ur.do("add", {
-            group: "nodes",
-            data: {id: newId, label: name},
+        // Create node with automatic type detection
+        createNodeWithType({
+            id: newId,
+            label: name,
             position: safePosition
+        }).then(nodeData => {
+            ur.do("add", nodeData);
+            // Automatically select the newly created node to show its properties
+            const newNode = cy.getElementById(newId);
+            if (newNode.length) {
+                newNode.select();
+            }
+        }).catch(error => {
+            console.error("Error creating node with type:", error);
+            // Fallback to custom type if detection fails
+            const fallbackNode = {
+                group: "nodes",
+                data: {id: newId, label: name, type: 'custom'},
+                position: safePosition
+            };
+            ur.do("add", fallbackNode);
+            // Automatically select the newly created node to show its properties
+            const newNode = cy.getElementById(newId);
+            if (newNode.length) {
+                newNode.select();
+            }
         });
     }
 });
