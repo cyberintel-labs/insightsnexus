@@ -534,6 +534,32 @@ body {
     min-width: 50px;
 }
 
+#reset-view-btn {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-small);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-light);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+}
+
+#reset-view-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-heavy);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+#reset-view-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-light);
+}
+
 #side-panel {
     position: absolute;
     top: 60px;

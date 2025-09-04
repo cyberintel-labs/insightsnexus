@@ -782,6 +782,54 @@ function initDarkMode() {
 document.addEventListener('DOMContentLoaded', initDarkMode);
 
 /**
+ * Reset View Function
+ * 
+ * Resets the zoom level to 100% and centers the view on the majority of nodes.
+ * This provides a quick way to return to a standard view of the graph.
+ * 
+ * Process:
+ * 1. Resets zoom level to 1.0 (100%)
+ * 2. Calculates the center of all nodes
+ * 3. Centers the view on that position
+ * 4. Updates the zoom slider and label
+ */
+function resetToDefaultView() {
+    // Reset zoom to 100%
+    cy.zoom({ level: 1.0, renderedPosition: { x: cy.width()/2, y: cy.height()/2 } });
+    
+    // Get all nodes
+    const nodes = cy.nodes();
+    
+    if (nodes.length > 0) {
+        // Calculate the center of all nodes
+        let centerX = 0;
+        let centerY = 0;
+        
+        nodes.forEach(node => {
+            const position = node.position();
+            centerX += position.x;
+            centerY += position.y;
+        });
+        
+        centerX /= nodes.length;
+        centerY /= nodes.length;
+        
+        // Center the view on the calculated center
+        cy.center({ x: centerX, y: centerY });
+    } else {
+        // If no nodes, just center on the viewport
+        cy.center();
+    }
+    
+    // Update zoom slider and label
+    const zoomSlider = document.getElementById("zoom-control");
+    const zoomLabel = document.getElementById("zoom-label");
+    
+    zoomSlider.value = 1.0;
+    zoomLabel.innerText = "100%";
+}
+
+/**
  * Module Exports
  * 
  * Exports key functions and objects for use by other modules.
@@ -811,6 +859,7 @@ function initializeGlobalFunctions() {
     window.openPropertiesMenu = openPropertiesMenu;
     window.closePropertiesMenu = closePropertiesMenu;
     window.toggleDarkMode = toggleDarkMode;
+    window.resetToDefaultView = resetToDefaultView;
     
     console.log('Global functions initialized successfully');
 }
