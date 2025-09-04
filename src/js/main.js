@@ -674,6 +674,50 @@ window.toggleTransformSubmenu = function() {
 };
 
 /**
+ * Generic Submenu Toggle
+ * 
+ * toggleSubmenu(submenuId)
+ * 
+ * Toggles the visibility of any submenu in the context menu.
+ * Handles the show/hide animation and updates the trigger button state.
+ * Ensures only one submenu can be open at a time by closing others.
+ * 
+ * @param {string} submenuId - The ID of the submenu to toggle
+ */
+window.toggleSubmenu = function(submenuId) {
+    const submenu = document.getElementById(submenuId);
+    const trigger = event.target;
+    
+    // Get all submenus within the transform-submenu
+    const allSubmenus = document.querySelectorAll('#transform-submenu .submenu');
+    const allTriggers = document.querySelectorAll('#transform-submenu .submenu-trigger');
+    
+    if (submenu.classList.contains("show")) {
+        // Close the clicked submenu
+        submenu.classList.remove("show");
+        trigger.classList.remove("active");
+    } else {
+        // Close all other submenus first
+        allSubmenus.forEach(menu => {
+            if (menu.id !== submenuId) {
+                menu.classList.remove("show");
+            }
+        });
+        
+        // Remove active class from all other triggers
+        allTriggers.forEach(trig => {
+            if (trig !== trigger) {
+                trig.classList.remove("active");
+            }
+        });
+        
+        // Open the clicked submenu
+        submenu.classList.add("show");
+        trigger.classList.add("active");
+    }
+};
+
+/**
  * Dark Mode Toggle Functionality
  * 
  * toggleDarkMode()

@@ -143,17 +143,35 @@
     <ul id="context-menu">
         <li class="submenu-trigger" onclick="toggleTransformSubmenu()">Transforms</li>
         <ul class="submenu" id="transform-submenu">
-            <li onclick="handleContextAction('sherlock')">Run Sherlock</li>
-            <li onclick="handleContextAction('domain-to-ip')">Domain to IP</li>
-            <li onclick="handleContextAction('domain-to-dns')">Domain to DNS</li>
-            <!-- <li onclick="handleContextAction('domain-to-subdomain')">Domain to Subdomain</li> -->
-            <li onclick="handleContextAction('domain-to-endpoint')">Domain to Endpoint</li>
-            <li onclick="handleContextAction('whois')">Whois Information</li>
-            <li onclick="handleContextAction('ip-to-netblock')">IP to Netblock</li>
-            <li onclick="handleContextAction('ip-to-location')">IP to Location</li>
-            <li onclick="handleContextAction('port-scan')">Port Scan</li>
-            <li onclick="handleContextAction('website-to-domain')">Website to Domain</li>
-            <li onclick="handleContextAction('website-screenshot')">Website Screenshot</li>
+            <!-- Domain Analysis -->
+            <li class="submenu-trigger" onclick="toggleSubmenu('domain-submenu')">Domain Analysis</li>
+            <ul class="submenu" id="domain-submenu">
+                <li onclick="handleContextAction('domain-to-ip')">Domain to IP</li>
+                <li onclick="handleContextAction('domain-to-dns')">Domain to DNS</li>
+                <li onclick="handleContextAction('domain-to-endpoint')">Domain to Endpoint</li>
+                <li onclick="handleContextAction('whois')">Whois Information</li>
+            </ul>
+            
+            <!-- Network Intelligence -->
+            <li class="submenu-trigger" onclick="toggleSubmenu('network-submenu')">Network Intelligence</li>
+            <ul class="submenu" id="network-submenu">
+                <li onclick="handleContextAction('ip-to-netblock')">IP to Netblock</li>
+                <li onclick="handleContextAction('ip-to-location')">IP to Location</li>
+                <li onclick="handleContextAction('port-scan')">Port Scan</li>
+            </ul>
+            
+            <!-- OSINT Tools -->
+            <li class="submenu-trigger" onclick="toggleSubmenu('osint-submenu')">OSINT Tools</li>
+            <ul class="submenu" id="osint-submenu">
+                <li onclick="handleContextAction('sherlock')">Run Sherlock</li>
+            </ul>
+            
+            <!-- Web Analysis -->
+            <li class="submenu-trigger" onclick="toggleSubmenu('web-submenu')">Web Analysis</li>
+            <ul class="submenu" id="web-submenu">
+                <li onclick="handleContextAction('website-to-domain')">Website to Domain</li>
+                <li onclick="handleContextAction('website-screenshot')">Website Screenshot</li>
+            </ul>
         </ul>
         <li onclick="handleContextAction('edit')">Edit</li>
         <li onclick="handleContextAction('delete')">Delete</li>
@@ -182,6 +200,9 @@
         };
         window.toggleDarkMode = function() {
             console.log('toggleDarkMode called - waiting for module to load');
+        };
+        window.toggleSubmenu = function() {
+            console.log('toggleSubmenu called - waiting for module to load');
         };
     </script>
     
