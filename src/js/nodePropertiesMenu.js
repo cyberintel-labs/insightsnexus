@@ -52,6 +52,8 @@ if (typeof window !== 'undefined') {
     window.togglePropertiesMenu = togglePropertiesMenu;
     window.openPropertiesMenu = openPropertiesMenu;
     window.closePropertiesMenu = closePropertiesMenu;
+    window.closeImageOverlay = closeImageOverlay;
+    window.showImageOverlay = showImageOverlay;
 }
 
 export function initNodePropertiesMenu(cytoscapeInstance){
@@ -200,17 +202,29 @@ export function initNodePropertiesMenu(cytoscapeInstance){
                 const img = document.createElement("img");
                 img.src = src;
                 img.classList.add("thumbnail");
+                img.title = "Click to select • Double-click to view fullscreen";
 
                 // This is to highlight selected thumbnail
                 if(i === (selectedNode.data("currentImageIndex") || 0)){
                     img.classList.add("thumbnail-selected");
                 }
 
-                img.addEventListener("click", () => {
-                    selectedNode.data("currentImageIndex", i)
-                    showCurrentImage(selectedNode);
-                    selectedNode.emit("filesUpdated");
-                    updatePropertiesMenu(selectedNode);
+                img.addEventListener("click", (e) => {
+                    // Prevent double-click from triggering single click
+                    if (e.detail === 1) {
+                        selectedNode.data("currentImageIndex", i)
+                        showCurrentImage(selectedNode);
+                        selectedNode.emit("filesUpdated");
+                        updatePropertiesMenu(selectedNode);
+                    }
+                });
+
+                // Add double-click event for image overlay
+                img.addEventListener("dblclick", (e) => {
+                    console.log("Double-click detected on image:", src);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showImageOverlay(src);
                 });
 
                 const delBtn = document.createElement("button");
@@ -268,5 +282,74 @@ export function initNodePropertiesMenu(cytoscapeInstance){
     }
 }
 
+/**
+ * Show Image Overlay Function
+ * 
+ * showImageOverlay(imageSrc)
+ * 
+ * Displays an image in a full-screen overlay with a darkened background.
+ * The image is centered and scaled to fit within the viewport.
+ * 
+ * @param {string} imageSrc - The source URL of the image to display
+ */
+function showImageOverlay(imageSrc) {
+    console.log("showImageOverlay called with:", imageSrc);
+    const overlay = document.getElementById("image-overlay");
+    const overlayImage = document.getElementById("overlay-image");
+    
+    if (overlay && overlayImage) {
+        overlayImage.src = imageSrc;
+        overlay.classList.add("active");
+        
+        // Prevent body scroll when overlay is active
+        document.body.style.overflow = "hidden";
+        console.log("Image overlay activated");
+    } else {
+        console.error("Overlay elements not found:", { overlay, overlayImage });
+    }
+}
+
+/**
+ * Close Image Overlay Function
+ * 
+ * closeImageOverlay()
+ * 
+ * Closes the image overlay and restores normal view.
+ * Removes the active class and restores body scroll.
+ */
+function closeImageOverlay() {
+    const overlay = document.getElementById("image-overlay");
+    
+    if (overlay) {
+        overlay.classList.remove("active");
+        
+        // Restore body scroll
+        document.body.style.overflow = "";
+    }
+}
+
+// Add click event listener to overlay background to close on outside click
+document.addEventListener("DOMContentLoaded", () => {
+    const overlay = document.getElementById("image-overlay");
+    if (overlay) {
+        overlay.addEventListener("click", (e) => {
+            // Close if clicking on the overlay background or the image container, but not the image itself
+            if (e.target === overlay || e.target.classList.contains("image-overlay-content")) {
+                closeImageOverlay();
+            }
+        });
+    }
+    
+    // Add keyboard event listener for Escape key
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            const overlay = document.getElementById("image-overlay");
+            if (overlay && overlay.classList.contains("active")) {
+                closeImageOverlay();
+            }
+        }
+    });
+});
+
 // Export functions for use in other modules
-export { togglePropertiesMenu, openPropertiesMenu, closePropertiesMenu };
+export { togglePropertiesMenu, openPropertiesMenu, closePropertiesMenu, showImageOverlay, closeImageOverlay };

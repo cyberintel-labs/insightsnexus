@@ -58,11 +58,7 @@ export const cy = cytoscape({
                 "height": 40,
                 "shape": "ellipse",
                 "border-width": 2,
-                "border-color": "rgba(255, 255, 255, 0.3)",
-                "shadow-blur": 10,
-                "shadow-color": "rgba(0, 0, 0, 0.2)",
-                "shadow-offset-x": 2,
-                "shadow-offset-y": 4
+                "border-color": "rgba(255, 255, 255, 0.3)"
             }
         },
         {
@@ -82,10 +78,6 @@ export const cy = cytoscape({
                 "border-color": "#667eea",
                 "text-outline-width": 4,
                 "text-outline-color": "#2c3e50",
-                "shadow-blur": 20,
-                "shadow-color": "rgba(102, 126, 234, 0.4)",
-                "shadow-offset-x": 4,
-                "shadow-offset-y": 8,
                 "width": 45,
                 "height": 45,
                 "font-size": "13px",

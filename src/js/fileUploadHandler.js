@@ -71,11 +71,7 @@ export function showCurrentImage(node){
             "text-outline-opacity": 0.8,
             "border-width": 3,
             "border-color": "rgba(255, 255, 255, 0.5)",
-            "border-opacity": 1,
-            "shadow-blur": 15,
-            "shadow-color": "rgba(0, 0, 0, 0.3)",
-            "shadow-offset-x": 3,
-            "shadow-offset-y": 6
+            "border-opacity": 1
         });
     } else {
         node.style({
@@ -92,11 +88,7 @@ export function showCurrentImage(node){
             "text-outline-opacity": 0.8,
             "border-width": 2,
             "border-color": "rgba(255, 255, 255, 0.3)",
-            "border-opacity": 0.8,
-            "shadow-blur": 10,
-            "shadow-color": "rgba(0, 0, 0, 0.2)",
-            "shadow-offset-x": 2,
-            "shadow-offset-y": 4
+            "border-opacity": 0.8
         });
     }
 }
