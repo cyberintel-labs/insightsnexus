@@ -234,6 +234,15 @@ export const cy = cytoscape({
                 "border-color": "rgba(255, 255, 255, 0.3)",
                 "text-outline-color": "#7F8C8D"
             }
+        },
+        {
+            selector: 'node[type="domain"]',
+            style:{
+                "background-color": "#16A085",
+                "shape": "ellipse",
+                "border-color": "rgba(255, 255, 255, 0.3)",
+                "text-outline-color": "#16A085"
+            }
         }
     ],
     
