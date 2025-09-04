@@ -880,3 +880,63 @@ body {
 #node-properties-menu.open + #properties-toggle-btn .toggle-icon {
     transform: rotate(180deg);
 }
+
+/* Notes section styling */
+.notes-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.notes-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px 16px;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: var(--border-radius-small);
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    resize: vertical;
+    transition: var(--transition-smooth);
+    outline: none;
+    box-sizing: border-box;
+}
+
+.notes-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: var(--panel-hover-bg);
+}
+
+.notes-textarea::placeholder {
+    color: rgba(102, 126, 234, 0.6);
+    font-style: italic;
+}
+
+.notes-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.notes-actions .section-button {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.section-button.secondary {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: rgba(102, 126, 234, 0.2);
+    color: var(--text-color);
+}
+
+.section-button.secondary:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.3);
+    color: var(--primary-color);
+}

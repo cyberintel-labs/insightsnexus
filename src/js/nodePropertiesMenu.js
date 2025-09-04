@@ -1,4 +1,5 @@
 import { uploadFiles, removeImageFromNode, removeTextFromNode, showCurrentImage } from "./fileUploadHandler.js";
+import { setStatusMessage } from "./setStatusMessageHandler.js";
 
 let cy;
 let selectedNode = null;
@@ -62,6 +63,9 @@ export function initNodePropertiesMenu(cytoscapeInstance){
     const textsContainer = document.getElementById("node-texts");
     const uploadImageBtn = document.getElementById("upload-image-btn");
     const uploadTextBtn = document.getElementById("upload-text-btn");
+    const notesTextarea = document.getElementById("node-notes-textarea");
+    const saveNotesBtn = document.getElementById("save-notes-btn");
+    const clearNotesBtn = document.getElementById("clear-notes-btn");
     // const noNodeMessage = document.getElementById("no-node-message");
     // const nodeDetails = document.getElementById("node-details");
 
@@ -129,6 +133,33 @@ export function initNodePropertiesMenu(cytoscapeInstance){
         input.click();
     });
 
+    // Save notes button
+    saveNotesBtn.addEventListener("click", () => {
+        if(!selectedNode) return;
+        const notesText = notesTextarea.value.trim();
+        selectedNode.data("notes", notesText);
+        // Show a brief success message
+        setStatusMessage("Notes saved successfully!");
+    });
+
+    // Clear notes button
+    clearNotesBtn.addEventListener("click", () => {
+        if(!selectedNode) return;
+        notesTextarea.value = "";
+        selectedNode.data("notes", "");
+        setStatusMessage("Notes cleared!");
+    });
+
+    // Auto-save notes on input (optional - saves as user types)
+    notesTextarea.addEventListener("input", () => {
+        if(!selectedNode) return;
+        // Debounce the auto-save to avoid too frequent updates
+        clearTimeout(notesTextarea.autoSaveTimeout);
+        notesTextarea.autoSaveTimeout = setTimeout(() => {
+            selectedNode.data("notes", notesTextarea.value);
+        }, 1000); // Save after 1 second of no typing
+    });
+
     function updatePropertiesMenu(selectedNode) {
         const noNodeMessage = document.getElementById("no-node-message");
         const propertiesSections = document.querySelectorAll(".properties-section");
@@ -150,6 +181,11 @@ export function initNodePropertiesMenu(cytoscapeInstance){
 
         if(nameInput) nameInput.value = selectedNode.data("label") || "";
         if(typeSelect) typeSelect.value = selectedNode.data("type") || "custom";
+        
+        // Populate notes field
+        if(notesTextarea) {
+            notesTextarea.value = selectedNode.data("notes") || "";
+        }
 
         // Clear + rebuild images list
         if(imagesContainer){
