@@ -388,17 +388,14 @@ function detectNodeType(label) {
     // Domain detection - enhanced with protocols and common TLDs
     const domainWithProtocolRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$/;
     const commonTlds = ['.com', '.org', '.ai', '.net', '.info', '.edu', '.blog', '.wiki', '.online', '.io', '.uk', '.us', '.fr', '.ru', '.jp', '.eu', '.gov', '.mil'];
-    
     // Check for URLs with protocols first
     if (trimmedLabel.includes('http://') || trimmedLabel.includes('https://')) {
         return 'domain';
     }
-    
     // Check for domains ending with common TLDs
     if (commonTlds.some(tld => trimmedLabel.toLowerCase().endsWith(tld))) {
         return 'domain';
     }
-    
     // Check for www. prefixed domains
     if (trimmedLabel.startsWith('www.')) {
         return 'domain';
