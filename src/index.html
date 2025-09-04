@@ -44,52 +44,14 @@
         </div>
     </div>
 
-    <div id="side-panel">
-        <button id="toggle-panel">+</button>
-        <div id="panel-content">
-            <!-- Change node types -->
-            <div class="panel-section">
-                <div class="section-header" onclick="toggleSection('node-type-section')">Change Node Type</div>
-                <div class="section-body" id="node-type-section">
-                    <button class="node-type-btn" data-type="person">Person</button>
-                    <button class="node-type-btn" data-type="event">Event</button>
-                    <button class="node-type-btn" data-type="organization">Organization</button>
-                    <button class="node-type-btn" data-type="username">Username</button>
-                    <button class="node-type-btn" data-type="custom">Custom</button>
-                    <button class="node-type-btn" data-type="address">Address</button>
-                    <button class="node-type-btn" data-type="domain">Domain</button>
-                    <button class="node-type-btn" data-type="ip">IP</button>
-                    <button class="node-type-btn" data-type="email">Email</button>
-                    <button class="node-type-btn" data-type="geo">Geo Data</button>
-                    <button class="node-type-btn" data-type="database">Database</button>
-                    <button class="node-type-btn" data-type="default">Default</button>
-                </div>
-            </div>
 
-            <!-- Placeholder section -->
-            <div class="panel-section">
-                <div class="section-header" onclick="toggleSection('section-1-body')">Section 1</div>
-                <div class="section-body" id="section-1-body">
-                    <button class="section-button">Section 1 Button</button>
-                </div>
-            </div>
-
-            <!-- Placeholder section -->
-            <div class="panel-section">
-                <div class="section-header" onclick="toggleSection('section-2-body')">Section 2</div>
-                <div class="section-body" id="section-2-body">
-                    <button class="section-button">Section 2 Button</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div id="node-properties-menu">
         <div id="properties-content">
 
             <p id="no-node-message">Please select a node to display its properties.</p>
 
-            <div class="properties-section panel-section">
+            <div class="properties-section">
                 <h3 class="section-header">Node Info</h3>
                 <div id="node-details" class="node-info">
                     <label class="section-header field-row">Name: <input type="text" id="node-name"></label>
@@ -112,19 +74,19 @@
                 </div>
             </div>
 
-            <div class="properties-section panel-section">
+            <div class="properties-section">
                 <h3 class="section-header">Images</h3>
                 <div id="node-images" class="file-list"></div>
                 <button id="upload-image-btn" class="section-button">Upload Image</button>
             </div>
 
-            <div class="properties-section panel-section">
+            <div class="properties-section">
                 <h3 class="section-header">Text Files</h3>
                 <div id="node-texts" class="file-list"></div>
                 <button id="upload-text-btn" class="section-button">Upload Text File</button>
             </div>
 
-            <div class="properties-section panel-section">
+            <div class="properties-section">
                 <h3 class="section-header">Notes</h3>
                 <div id="node-notes" class="notes-container">
                     <textarea id="node-notes-textarea" placeholder="Write your notes here..." class="notes-textarea"></textarea>

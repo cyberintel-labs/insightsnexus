@@ -237,8 +237,6 @@ body {
 
 /* Ensure proper z-index layering */
 #toolbar { z-index: 1000; }
-#side-panel { z-index: 999; }
-.side-panel.right-panel { z-index: 998; }
 #context-menu { z-index: 997; }
 #zoom-slider { z-index: 996; }
 #status-bar { z-index: 995; }
@@ -560,51 +558,11 @@ body {
     box-shadow: var(--shadow-light);
 }
 
-#side-panel {
-    position: absolute;
-    top: 60px;
-    left: 0;
-    z-index: 1002;
-    height: calc(100% - 60px);
-    width: 240px;
-    transform: translateX(-240px);
-    transition: var(--transition-smooth);
-    background: var(--glass-bg);
-    border-right: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-heavy);
-    backdrop-filter: blur(20px);
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
-}
 
-#side-panel.open {
-    transform: translateX(0);
-}
 
-/* Removed old right-panel styles - replaced with new collapsible properties menu */
-
-#toggle-panel {
-    position: absolute;
-    top: 15px;
-    right: -30px;
-    width: 30px;
-    height: 30px;
-    background: var(--primary-gradient);
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 0 var(--border-radius-small) var(--border-radius-small) 0;
-    font-size: 16px;
-    font-weight: bold;
-    transition: var(--transition-smooth);
-    box-shadow: var(--shadow-light);
-}
-
-#toggle-panel:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-heavy);
-}
-
-.panel-section {
+.properties-section {
+    display: none;
+    margin-bottom: 16px;
     background: var(--panel-bg);
     border-radius: var(--border-radius);
     margin: 12px 8px;
@@ -614,15 +572,10 @@ body {
     border-bottom: none;
 }
 
-.panel-section:hover {
+.properties-section:hover {
     background: var(--panel-hover-bg);
     transform: translateY(-2px);
     box-shadow: var(--shadow-light);
-}
-
-.properties-section {
-    display: none;
-    margin-bottom: 16px;
 }
 
 .section-header {
