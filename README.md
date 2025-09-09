@@ -13,7 +13,8 @@ You can find it here: https://nmap.org/
 
 # Starting the application
 To start the server open command prompt in the main directory and execute the following:
-* node dist/server.js
+1. First build the project: `npm run build`
+2. Then start the server: `npm start`
 
 # Testing the application
 To start running test files, open command prompt in the main directory and execute either:
@@ -21,9 +22,60 @@ To start running test files, open command prompt in the main directory and execu
 * npm run test:ui
 
 # Troubleshooting
+
+## Common Issues
+
+### "Cannot find module 'dist/server.js'" Error
+If you get an error like `Error: Cannot find module '/path/to/project/dist/server.js'`, this means the TypeScript files haven't been compiled yet. 
+
+**Solution:**
+1. First build the project: `npm run build`
+2. Then start the server: `npm start` or `node dist/server.js`
+
+**Why this happens:** The project uses TypeScript, which needs to be compiled to JavaScript before Node.js can run it. The `dist` folder contains the compiled JavaScript files.
+
+### Permission Errors
 If you run into access denied permission errors even when using sudo, run the following:
 * rm -rf ./node_modules; npm i
 
+### Popup Blocker Preventing Node Creation
+If you clicked "prevent this from opening new dialog boxes" and can no longer create new nodes, your browser's popup blocker is preventing the application's input dialogs from appearing.
+
+**Chrome:**
+1. Look for a popup blocker icon (🚫 or shield icon) in the address bar
+2. Click on it and select "Always allow pop-ups and redirects from [your site]"
+3. Refresh the page
+
+**Alternative Chrome method:**
+1. Go to Settings → Privacy and security → Site Settings
+2. Click "Pop-ups and redirects"
+3. Under "Allowed to send pop-ups and use redirects", click "Add"
+4. Enter your site URL (e.g., `http://localhost:3000`) and click "Add"
+5. Refresh the page
+
+**Firefox:**
+1. Look for the shield icon in the address bar
+2. Click on it and turn off "Enhanced Tracking Protection" for this site
+3. Or click "Disable protection for this session"
+4. Refresh the page
+
+**Alternative Firefox method:**
+1. Go to Settings → Privacy & Security
+2. Scroll down to "Permissions" section
+3. Click "Block pop-up windows" → "Exceptions"
+4. Add your site URL and click "Allow"
+5. Refresh the page
+
+**Microsoft Edge:**
+1. Look for the shield icon or popup blocker icon in the address bar
+2. Click on it and select "Allow pop-ups and redirects"
+3. Refresh the page
+
+**Alternative Edge method:**
+1. Go to Settings → Site permissions → Pop-ups and redirects
+2. Under "Allow", click "Add"
+3. Enter your site URL and click "Add"
+4. Refresh the page
 # Progress so far
 * NEW: Users can add files into nodes (right click -> Upload Files ~OR~ left click and use node menu on right)
 * NEW: Implemented domain to ip (right click -> transform -> select Domain to ip)
