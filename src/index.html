@@ -42,6 +42,12 @@
                 <button onclick="ur.redo()">Redo</button>
             </div>
         </div>
+        <div class="menu">
+            <button onclick="toggleDropdown('help-dropdown')">Help</button>
+            <div id="help-dropdown" class="dropdown">
+                <button onclick="tutorialSystem.restartTutorial()">Restart Tutorial</button>
+            </div>
+        </div>
     </div>
 
 
@@ -194,6 +200,7 @@
     </script>
     
     <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/tutorial.js"></script>
 </body>
 
 </html>

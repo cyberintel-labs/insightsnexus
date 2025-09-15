@@ -18,8 +18,8 @@ To start the server open command prompt in the main directory and execute the fo
 
 # Testing the application
 To start running test files, open command prompt in the main directory and execute either:
-* npm test
-* npm run test:ui
+`npm test`
+`npm run test:ui`
 
 # Troubleshooting
 
@@ -36,7 +36,7 @@ If you get an error like `Error: Cannot find module '/path/to/project/dist/serve
 
 ### Permission Errors
 If you run into access denied permission errors even when using sudo, run the following:
-* rm -rf ./node_modules; npm i
+`rm -rf ./node_modules; npm i`
 
 ### Popup Blocker Preventing Node Creation
 If you clicked "prevent this from opening new dialog boxes" and can no longer create new nodes, your browser's popup blocker is preventing the application's input dialogs from appearing.

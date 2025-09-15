@@ -806,6 +806,7 @@ export { ur, cy };
  */
 function initializeGlobalFunctions() {
     window.ur = ur;
+    window.cy = cy; // Make Cytoscape instance globally available
     window.setMode = setMode;
     window.saveGraph = saveGraph;
     window.loadGraph = loadGraph;
@@ -821,6 +822,11 @@ function initializeGlobalFunctions() {
     window.closePropertiesMenu = closePropertiesMenu;
     window.toggleDarkMode = toggleDarkMode;
     window.resetToDefaultView = resetToDefaultView;
+    
+    // Make tutorialSystem globally available when it's initialized
+    if (window.tutorialSystem) {
+        console.log('Tutorial system available');
+    }
     
     console.log('Global functions initialized successfully');
 }
