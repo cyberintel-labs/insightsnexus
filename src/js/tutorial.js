@@ -28,6 +28,10 @@ class TutorialSystem {
         // when page is refreshed or application is restarted (excluding when user clicked Skip Tutorial)
         this.enableTutorialResume = false; // Set to true to enable resume functionality for testing purposes
         
+        // Feature flag for step counter visibility
+        // Set to true to show step counter in tutorial modal, false to hide it
+        this.showStepCounter = false; // Set to false by default for production. Set this to true for debugging
+        
         // Debug logging
         console.log(`Tutorial System: Resume functionality ${this.enableTutorialResume ? 'ENABLED' : 'DISABLED'}`);
         
@@ -459,8 +463,15 @@ class TutorialSystem {
         // Update content
         this.tutorialModal.querySelector('.tutorial-title').textContent = step.title;
         this.tutorialModal.querySelector('.tutorial-text').textContent = step.content;
-        this.tutorialModal.querySelector('.tutorial-step-counter').textContent = 
-            `${this.currentStep + 1} of ${this.steps.length}`;
+        
+        // Update step counter visibility based on feature flag
+        const stepCounterElement = this.tutorialModal.querySelector('.tutorial-step-counter');
+        if (this.showStepCounter) {
+            stepCounterElement.textContent = `${this.currentStep + 1} of ${this.steps.length}`;
+            stepCounterElement.style.display = 'block';
+        } else {
+            stepCounterElement.style.display = 'none';
+        }
 
         // Update buttons
         const prevBtn = document.getElementById('prev-btn');
