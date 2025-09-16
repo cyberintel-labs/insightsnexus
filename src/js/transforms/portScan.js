@@ -17,7 +17,6 @@
  * - Error handling for failed scans
  */
 
-import { ur, cy } from "../main.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
 import { TransformBase } from "../utils/transformBase.js";
 

@@ -18,9 +18,8 @@
  * - Error handling for failed resolutions
  */
 
-import { ur, cy } from "../main.js";
-import { resolveNodeOverlap } from "../nodePositioning.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Execute Domain to DNS Records Resolution
@@ -42,16 +41,12 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * 6. Connects new nodes to the original domain node
  * 7. Updates status with resolution completion or error
  * 
- * Node Creation:
- * - Each discovered DNS record becomes a new node
- * - Node ID format: "{recordType}:{recordValue}"
- * - Node label format: "{recordType}: {recordValue}"
- * - Positioned randomly near the original node (±50px)
- * 
- * Edge Creation:
- * - Creates directed edge from original domain node to each new DNS record node
- * - Edge ID format: "e-{parentId}-{newId}"
- * - Uses undo/redo system for all additions
+ * DNS Record Types:
+ * - MX (Mail Exchange) records for email servers
+ * - NS (Name Server) records for DNS servers
+ * - A (IPv4) records for IP addresses
+ * - CNAME (Canonical Name) records for aliases
+ * - TXT records for text-based information
  * 
  * Server Communication:
  * - POST request to /domain-to-dns endpoint
@@ -68,214 +63,92 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * - Completion message with number of new nodes added
  * - Error messages for failed resolutions
  */
-export function runDomainToDns(node){
+export async function runDomainToDns(node){
     const domain = node.data("label");
     setStatusMessage(`DNS Resolution: Querying "${domain}"...`);
 
-    fetch("/domain-to-dns", {
+    const transformBase = new TransformBase();
+    const parentId = node.id();
+
+    try {
+        const response = await fetch("/domain-to-dns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain })
-    })
-        .then(res => res.json())
-        .then(data => {
-            const parentId = node.id();
+        });
+        
+        const data = await response.json();
             let added = false;
 
             /**
              * Process Each DNS Record Type
              * 
              * For each DNS record type (MX, NS, A, CNAME, TXT):
-             * 1. Creates unique node IDs combining record type and value
-             * 2. Checks if nodes already exist to avoid duplicates
-             * 3. Creates new nodes with DNS record information
-             * 4. Creates edges connecting to original domain node
-             * 5. Uses undo/redo system for all graph modifications
+             * 1. Creates unique node IDs using TransformBase.createNodeId()
+             * 2. Checks if nodes already exist using TransformBase.nodeExists()
+             * 3. Creates new nodes with DNS record information using TransformBase.createNode()
+             * 4. Automatically creates edges connecting to original domain node
+             * 5. Uses undo/redo system for all graph modifications via TransformBase
              */
             
             // Process MX (Mail Exchange) records
             if (data.mx && Array.isArray(data.mx)) {
-                data.mx.forEach(mxRecord => {
-                    const newId = `mx:${mxRecord}`;
-                    if(!cy.getElementById(newId).length){
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `MX: ${mxRecord}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const mxRecord of data.mx) {
+                    const newId = transformBase.createNodeId("mx", mxRecord);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `MX: ${mxRecord}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             // Process NS (Name Server) records
             if (data.ns && Array.isArray(data.ns)) {
-                data.ns.forEach(nsRecord => {
-                    const newId = `ns:${nsRecord}`;
-                    if(!cy.getElementById(newId).length){
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `NS: ${nsRecord}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const nsRecord of data.ns) {
+                    const newId = transformBase.createNodeId("ns", nsRecord);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `NS: ${nsRecord}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             // Process A (IPv4) records
             if (data.a && Array.isArray(data.a)) {
-                data.a.forEach(aRecord => {
-                    const newId = `a:${aRecord}`;
-                    if(!cy.getElementById(newId).length){
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `A: ${aRecord}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const aRecord of data.a) {
+                    const newId = transformBase.createNodeId("a", aRecord);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `A: ${aRecord}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             // Process CNAME (Canonical Name) records
             if (data.cname && Array.isArray(data.cname)) {
-                data.cname.forEach(cnameRecord => {
-                    const newId = `cname:${cnameRecord}`;
-                    if(!cy.getElementById(newId).length){
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `CNAME: ${cnameRecord}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const cnameRecord of data.cname) {
+                    const newId = transformBase.createNodeId("cname", cnameRecord);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `CNAME: ${cnameRecord}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             // Process TXT records
             if (data.txt && Array.isArray(data.txt)) {
-                data.txt.forEach(txtRecord => {
-                    const newId = `txt:${txtRecord}`;
-                    if(!cy.getElementById(newId).length){
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `TXT: ${txtRecord}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const txtRecord of data.txt) {
+                    const newId = transformBase.createNodeId("txt", txtRecord);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `TXT: ${txtRecord}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             /**
@@ -290,8 +163,7 @@ export function runDomainToDns(node){
             }else{
                 setStatusMessage(`No new DNS records found for "${domain}"`);
             }
-        })
-        .catch(err => {
+        } catch (err) {
             /**
              * Error Handling
              * 
@@ -302,5 +174,5 @@ export function runDomainToDns(node){
              */
             console.error("DNS Resolution error:", err);
             setStatusMessage(`DNS Resolution failed for "${domain}"`);
-        });
+        }
 } 

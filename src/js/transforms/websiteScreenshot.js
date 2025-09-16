@@ -20,7 +20,6 @@
  * - Integration with existing image management system
  */
 
-import { ur, cy } from "../main.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
 
 /**
@@ -71,7 +70,7 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * - Completion message with screenshot upload success
  * - Error messages for failed captures or invalid URLs
  */
-export function runWebsiteScreenshot(node) {
+export async function runWebsiteScreenshot(node) {
     const urlInput = node.data("label");
     
     // Normalize URL format
@@ -105,13 +104,14 @@ export function runWebsiteScreenshot(node) {
     
     setStatusMessage(`Website Screenshot: Capturing "${normalizedUrl}"...`);
 
-    fetch("/website-screenshot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: normalizedUrl })
-    })
-        .then(res => res.json())
-        .then(data => {
+    try {
+        const response = await fetch("/website-screenshot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: normalizedUrl })
+        });
+        
+        const data = await response.json();
             if (data.error) {
                 throw new Error(data.error);
             }
@@ -171,15 +171,10 @@ export function runWebsiteScreenshot(node) {
             }
             
             // Import uploadFiles function dynamically to avoid circular imports
-            import('../fileUploadHandler.js').then(({ uploadFiles }) => {
-                uploadFiles(node, [screenshotFile]);
-                setStatusMessage(`Website Screenshot complete for "${normalizedUrl}"`);
-            }).catch(err => {
-                console.error("Error importing uploadFiles:", err);
-                setStatusMessage(`Failed to upload screenshot for "${normalizedUrl}"`);
-            });
-        })
-        .catch(err => {
+            const { uploadFiles } = await import('../fileUploadHandler.js');
+            uploadFiles(node, [screenshotFile]);
+            setStatusMessage(`Website Screenshot complete for "${normalizedUrl}"`);
+        } catch (err) {
             /**
              * Error Handling
              * 
@@ -190,5 +185,5 @@ export function runWebsiteScreenshot(node) {
              */
             console.error("Website Screenshot error:", err);
             setStatusMessage(`Website Screenshot failed for "${normalizedUrl}": ${err.message}`);
-        });
+        }
 }

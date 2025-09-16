@@ -5,7 +5,6 @@
  * It saves the discovered subdomains to a text file and uploads it to the original node.
  */
 
-import { ur, cy } from "../main.js";
 import { uploadFiles } from "../fileUploadHandler.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
 

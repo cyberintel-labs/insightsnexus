@@ -19,9 +19,8 @@
  * - Error handling for failed analyses
  */
 
-import { ur, cy } from "../main.js";
-import { resolveNodeOverlap } from "../nodePositioning.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Execute IP to Netblock Network Analysis
@@ -43,19 +42,10 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * 6. Connects new nodes to the original IP address node
  * 7. Updates status with analysis completion or error
  * 
- * Node Creation:
- * - Each network block becomes a new node
- * - Node ID format: "netblock:{networkRange}"
- * - Node label format: "Netblock: {networkRange}"
- * - Each ownership detail becomes a new node
- * - Node ID format: "owner:{ownerName}"
- * - Node label format: "Owner: {ownerName}"
- * - Positioned randomly near the original node (±50px)
- * 
- * Edge Creation:
- * - Creates directed edge from original node to each new network node
- * - Edge ID format: "e-{parentId}-{newId}"
- * - Uses undo/redo system for all additions
+ * Network Analysis:
+ * - Identifies CIDR network ranges containing the IP address
+ * - Discovers network ownership and ASN information
+ * - Maps IP addresses to their network infrastructure
  * 
  * Server Communication:
  * - POST request to /ip-to-netblock endpoint
@@ -72,152 +62,53 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * - Completion message with number of new nodes added
  * - Error messages for failed analyses
  */
-export function runIpToNetblock(node){
+export async function runIpToNetblock(node){
     const ip = node.data("label");
     setStatusMessage(`IP to Netblock: Analyzing "${ip}"...`);
 
-    fetch("/ip-to-netblock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ip })
-    })
-        .then(res => res.json())
-        .then(data => {
-            const parentId = node.id();
-            let added = false;
+    const transformBase = new TransformBase();
+    const parentId = node.id();
+
+    try {
+        const response = await fetch("/ip-to-netblock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ip })
+        });
+        
+        const data = await response.json();
+        let added = false;
 
             /**
              * Process Each Found Network Block
              * 
-             * For each network block found for the IP address:
-             * 1. Creates a unique node ID combining "netblock" prefix and network range
-             * 2. Checks if node already exists to avoid duplicates
-             * 3. Creates new node with network block information
-             * 4. Creates edge connecting to original IP address node
-             * 5. Uses undo/redo system for all graph modifications
+             * Creates nodes for each network block found for the IP address.
              */
             if (data.netblocks) {
-                data.netblocks.forEach(netblock => {
-                    const newId = `netblock:${netblock}`;
-                    if(!cy.getElementById(newId).length){
-                        /**
-                         * New Node Configuration
-                         * 
-                         * Creates a node representing a network block:
-                         * - group: "nodes" - Identifies as a node element
-                         * - data.id: Unique identifier for the node
-                         * - data.label: Human-readable label showing network range
-                         * - position: Non-overlapping position near original node
-                         */
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `Netblock: ${netblock}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        /**
-                         * Edge Configuration
-                         * 
-                         * Creates a directed edge from the original IP address node
-                         * to the newly discovered network block:
-                         * - group: "edges" - Identifies as an edge element
-                         * - data.id: Unique identifier for the edge
-                         * - data.source: ID of the original IP address node
-                         * - data.target: ID of the new network block node
-                         */
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        // Add both node and edge to graph using undo/redo system
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const netblock of data.netblocks) {
+                    const newId = transformBase.createNodeId("netblock", netblock);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `Netblock: ${netblock}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             /**
              * Process Each Found Network Owner
              * 
-             * For each network owner found for the IP address:
-             * 1. Creates a unique node ID combining "owner" prefix and owner name
-             * 2. Checks if node already exists to avoid duplicates
-             * 3. Creates new node with ownership information
-             * 4. Creates edge connecting to original IP address node
-             * 5. Uses undo/redo system for all graph modifications
+             * Creates nodes for each network owner found for the IP address.
              */
             if (data.owners) {
-                data.owners.forEach(owner => {
-                    const newId = `owner:${owner}`;
-                    if(!cy.getElementById(newId).length){
-                        /**
-                         * New Node Configuration
-                         * 
-                         * Creates a node representing a network owner:
-                         * - group: "nodes" - Identifies as a node element
-                         * - data.id: Unique identifier for the node
-                         * - data.label: Human-readable label showing owner name
-                         * - position: Non-overlapping position near original node
-                         */
-                        const proposedPosition = {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        };
-                        
-                        // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                        const safePosition = resolveNodeOverlap(null, proposedPosition);
-                        
-                        const newNode = {
-                            group: "nodes",
-                            data: {
-                                id: newId,
-                                label: `Owner: ${owner}`
-                            },
-                            position: safePosition
-                        };
-                        
-                        /**
-                         * Edge Configuration
-                         * 
-                         * Creates a directed edge from the original IP address node
-                         * to the newly discovered network owner:
-                         * - group: "edges" - Identifies as an edge element
-                         * - data.id: Unique identifier for the edge
-                         * - data.source: ID of the original IP address node
-                         * - data.target: ID of the new network owner node
-                         */
-                        const newEdge = {
-                            group: "edges",
-                            data: {
-                                id: `e-${parentId}-${newId}`,
-                                source: parentId,
-                                target: newId
-                            }
-                        };
-                        
-                        // Add both node and edge to graph using undo/redo system
-                        ur.do("add", newNode);
-                        ur.do("add", newEdge);
-                        added = true;
+                for (const owner of data.owners) {
+                    const newId = transformBase.createNodeId("owner", owner);
+                    if(!transformBase.nodeExists(newId)){
+                        const position = transformBase.generatePositionNearNode(node);
+                        const createdNode = await transformBase.createNode(newId, `Owner: ${owner}`, position, parentId);
+                        if(createdNode) added = true;
                     }
-                });
+                }
             }
 
             /**
@@ -232,8 +123,7 @@ export function runIpToNetblock(node){
             }else{
                 setStatusMessage(`No new additions found for "${ip}"`);
             }
-        })
-        .catch(err => {
+        } catch (err) {
             /**
              * Error Handling
              * 
@@ -244,5 +134,5 @@ export function runIpToNetblock(node){
              */
             console.error("IP to Netblock error:", err);
             setStatusMessage(`IP to Netblock failed for "${ip}"`);
-        });
+        }
 }

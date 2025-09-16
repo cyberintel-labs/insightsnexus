@@ -18,9 +18,8 @@
  * - Error handling for failed searches
  */
 
-import { ur, cy } from "../main.js";
-import { resolveNodeOverlap } from "../nodePositioning.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Execute Sherlock Username Search
@@ -42,16 +41,10 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * 6. Connects new nodes to the original username node
  * 7. Updates status with search completion or error
  * 
- * Node Creation:
- * - Each found platform becomes a new node
- * - Node ID format: "{platform}:{username}"
- * - Node label format: "{platform}: {username}"
- * - Positioned randomly near the original node (±50px)
- * 
- * Edge Creation:
- * - Creates directed edge from original node to each new node
- * - Edge ID format: "e-{parentId}-{newId}"
- * - Uses undo/redo system for all additions
+ * Sherlock Tool:
+ * - Searches for usernames across 350+ social media platforms
+ * - Returns list of platforms where the username exists
+ * - Helps investigators discover additional online presence
  * 
  * Server Communication:
  * - POST request to /sherlock endpoint
@@ -68,84 +61,36 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  * - Completion message with number of new nodes added
  * - Error messages for failed searches
  */
-export function runSherlock(node){
+export async function runSherlock(node){
     const username = node.data("label");
     setStatusMessage(`Sherlock: Searching "${username}"...`);
 
-    fetch("/sherlock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username })
-    })
-        .then(res => res.json())
-        .then(data => {
-            const parentId = node.id();
-            let added = false;
+    const transformBase = new TransformBase();
+    const parentId = node.id();
+
+    try {
+        const response = await fetch("/sherlock", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username })
+        });
+        
+        const data = await response.json();
+        let added = false;
 
             /**
              * Process Each Found Social Media Platform
              * 
-             * For each platform where the username was found:
-             * 1. Creates a unique node ID combining platform and username
-             * 2. Checks if node already exists to avoid duplicates
-             * 3. Creates new node with platform information
-             * 4. Creates edge connecting to original username node
-             * 5. Uses undo/redo system for all graph modifications
+             * Creates nodes for each platform where the username was found.
              */
-            data.services.forEach(service => {
-                const newId = `${service}:${username}`;
-                if(!cy.getElementById(newId).length){
-                    /**
-                     * New Node Configuration
-                     * 
-                     * Creates a node representing a social media account:
-                     * - group: "nodes" - Identifies as a node element
-                     * - data.id: Unique identifier for the node
-                     * - data.label: Human-readable label showing platform and username
-                     * - position: Non-overlapping position near original node
-                     */
-                    const proposedPosition = {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    };
-                    
-                    // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-                    const safePosition = resolveNodeOverlap(null, proposedPosition);
-                    
-                    const newNode = {
-                        group: "nodes",
-                        data: {
-                            id: newId,
-                            label: `${service}: ${username}`
-                        },
-                        position: safePosition
-                    };
-                    
-                    /**
-                     * Edge Configuration
-                     * 
-                     * Creates a directed edge from the original username node
-                     * to the newly discovered social media account:
-                     * - group: "edges" - Identifies as an edge element
-                     * - data.id: Unique identifier for the edge
-                     * - data.source: ID of the original username node
-                     * - data.target: ID of the new social media account node
-                     */
-                    const newEdge = {
-                        group: "edges",
-                        data: {
-                            id: `e-${parentId}-${newId}`,
-                            source: parentId,
-                            target: newId
-                        }
-                    };
-                    
-                    // Add both node and edge to graph using undo/redo system
-                    ur.do("add", newNode);
-                    ur.do("add", newEdge);
-                    added = true;
+            for (const service of data.services) {
+                const newId = transformBase.createNodeId(service, username);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `${service}: ${username}`, position, parentId);
+                    if(createdNode) added = true;
                 }
-            });
+            }
 
             /**
              * Update UI Status
@@ -159,8 +104,7 @@ export function runSherlock(node){
             }else{
                 setStatusMessage(`No new additions found for "${username}"`);
             }
-        })
-        .catch(err => {
+        } catch (err) {
             /**
              * Error Handling
              * 
@@ -171,5 +115,5 @@ export function runSherlock(node){
              */
             console.error("Sherlock error:", err);
             setStatusMessage(`Sherlock failed for "${username}"`);
-        });
+        }
 }

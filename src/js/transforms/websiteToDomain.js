@@ -20,9 +20,8 @@
  * - Detects when node already contains just a domain and provides notification
  */
 
-import { ur, cy } from "../main.js";
-import { resolveNodeOverlap } from "../nodePositioning.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Extract Domain from URL
@@ -84,16 +83,11 @@ function extractDomain(url) {
  * 7. Connects new domain node to the original URL node
  * 8. Updates status with extraction completion or error
  * 
- * Node Creation:
- * - New node represents the extracted domain
- * - Node ID format: "domain:{domain}"
- * - Node label format: "{domain}" (just the domain, no prefix)
- * - Positioned near the original node with overlap prevention
- * 
- * Edge Creation:
- * - Creates directed edge from original URL node to domain node
- * - Edge ID format: "e-{parentId}-{domainId}"
- * - Uses undo/redo system for all additions
+ * Domain Extraction:
+ * - Removes protocol (http://, https://) if present
+ * - Extracts domain portion before first slash
+ * - Handles various URL formats (with/without protocol, with/without www)
+ * - Returns null for invalid URLs
  * 
  * Error Handling:
  * - Invalid URLs are caught and logged
@@ -105,9 +99,11 @@ function extractDomain(url) {
  * - Completion message with domain extracted
  * - Error messages for invalid URLs
  */
-export function runWebsiteToDomain(node) {
+export async function runWebsiteToDomain(node) {
     const url = node.data("label");
     setStatusMessage(`Website to Domain: Extracting from "${url}"...`);
+
+    const transformBase = new TransformBase();
 
     try {
         /**
@@ -135,62 +131,21 @@ export function runWebsiteToDomain(node) {
         }
 
         const parentId = node.id();
-        const domainId = `domain:${domain}`;
+        const domainId = transformBase.createNodeId("domain", domain);
         
         // Check if domain node already exists
-        if (cy.getElementById(domainId).length > 0) {
+        if (transformBase.nodeExists(domainId)) {
             setStatusMessage(`Website to Domain: Domain "${domain}" already exists`);
             return;
         }
 
         /**
-         * New Domain Node Configuration
+         * Create Domain Node
          * 
-         * Creates a node representing the extracted domain:
-         * - group: "nodes" - Identifies as a node element
-         * - data.id: Unique identifier for the domain node
-         * - data.label: The extracted domain (no prefix, just the domain)
-         * - position: Non-overlapping position near original node
+         * Creates a node representing the extracted domain.
          */
-        const proposedPosition = {
-            x: node.position("x") + Math.random() * 100 - 50,
-            y: node.position("y") + Math.random() * 100 - 50
-        };
-        
-        // Apply overlap prevention to ensure new node doesn't overlap existing nodes
-        const safePosition = resolveNodeOverlap(null, proposedPosition);
-        
-        const newNode = {
-            group: "nodes",
-            data: {
-                id: domainId,
-                label: domain
-            },
-            position: safePosition
-        };
-        
-        /**
-         * Edge Configuration
-         * 
-         * Creates a directed edge from the original URL node
-         * to the newly extracted domain node:
-         * - group: "edges" - Identifies as an edge element
-         * - data.id: Unique identifier for the edge
-         * - data.source: ID of the original URL node
-         * - data.target: ID of the new domain node
-         */
-        const newEdge = {
-            group: "edges",
-            data: {
-                id: `e-${parentId}-${domainId}`,
-                source: parentId,
-                target: domainId
-            }
-        };
-        
-        // Add both node and edge to graph using undo/redo system
-        ur.do("add", newNode);
-        ur.do("add", newEdge);
+        const position = transformBase.generatePositionNearNode(node);
+        const createdNode = await transformBase.createNode(domainId, domain, position, parentId);
         
         /**
          * Update UI Status
