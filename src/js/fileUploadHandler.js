@@ -74,22 +74,7 @@ export function showCurrentImage(node){
             "border-opacity": 1
         });
     } else {
-        node.style({
-            "background-image": "none",
-            "width": 40,
-            "height": 40,
-            "shape": "ellipse",
-            "text-valign": "center",
-            "text-halign": "center",
-            "font-size": 12,
-            "font-weight": "600",
-            "text-outline-color": "#2c3e50",
-            "text-outline-width": 3,
-            "text-outline-opacity": 0.8,
-            "border-width": 2,
-            "border-color": "rgba(255, 255, 255, 0.3)",
-            "border-opacity": 0.8
-        });
+        node.removeStyle();
     }
 }
 

@@ -46,6 +46,62 @@ import {
 
 const router = Router();
 
+import multer from "multer";
+import{ 
+    hasCustomTransform, 
+    saveCustomTransform, 
+    removeCustomTransform, 
+    executeCustomTransform 
+}from "../services/customTransform.js";
+
+const upload = multer(); // memory storage
+
+// Upload a Python transform
+router.post("/upload-transform", upload.single("file"), async (req: Request, res: Response) => {
+    if(!req.file || !req.file.originalname.endsWith(".py")){
+        res.status(400).json({ error: "Only .py files are allowed" });
+        return;
+    }
+
+    try{
+        await saveCustomTransform(req.file.buffer);
+        res.json({ message: "Custom transform uploaded successfully" });
+    }catch(err){
+        res.status(500).json({ error: "Failed to save custom transform" });
+    }
+});
+
+// Remove custom transform
+router.delete("/remove-transform", async (_req: Request, res: Response) => {
+    try{
+        await removeCustomTransform();
+        res.json({ message: "Custom transform removed" });
+    }catch(err){
+        res.status(500).json({ error: "Failed to remove custom transform" });
+    }
+});
+
+// Check if transform exists
+router.get("/has-transform", (_req: Request, res: Response) => {
+    res.json({ exists: hasCustomTransform() });
+});
+
+// Run transform
+router.post("/run-transform", async (req: Request, res: Response) => {
+    const { nodeLabel } = req.body;
+    if(!nodeLabel){
+        res.status(400).json({ error: "nodeLabel is required" });
+        return;
+    }
+
+    try{
+        const result = await executeCustomTransform(nodeLabel);
+        res.json({ result });
+    }catch(err){
+        res.status(500).json({ error: "Failed to execute custom transform" });
+    }
+});
+
 // Initialize directories and tool paths
 let directories: any;
 let toolPaths: ToolPaths;

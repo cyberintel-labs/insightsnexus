@@ -35,6 +35,170 @@ import { createNodeWithType } from "./utils/nodeTypeDetection.js";
 
 initNodePropertiesMenu(cy);
 
+// START: Custom button logic will be moved to it's own file
+/**
+ * Custom Transform UI Integration
+ * 
+ * This section manages the frontend logic for uploading, removing,
+ * and running user-provided Python transforms. It coordinates with
+ * the backend API (customTransform.ts + api.ts) to keep UI state
+ * synchronized with the server.
+ * 
+ * Features:
+ * - Upload/remove Python transform via toolbar button
+ * - Dynamically update button label ("Upload Transform" / "Remove Transform")
+ * - Show/hide "Run Custom Transform" option in the right-click context menu
+ * - Check backend on startup for existing transform
+ * 
+ * Security Note:
+ * - Frontend only manages UI state
+ * - Backend is responsible for safely executing Python
+ */
+
+// Track transform state
+// - true if a custom transform is currently uploaded on the server
+// - false otherwise
+let hasCustomTransform = false;
+
+/**
+ * Handle Transform Action
+ * 
+ * handleTransformAction()
+ * 
+ * Called when the toolbar button ("Upload Transform"/"Remove Transform") is clicked.
+ * 
+ * Process:
+ * 1. If no transform exists:
+ *    - Prompt user to upload a `.py` file
+ *    - Send file to backend via POST /upload-transform
+ *    - Update UI state if successful
+ * 
+ * 2. If a transform already exists:
+ *    - Send DELETE request to /remove-transform
+ *    - Update UI state if successful
+ * 
+ * UI Feedback:
+ * - Logs status to console
+ * - Alerts user if upload/remove fails
+ */
+async function handleTransformAction(){
+    if(!hasCustomTransform){
+        // --- Upload Transform Flow ---
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = ".py"; // restrict to Python files
+
+        // Triggered once user selects a file
+        fileInput.onchange = async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            // Prepare file for upload (must match backend's multer setup)
+            const formData = new FormData();
+            formData.append("file", file);
+
+            // Send file to backend
+            const res = await fetch("/upload-transform", {
+                method: "POST",
+                body: formData
+            });
+
+            if(res.ok){
+                console.log(file);
+                console.log("Custom transform has been uploaded");
+                hasCustomTransform = true;
+                updateTransformButton(); // refresh UI
+            }else{
+                alert("Failed to upload transform.");
+            }
+        };
+
+        fileInput.click(); // open file picker dialog
+    }else{
+        // --- Remove Transform Flow ---
+        const res = await fetch("/remove-transform", { method: "DELETE" });
+        if(res.ok){
+            console.log("Custom transform has been removed");
+            hasCustomTransform = false;
+            updateTransformButton(); // refresh UI
+        }else{
+            alert("Failed to remove transform.");
+        }
+    }
+}
+
+/**
+ * Update Transform Button
+ * 
+ * updateTransformButton()
+ * 
+ * Dynamically updates the toolbar button text depending on current state:
+ * - "Upload Transform" when no transform exists
+ * - "Remove Transform" when transform is active
+ * 
+ * Also triggers context menu rebuild to ensure correct options.
+ */
+function updateTransformButton() {
+    const btn = document.getElementById("transform-toggle-btn");
+    if(btn){
+        btn.textContent = hasCustomTransform ? "Remove Transform" : "Upload Transform";
+    }
+
+    buildContextMenu();
+}
+
+/**
+ * Check Transform Status (on startup)
+ * 
+ * checkTransformStatus()
+ * 
+ * Queries backend to determine if a custom transform exists when app loads.
+ * - GET /has-transform
+ * - Updates hasCustomTransform state
+ * - Refreshes toolbar + context menu
+ */
+async function checkTransformStatus(){
+    const res = await fetch("/has-transform");
+    const data = await res.json();
+    hasCustomTransform = data.exists;
+    updateTransformButton();
+}
+checkTransformStatus();
+
+/**
+ * Build Context Menu
+ * 
+ * buildContextMenu()
+ * 
+ * Dynamically adds/removes "Run Custom Transform" option in right-click menu.
+ * 
+ * Process:
+ * - Removes existing "Run Custom Transform" item if present
+ * - If transform exists, creates new <li> with click handler
+ * - Appends to context menu
+ * 
+ * Result:
+ * - Context menu always reflects current transform state
+ */
+function buildContextMenu() {
+    const menu = document.getElementById("context-menu");
+    if (!menu) return;
+
+    // Remove previous instance if it exists
+    const existing = document.getElementById("run-custom-transform");
+    if (existing) existing.remove();
+
+    // Add "Run Custom Transform" only if a transform exists
+    if(hasCustomTransform){
+        const li = document.createElement("li");
+        li.id = "run-custom-transform";
+        li.textContent = "Run Custom Transform";
+        li.onclick = () => handleContextAction("run-custom-transform");
+        menu.appendChild(li);
+    }
+}
+// END: Custom button logic will be moved to it's own file
+
 /**
  * Global State Management
  * 
@@ -162,11 +326,52 @@ function toggleDropdown(id){
  * 2. Performs the requested action
  * 3. Hides the context menu
  */
-function handleContextAction(action){
+async function handleContextAction(action){
     const node = rightClickedNode;
-    if(!node) return;
+    if (!node) return;
 
-    if(action === "edit"){
+    if(action === "run-custom-transform"){
+        // Logic is very similar with other transforms
+        // TODO: will move logic to own file for all transforms to use
+        try {
+            const res = await fetch("/run-transform", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nodeLabel: node.data("label") })
+            });
+
+            if(!res.ok){
+                alert("Failed to run custom transform.");
+                return;
+            }
+
+            const data = await res.json();
+            if(Array.isArray(data.result)){
+                data.result.forEach(binary => {
+                    const newId = "n" + idCounter++;
+                    ur.do("add", {
+                        group: "nodes",
+                        data: { id: newId, label: binary, type: "custom" },
+                        position: {
+                            x: node.position("x") + Math.random() * 100 - 50,
+                            y: node.position("y") + Math.random() * 100 - 50
+                        }
+                    });
+                    ur.do("add", {
+                        group: "edges",
+                        data: {
+                            id: `e-${node.id()}-${newId}-${Date.now()}`,
+                            source: node.id(),
+                            target: newId
+                        }
+                    });
+                });
+            }
+        }catch(err){
+            console.error("Error running custom transform:", err);
+            alert("Error running custom transform.");
+        }
+    }else if(action === "edit"){
         console.log("Inside edit action")
         const newLabel = prompt("Enter new name:", node.data("label"));
         if(newLabel){
@@ -822,6 +1027,7 @@ function initializeGlobalFunctions() {
     window.closePropertiesMenu = closePropertiesMenu;
     window.toggleDarkMode = toggleDarkMode;
     window.resetToDefaultView = resetToDefaultView;
+    window.handleTransformAction = handleTransformAction;
     
     // Make tutorialSystem globally available when it's initialized
     if (window.tutorialSystem) {
@@ -840,7 +1046,6 @@ function initializeGlobalFunctions() {
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize global functions first
     initializeGlobalFunctions();
-    
     // Small delay to ensure Cytoscape is fully initialized
     setTimeout(() => {
         autoLoadLastSave();

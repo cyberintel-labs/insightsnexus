@@ -1,0 +1,136 @@
+/**
+ * Custom Transform Integration
+ * 
+ * This module manages user-uploaded Python transforms and provides an interface
+ * for saving, removing, checking, and executing custom scripts. It allows investigators
+ * to expand the graph with arbitrary logic defined in Python, supporting more flexible
+ * and specialized workflows.
+ * 
+ * Custom Transform Features:
+ * - Accepts user-uploaded `.py` files stored on the server
+ * - Ensures only one active custom transform at a time
+ * - Executes the uploaded Python script with a string input
+ * - Expects script to return JSON array of results via stdout
+ * - Integrates results back into the investigation graph
+ * 
+ * Security Note:
+ * - Uploaded Python scripts are executed directly on the server
+ * - This creates a high security risk if untrusted code is uploaded
+ * - In production, strict sandboxing and validation should be implemented
+ */
+
+import { exec } from "child_process";
+import { promisify } from "util";
+import path from "path";
+import fs from "fs";
+
+// Promisified exec to allow async/await execution of shell commands
+const execAsync = promisify(exec);
+
+// Path where the uploaded Python transform is stored on the server
+// - Only one transform is active at a time
+// - File is always named "customTransform.py"
+const customTransformPath = path.join(__dirname, "../../saves/customTransform.py");
+
+/**
+ * Check Transform Existence
+ * 
+ * hasCustomTransform(): boolean
+ * 
+ * Verifies whether a custom transform Python file exists in the saves directory.
+ * 
+ * Returns:
+ * - true if transform file exists
+ * - false otherwise
+ */
+export function hasCustomTransform(): boolean {
+    return fs.existsSync(customTransformPath);
+}
+
+/**
+ * Remove Custom Transform
+ * 
+ * removeCustomTransform(): Promise<void>
+ * 
+ * Deletes the uploaded Python transform file from disk.
+ * 
+ * Process:
+ * - Checks if file exists
+ * - Removes it synchronously using fs.unlinkSync
+ * - Wrapped in async signature for consistency
+ */
+export async function removeCustomTransform(): Promise<void> {
+    if(fs.existsSync(customTransformPath)){
+        fs.unlinkSync(customTransformPath);
+    }
+}
+
+/**
+ * Save Custom Transform
+ * 
+ * saveCustomTransform(fileBuffer: Buffer): Promise<void>
+ * 
+ * Saves a user-uploaded Python transform to the predefined path.
+ * 
+ * Input:
+ * - fileBuffer: Buffer containing the raw contents of the Python file
+ * 
+ * Process:
+ * - Writes file contents to disk as "customTransform.py"
+ * - Overwrites existing file if one already exists
+ */
+export async function saveCustomTransform(fileBuffer: Buffer): Promise<void> {
+    fs.writeFileSync(customTransformPath, fileBuffer);
+}
+
+/**
+ * Execute Custom Transform
+ * 
+ * executeCustomTransform(input: string): Promise<string[]>
+ * 
+ * Runs the uploaded Python transform against a provided input string.
+ * 
+ * Input:
+ * - input: string - Value to be passed as a command-line argument to the Python script
+ * 
+ * Process:
+ * 1. Confirms that a custom transform exists on disk
+ * 2. Builds shell command: python3 "<transformPath>" "<input>"
+ * 3. Executes script using execAsync
+ * 4. Captures stdout output from script
+ * 5. Parses stdout as JSON array of results
+ * 
+ * Expected Python Script Contract:
+ * - Accepts one argument (input string) via sys.argv[1]
+ * - Processes the input string
+ * - Prints a JSON array to stdout (e.g., ["a = 01100001", "b = 01100010"])
+ * 
+ * Example Python Implementation:
+ * ```python
+ * import sys, json
+ * input_str = sys.argv[1]
+ * result = [f"{ch} = {bin(ord(ch))[2:].zfill(8)}" for ch in input_str]
+ * print(json.dumps(result))
+ * ```
+ * 
+ * Returns:
+ * - Parsed JSON array from Python script output
+ * 
+ * Error Handling:
+ * - If file does not exist, throws "No custom transform uploaded"
+ * - If execution fails or JSON is invalid, logs error and throws
+ */
+export async function executeCustomTransform(input: string): Promise<string[]> {
+    if(!fs.existsSync(customTransformPath)){
+        throw new Error("No custom transform uploaded");
+    }
+
+    const command = `python3 "${customTransformPath}" "${input}"`;
+    try{
+        const { stdout } = await execAsync(command);
+        return JSON.parse(stdout.trim());
+    }catch(error){
+        console.error("Custom transform failed:", error);
+        throw new Error("Failed to execute custom transform");
+    }
+}

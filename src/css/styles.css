@@ -321,7 +321,7 @@ body {
 #status-bar {
     position: absolute;
     top: 72px;
-    right: 352px;
+    right: 20px;
     background: var(--primary-gradient);
     color: white;
     padding: 12px 20px;
@@ -337,7 +337,7 @@ body {
     animation: fadeInUp 0.6s ease-out;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease, var(--transition-smooth);
 }
 
 #status-bar:not(:empty) {
@@ -484,7 +484,7 @@ body {
 #zoom-slider {
     position: absolute;
     bottom: 20px;
-    right: 400px;
+    right: 20px;
     z-index: 1001;
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -497,6 +497,7 @@ body {
     backdrop-filter: blur(20px);
     animation: fadeInUp 0.6s ease-out;
     min-width: 200px;
+    transition: var(--transition-smooth);
 }
 
 #zoom-slider input[type="range"] {
@@ -826,6 +827,15 @@ body {
 
 #node-properties-menu.open {
     transform: translateX(0);
+}
+
+/* Testing some movement: Shift status bar and zoom slider when properties menu is open */
+#node-properties-menu.open ~ #status-bar {
+    right: calc(var(--properties-menu-width) + 60px);
+}
+
+#node-properties-menu.open ~ #zoom-slider {
+    right: calc(var(--properties-menu-width) + 60px);
 }
 
 #properties-toggle-btn {

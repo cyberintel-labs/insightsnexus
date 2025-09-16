@@ -33,6 +33,7 @@
             <button onclick="toggleDropdown('selection-dropdown')">Tools</button>
             <div id="selection-dropdown" class="dropdown">
                 <button onclick="handleContextAction('connect')">Connect Nodes</button>
+                <button id="transform-toggle-btn" onclick="handleTransformAction()">Upload Transform</button>
             </div>
         </div>
         <div class="menu">
@@ -50,7 +51,7 @@
         </div>
     </div>
 
-
+    <div id="cy"></div>
 
     <div id="node-properties-menu">
         <div id="properties-content">
@@ -160,8 +161,6 @@
         <li onclick="handleContextAction('connect')">Create Connection</li>
         <li onclick="handleContextAction('upload')">Upload File</li>
     </ul>
-
-    <div id="cy"></div>
 
     <!-- Image Overlay -->
     <div id="image-overlay" class="image-overlay">
