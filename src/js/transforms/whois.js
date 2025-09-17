@@ -78,92 +78,111 @@ export async function runWhois(node){
     const parentId = node.id();
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('whois');
+        transformBase.updateTransformProgress(20, `Whois: Looking up "${domain}"...`);
+
         const response = await fetch("/whois", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ domain })
         });
         
+        transformBase.updateTransformProgress(60, `Whois: Processing results for "${domain}"...`);
+        
         const data = await response.json();
         let added = false;
+        let processedItems = 0;
+        const totalItems = 4; // registrar, nameservers, creation, expiry
 
-            /**
-             * Process Each Piece of Domain Information
-             * 
-             * For each piece of information found for the domain:
-             * 1. Creates a unique node ID combining info type and value
-             * 2. Checks if node already exists to avoid duplicates
-             * 3. Creates new node with domain information
-             * 4. Creates edge connecting to original domain node
-             * 5. Uses undo/redo system for all graph modifications
-             */
-            
-            // Process registrar information
-            if(data.registrar){
-                const newId = transformBase.createNodeId("registrar", data.registrar);
-                if(!transformBase.nodeExists(newId)){
-                    const position = transformBase.generatePositionNearNode(node);
-                    const createdNode = await transformBase.createNode(newId, `Registrar: ${data.registrar}`, position, parentId);
-                    if(createdNode) added = true;
-                }
+        /**
+         * Process Each Piece of Domain Information
+         * 
+         * For each piece of information found for the domain:
+         * 1. Creates a unique node ID combining info type and value
+         * 2. Checks if node already exists to avoid duplicates
+         * 3. Creates new node with domain information
+         * 4. Creates edge connecting to original domain node
+         * 5. Uses undo/redo system for all graph modifications
+         */
+        
+        // Process registrar information
+        if(data.registrar){
+            const newId = transformBase.createNodeId("registrar", data.registrar);
+            if(!transformBase.nodeExists(newId)){
+                const position = transformBase.generatePositionNearNode(node);
+                const createdNode = await transformBase.createNode(newId, `Registrar: ${data.registrar}`, position, parentId);
+                if(createdNode) added = true;
             }
-
-            // Process name servers (remove duplicates)
-            if(data.nameServers && data.nameServers.length > 0){
-                const uniqueNameServers = [...new Set(data.nameServers)];
-                
-                for (const nameServer of uniqueNameServers) {
-                    const newId = transformBase.createNodeId("nameserver", nameServer);
-                    if(!transformBase.nodeExists(newId)){
-                        const position = transformBase.generatePositionNearNode(node);
-                        const createdNode = await transformBase.createNode(newId, `Name Server: ${nameServer}`, position, parentId);
-                        if(createdNode) added = true;
-                    }
-                }
-            }
-
-            // Process creation date
-            if(data.creationDate){
-                const newId = transformBase.createNodeId("creation", data.creationDate);
-                if(!transformBase.nodeExists(newId)){
-                    const position = transformBase.generatePositionNearNode(node);
-                    const createdNode = await transformBase.createNode(newId, `Created: ${data.creationDate}`, position, parentId);
-                    if(createdNode) added = true;
-                }
-            }
-
-            // Process expiry date
-            if(data.expiryDate){
-                const newId = transformBase.createNodeId("expiry", data.expiryDate);
-                if(!transformBase.nodeExists(newId)){
-                    const position = transformBase.generatePositionNearNode(node);
-                    const createdNode = await transformBase.createNode(newId, `Expires: ${data.expiryDate}`, position, parentId);
-                    if(createdNode) added = true;
-                }
-            }
-
-            /**
-             * Update UI Status
-             * 
-             * Provides feedback on the lookup results:
-             * - Shows completion message with number of new nodes added
-             * - Indicates if no new nodes were found (duplicates filtered out)
-             */
-            if(added){
-                setStatusMessage(`Whois complete for "${domain}"`);
-            }else{
-                setStatusMessage(`No new additions found for "${domain}"`);
-            }
-        } catch (err) {
-            /**
-             * Error Handling
-             * 
-             * Catches and handles any errors during the lookup process:
-             * - Logs error details to console for debugging
-             * - Updates UI status with error message
-             * - Preserves original node state
-             */
-            console.error("Whois error:", err);
-            setStatusMessage(`Whois failed for "${domain}"`);
         }
+        processedItems++;
+        transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `Whois: Processing registrar...`);
+
+        // Process name servers (remove duplicates)
+        if(data.nameServers && data.nameServers.length > 0){
+            const uniqueNameServers = [...new Set(data.nameServers)];
+            
+            for (const nameServer of uniqueNameServers) {
+                const newId = transformBase.createNodeId("nameserver", nameServer);
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, `Name Server: ${nameServer}`, position, parentId);
+                    if(createdNode) added = true;
+                }
+            }
+        }
+        processedItems++;
+        transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `Whois: Processing name servers...`);
+
+        // Process creation date
+        if(data.creationDate){
+            const newId = transformBase.createNodeId("creation", data.creationDate);
+            if(!transformBase.nodeExists(newId)){
+                const position = transformBase.generatePositionNearNode(node);
+                const createdNode = await transformBase.createNode(newId, `Created: ${data.creationDate}`, position, parentId);
+                if(createdNode) added = true;
+            }
+        }
+        processedItems++;
+        transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `Whois: Processing dates...`);
+
+        // Process expiry date
+        if(data.expiryDate){
+            const newId = transformBase.createNodeId("expiry", data.expiryDate);
+            if(!transformBase.nodeExists(newId)){
+                const position = transformBase.generatePositionNearNode(node);
+                const createdNode = await transformBase.createNode(newId, `Expires: ${data.expiryDate}`, position, parentId);
+                if(createdNode) added = true;
+            }
+        }
+        processedItems++;
+        transformBase.updateTransformProgress(95, `Whois: Finalizing results...`);
+
+        /**
+         * Update UI Status
+         * 
+         * Provides feedback on the lookup results:
+         * - Shows completion message with number of new nodes added
+         * - Indicates if no new nodes were found (duplicates filtered out)
+         */
+        if(added){
+            setStatusMessage(`Whois complete for "${domain}"`);
+            transformBase.completeTransformProgress(true, `Whois: Found information for "${domain}"`);
+        }else{
+            setStatusMessage(`No new additions found for "${domain}"`);
+            transformBase.completeTransformProgress(true, `Whois: No new information found for "${domain}"`);
+        }
+    } catch (err) {
+        /**
+         * Error Handling
+         * 
+         * Catches and handles any errors during the lookup process:
+         * - Logs error details to console for debugging
+         * - Updates UI status with error message
+         * - Preserves original node state
+         */
+        console.error("Whois error:", err);
+        setStatusMessage(`Whois failed for "${domain}"`);
+        transformBase.completeTransformProgress(false, `Whois: Failed for "${domain}"`);
+    }
 }

@@ -21,6 +21,7 @@
  */
 
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * Execute Website Screenshot Capture
@@ -72,6 +73,7 @@ import { setStatusMessage } from "../setStatusMessageHandler.js";
  */
 export async function runWebsiteScreenshot(node) {
     const urlInput = node.data("label");
+    const transformBase = new TransformBase();
     
     // Normalize URL format
     let normalizedUrl = urlInput.trim();
@@ -105,11 +107,17 @@ export async function runWebsiteScreenshot(node) {
     setStatusMessage(`Website Screenshot: Capturing "${normalizedUrl}"...`);
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('website-screenshot');
+        transformBase.updateTransformProgress(10, `Website Screenshot: Capturing "${normalizedUrl}"...`);
+
         const response = await fetch("/website-screenshot", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ url: normalizedUrl })
         });
+        
+        transformBase.updateTransformProgress(60, `Website Screenshot: Processing image data...`);
         
         const data = await response.json();
             if (data.error) {
@@ -119,6 +127,8 @@ export async function runWebsiteScreenshot(node) {
             if (!data.screenshot) {
                 throw new Error("No screenshot data received from server");
             }
+            
+            transformBase.updateTransformProgress(80, `Website Screenshot: Converting image...`);
             
             /**
              * Process Screenshot Data
@@ -170,10 +180,14 @@ export async function runWebsiteScreenshot(node) {
                 throw new Error(`Failed to convert base64 to image: ${base64Error.message}`);
             }
             
+            transformBase.updateTransformProgress(95, `Website Screenshot: Uploading to node...`);
+            
             // Import uploadFiles function dynamically to avoid circular imports
             const { uploadFiles } = await import('../fileUploadHandler.js');
             uploadFiles(node, [screenshotFile]);
+            
             setStatusMessage(`Website Screenshot complete for "${normalizedUrl}"`);
+            transformBase.completeTransformProgress(true, `Website Screenshot: Captured "${normalizedUrl}"`);
         } catch (err) {
             /**
              * Error Handling
@@ -185,5 +199,6 @@ export async function runWebsiteScreenshot(node) {
              */
             console.error("Website Screenshot error:", err);
             setStatusMessage(`Website Screenshot failed for "${normalizedUrl}": ${err.message}`);
+            transformBase.completeTransformProgress(false, `Website Screenshot: Failed for "${normalizedUrl}"`);
         }
 }

@@ -75,14 +75,22 @@ export async function runIpToLocation(node){
     const parentId = node.id();
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('ip-to-location');
+        transformBase.updateTransformProgress(20, `IP to Location: Analyzing "${ipAddress}"...`);
+
         const response = await fetch("/ip-to-location", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ip: ipAddress })
         });
         
+        transformBase.updateTransformProgress(60, `IP to Location: Processing results for "${ipAddress}"...`);
+        
         const data = await response.json();
         let added = false;
+        let processedItems = 0;
+        const totalItems = 6; // country, city, region, coordinates, asn, asnOrg
 
             /**
              * Process Each Discovered Location Detail
@@ -104,6 +112,8 @@ export async function runIpToLocation(node){
                     if(createdNode) added = true;
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `IP to Location: Processing country...`);
 
             // Create city node
             if(data.cityName && data.cityName !== "Unknown"){
@@ -114,6 +124,8 @@ export async function runIpToLocation(node){
                     if(createdNode) added = true;
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `IP to Location: Processing city...`);
 
             // Create region/state node
             if(data.regionName && data.regionName !== "Unknown"){
@@ -124,6 +136,8 @@ export async function runIpToLocation(node){
                     if(createdNode) added = true;
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `IP to Location: Processing region...`);
 
             // Create coordinates node
             if(data.latitude && data.longitude && data.latitude !== "Unknown" && data.longitude !== "Unknown"){
@@ -134,6 +148,8 @@ export async function runIpToLocation(node){
                     if(createdNode) added = true;
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `IP to Location: Processing coordinates...`);
 
             // Create ASN node
             if(data.asn && data.asn !== "Unknown"){
@@ -144,6 +160,8 @@ export async function runIpToLocation(node){
                     if(createdNode) added = true;
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `IP to Location: Processing ASN...`);
 
             // Create ASN Organization node
             if(data.asnOrganization && data.asnOrganization !== "Unknown"){
@@ -154,6 +172,8 @@ export async function runIpToLocation(node){
                     if(createdNode) added = true;
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(95, `IP to Location: Finalizing results...`);
 
             /**
              * Update UI Status
@@ -164,8 +184,10 @@ export async function runIpToLocation(node){
              */
             if(added){
                 setStatusMessage(`IP to Location complete for "${ipAddress}"`);
+                transformBase.completeTransformProgress(true, `IP to Location: Found data for "${ipAddress}"`);
             }else{
                 setStatusMessage(`No new location data found for "${ipAddress}"`);
+                transformBase.completeTransformProgress(true, `IP to Location: No new data found for "${ipAddress}"`);
             }
         } catch (err) {
             /**
@@ -178,5 +200,6 @@ export async function runIpToLocation(node){
              */
             console.error("IP to Location error:", err);
             setStatusMessage(`IP to Location failed for "${ipAddress}"`);
+            transformBase.completeTransformProgress(false, `IP to Location: Failed for "${ipAddress}"`);
         }
 }

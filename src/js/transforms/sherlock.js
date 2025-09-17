@@ -69,51 +69,68 @@ export async function runSherlock(node){
     const parentId = node.id();
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('sherlock');
+        transformBase.updateTransformProgress(10, `Sherlock: Searching "${username}"...`);
+
         const response = await fetch("/sherlock", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username })
         });
         
+        transformBase.updateTransformProgress(60, `Sherlock: Processing results for "${username}"...`);
+        
         const data = await response.json();
         let added = false;
 
-            /**
-             * Process Each Found Social Media Platform
-             * 
-             * Creates nodes for each platform where the username was found.
-             */
-            for (const service of data.services) {
-                const newId = transformBase.createNodeId(service, username);
-                if(!transformBase.nodeExists(newId)){
-                    const position = transformBase.generatePositionNearNode(node);
-                    const createdNode = await transformBase.createNode(newId, `${service}: ${username}`, position, parentId);
-                    if(createdNode) added = true;
-                }
+        /**
+         * Process Each Found Social Media Platform
+         * 
+         * Creates nodes for each platform where the username was found.
+         */
+        const totalServices = data.services.length;
+        for (let i = 0; i < data.services.length; i++) {
+            const service = data.services[i];
+            const newId = transformBase.createNodeId(service, username);
+            if(!transformBase.nodeExists(newId)){
+                const position = transformBase.generatePositionNearNode(node);
+                const createdNode = await transformBase.createNode(newId, `${service}: ${username}`, position, parentId);
+                if(createdNode) added = true;
             }
-
-            /**
-             * Update UI Status
-             * 
-             * Provides feedback on the search results:
-             * - Shows completion message with number of new nodes added
-             * - Indicates if no new nodes were found (duplicates filtered out)
-             */
-            if(added){
-                setStatusMessage(`Sherlock complete for "${username}"`);
-            }else{
-                setStatusMessage(`No new additions found for "${username}"`);
-            }
-        } catch (err) {
-            /**
-             * Error Handling
-             * 
-             * Catches and handles any errors during the search process:
-             * - Logs error details to console for debugging
-             * - Updates UI status with error message
-             * - Preserves original node state
-             */
-            console.error("Sherlock error:", err);
-            setStatusMessage(`Sherlock failed for "${username}"`);
+            
+            // Update progress based on services processed
+            const serviceProgress = 60 + (i / totalServices) * 30;
+            transformBase.updateTransformProgress(serviceProgress, `Sherlock: Processing ${i + 1}/${totalServices} services...`);
         }
+
+        transformBase.updateTransformProgress(95, `Sherlock: Finalizing results...`);
+
+        /**
+         * Update UI Status
+         * 
+         * Provides feedback on the search results:
+         * - Shows completion message with number of new nodes added
+         * - Indicates if no new nodes were found (duplicates filtered out)
+         */
+        if(added){
+            setStatusMessage(`Sherlock complete for "${username}"`);
+            transformBase.completeTransformProgress(true, `Sherlock: Found ${data.services.length} platforms for "${username}"`);
+        }else{
+            setStatusMessage(`No new additions found for "${username}"`);
+            transformBase.completeTransformProgress(true, `Sherlock: No new platforms found for "${username}"`);
+        }
+    } catch (err) {
+        /**
+         * Error Handling
+         * 
+         * Catches and handles any errors during the search process:
+         * - Logs error details to console for debugging
+         * - Updates UI status with error message
+         * - Preserves original node state
+         */
+        console.error("Sherlock error:", err);
+        setStatusMessage(`Sherlock failed for "${username}"`);
+        transformBase.completeTransformProgress(false, `Sherlock: Failed for "${username}"`);
+    }
 }

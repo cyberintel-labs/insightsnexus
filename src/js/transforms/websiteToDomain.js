@@ -106,6 +106,10 @@ export async function runWebsiteToDomain(node) {
     const transformBase = new TransformBase();
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('website-to-domain');
+        transformBase.updateTransformProgress(20, `Website to Domain: Extracting from "${url}"...`);
+
         /**
          * Domain Detection Check
          * 
@@ -119,16 +123,22 @@ export async function runWebsiteToDomain(node) {
          */
         if (url && url.includes('.') && !url.includes('/') && !url.includes('?')) {
             setStatusMessage(`Website to Domain: Node already contains domain "${url}"`);
+            transformBase.completeTransformProgress(true, `Website to Domain: Already a domain "${url}"`);
             return;
         }
+        
+        transformBase.updateTransformProgress(40, `Website to Domain: Validating URL...`);
         
         // Extract domain from URL
         const domain = extractDomain(url);
         
         if (!domain) {
             setStatusMessage(`Website to Domain: Invalid URL format`);
+            transformBase.completeTransformProgress(false, `Website to Domain: Invalid URL format`);
             return;
         }
+
+        transformBase.updateTransformProgress(60, `Website to Domain: Checking for existing domain...`);
 
         const parentId = node.id();
         const domainId = transformBase.createNodeId("domain", domain);
@@ -136,8 +146,11 @@ export async function runWebsiteToDomain(node) {
         // Check if domain node already exists
         if (transformBase.nodeExists(domainId)) {
             setStatusMessage(`Website to Domain: Domain "${domain}" already exists`);
+            transformBase.completeTransformProgress(true, `Website to Domain: Domain "${domain}" already exists`);
             return;
         }
+
+        transformBase.updateTransformProgress(80, `Website to Domain: Creating domain node...`);
 
         /**
          * Create Domain Node
@@ -147,6 +160,8 @@ export async function runWebsiteToDomain(node) {
         const position = transformBase.generatePositionNearNode(node);
         const createdNode = await transformBase.createNode(domainId, domain, position, parentId);
         
+        transformBase.updateTransformProgress(95, `Website to Domain: Finalizing...`);
+
         /**
          * Update UI Status
          * 
@@ -155,6 +170,7 @@ export async function runWebsiteToDomain(node) {
          * - Indicates successful domain extraction and node creation
          */
         setStatusMessage(`Website to Domain: Extracted "${domain}" from URL`);
+        transformBase.completeTransformProgress(true, `Website to Domain: Extracted "${domain}"`);
         
     } catch (error) {
         /**
@@ -167,5 +183,6 @@ export async function runWebsiteToDomain(node) {
          */
         console.error("Website to Domain error:", error);
         setStatusMessage(`Website to Domain: Extraction failed`);
+        transformBase.completeTransformProgress(false, `Website to Domain: Extraction failed`);
     }
 } 

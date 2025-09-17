@@ -69,47 +69,68 @@ export async function runDomainToIp(node){
     const parentId = node.id();
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('domain-to-ip');
+        transformBase.updateTransformProgress(20, `Domain to IP: Resolving "${domain}"...`);
+
         const response = await fetch("/domain-to-ip", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ domain })
         });
         
+        transformBase.updateTransformProgress(60, `Domain to IP: Processing results for "${domain}"...`);
+        
         const data = await response.json();
         let added = false;
 
-            /**
-             * Process Each Resolved IP Address
-             * 
-             * Creates nodes for each IP address found for the domain.
-             */
-            for (const ip of data.ips) {
-                const newId = transformBase.createNodeId("ip", ip);
-                if(!transformBase.nodeExists(newId)){
-                    const position = transformBase.generatePositionNearNode(node);
-                    const createdNode = await transformBase.createNode(newId, `IP: ${ip}`, position, parentId);
-                    if(createdNode) added = true;
-                }
+        /**
+         * Process Each Resolved IP Address
+         * 
+         * Creates nodes for each IP address found for the domain.
+         */
+        const totalIps = data.ips.length;
+        for (let i = 0; i < data.ips.length; i++) {
+            const ip = data.ips[i];
+            const newId = transformBase.createNodeId("ip", ip);
+            if(!transformBase.nodeExists(newId)){
+                const position = transformBase.generatePositionNearNode(node);
+                const createdNode = await transformBase.createNode(newId, `IP: ${ip}`, position, parentId);
+                if(createdNode) added = true;
             }
-
-            /**
-             * Update UI Status
-             * 
-             * Provides feedback on the resolution results:
-             * - Shows completion message with number of new nodes added
-             * - Indicates if no new nodes were found (duplicates filtered out)
-             */
-            setStatusMessage(`Domain to IP complete for "${domain}"`);
-        } catch (err) {
-            /**
-             * Error Handling
-             * 
-             * Catches and handles any errors during the resolution process:
-             * - Logs error details to console for debugging
-             * - Updates UI status with error message
-             * - Preserves original node state
-             */
-            console.error("Domain to IP error:", err);
-            setStatusMessage(`Domain to IP failed for "${domain}"`);
+            
+            // Update progress based on IPs processed
+            const ipProgress = 60 + (i / totalIps) * 30;
+            transformBase.updateTransformProgress(ipProgress, `Domain to IP: Processing ${i + 1}/${totalIps} IPs...`);
         }
+
+        transformBase.updateTransformProgress(95, `Domain to IP: Finalizing results...`);
+
+        /**
+         * Update UI Status
+         * 
+         * Provides feedback on the resolution results:
+         * - Shows completion message with number of new nodes added
+         * - Indicates if no new nodes were found (duplicates filtered out)
+         */
+        if(added){
+            setStatusMessage(`Domain to IP complete for "${domain}"`);
+            transformBase.completeTransformProgress(true, `Domain to IP: Found ${data.ips.length} IPs for "${domain}"`);
+        } else {
+            setStatusMessage(`No new additions found for "${domain}"`);
+            transformBase.completeTransformProgress(true, `Domain to IP: No new IPs found for "${domain}"`);
+        }
+    } catch (err) {
+        /**
+         * Error Handling
+         * 
+         * Catches and handles any errors during the resolution process:
+         * - Logs error details to console for debugging
+         * - Updates UI status with error message
+         * - Preserves original node state
+         */
+        console.error("Domain to IP error:", err);
+        setStatusMessage(`Domain to IP failed for "${domain}"`);
+        transformBase.completeTransformProgress(false, `Domain to IP: Failed for "${domain}"`);
+    }
 } 

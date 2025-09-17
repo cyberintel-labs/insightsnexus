@@ -805,6 +805,120 @@ body {
     transform: rotate(180deg);
 }
 
+/* Progress meter for transforms */
+#progress-meter {
+    position: fixed;
+    bottom: 20px;
+    left: 45%;
+    transform: translateX(-50%);
+    z-index: 1002;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 12px 20px;
+    box-shadow: var(--shadow-heavy);
+    backdrop-filter: blur(20px);
+    min-width: 280px;
+    max-width: 400px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, var(--transition-smooth);
+    animation: fadeInUp 0.4s ease-out;
+}
+
+#progress-meter.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-gradient);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progressShimmer 2s infinite;
+}
+
+@keyframes progressShimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.progress-label {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.progress-percentage {
+    font-weight: 700;
+    color: var(--secondary-color);
+    min-width: 35px;
+    text-align: right;
+}
+
+/* Dark mode adjustments for progress meter */
+.dark-mode #progress-meter {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+}
+
+.dark-mode .progress-bar {
+    background: rgba(74, 144, 226, 0.2);
+}
+
+.dark-mode .progress-fill {
+    background: var(--primary-gradient);
+}
+
+.dark-mode .progress-label {
+    color: var(--primary-color);
+}
+
+.dark-mode .progress-percentage {
+    color: white;
+}
+
 #node-properties-menu {
     position: fixed;
     top: 0;

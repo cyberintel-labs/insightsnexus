@@ -32,6 +32,7 @@ import { initNodePropertiesMenu, togglePropertiesMenu, openPropertiesMenu, close
 import { setStatusMessage } from "./setStatusMessageHandler.js";
 import { runDomainToEnd } from "./transforms/domainToEnd.js";
 import { createNodeWithType } from "./utils/nodeTypeDetection.js";
+import { TransformBase } from "./utils/transformBase.js";
 
 initNodePropertiesMenu(cy);
 
@@ -333,7 +334,14 @@ async function handleContextAction(action){
     if(action === "run-custom-transform"){
         // Logic is very similar with other transforms
         // TODO: will move logic to own file for all transforms to use
+        const transformBase = new TransformBase();
+        const parentId = node.id();
+        
         try {
+            // Start progress tracking
+            transformBase.startTransformProgress('run-custom-transform');
+            transformBase.updateTransformProgress(10, `Custom Transform: Processing "${node.data("label")}"...`);
+
             const res = await fetch("/run-transform", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -341,13 +349,20 @@ async function handleContextAction(action){
             });
 
             if(!res.ok){
+                transformBase.completeTransformProgress(false, `Custom Transform: Failed for "${node.data("label")}"`);
                 alert("Failed to run custom transform.");
                 return;
             }
 
+            transformBase.updateTransformProgress(60, `Custom Transform: Processing results...`);
+
             const data = await res.json();
+            let added = false;
+            
             if(Array.isArray(data.result)){
-                data.result.forEach(binary => {
+                const totalResults = data.result.length;
+                for (let i = 0; i < data.result.length; i++) {
+                    const binary = data.result[i];
                     const newId = "n" + idCounter++;
                     ur.do("add", {
                         group: "nodes",
@@ -365,10 +380,24 @@ async function handleContextAction(action){
                             target: newId
                         }
                     });
-                });
+                    added = true;
+                    
+                    // Update progress based on results processed
+                    const resultProgress = 60 + (i / totalResults) * 30;
+                    transformBase.updateTransformProgress(resultProgress, `Custom Transform: Processing ${i + 1}/${totalResults} results...`);
+                }
+            }
+
+            transformBase.updateTransformProgress(95, `Custom Transform: Finalizing results...`);
+
+            if(added){
+                transformBase.completeTransformProgress(true, `Custom Transform: Found ${data.result.length} results for "${node.data("label")}"`);
+            } else {
+                transformBase.completeTransformProgress(true, `Custom Transform: No results found for "${node.data("label")}"`);
             }
         }catch(err){
             console.error("Error running custom transform:", err);
+            transformBase.completeTransformProgress(false, `Custom Transform: Failed for "${node.data("label")}"`);
             alert("Error running custom transform.");
         }
     }else if(action === "edit"){

@@ -70,14 +70,22 @@ export async function runIpToNetblock(node){
     const parentId = node.id();
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('ip-to-netblock');
+        transformBase.updateTransformProgress(20, `IP to Netblock: Analyzing "${ip}"...`);
+
         const response = await fetch("/ip-to-netblock", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ip })
         });
         
+        transformBase.updateTransformProgress(60, `IP to Netblock: Processing results for "${ip}"...`);
+        
         const data = await response.json();
         let added = false;
+        let processedItems = 0;
+        const totalItems = 2; // netblocks and owners
 
             /**
              * Process Each Found Network Block
@@ -94,6 +102,8 @@ export async function runIpToNetblock(node){
                     }
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(60 + (processedItems / totalItems) * 30, `IP to Netblock: Processing netblocks...`);
 
             /**
              * Process Each Found Network Owner
@@ -110,6 +120,8 @@ export async function runIpToNetblock(node){
                     }
                 }
             }
+            processedItems++;
+            transformBase.updateTransformProgress(95, `IP to Netblock: Finalizing results...`);
 
             /**
              * Update UI Status
@@ -120,8 +132,10 @@ export async function runIpToNetblock(node){
              */
             if(added){
                 setStatusMessage(`IP to Netblock complete for "${ip}"`);
+                transformBase.completeTransformProgress(true, `IP to Netblock: Found data for "${ip}"`);
             }else{
                 setStatusMessage(`No new additions found for "${ip}"`);
+                transformBase.completeTransformProgress(true, `IP to Netblock: No new data found for "${ip}"`);
             }
         } catch (err) {
             /**
@@ -134,5 +148,6 @@ export async function runIpToNetblock(node){
              */
             console.error("IP to Netblock error:", err);
             setStatusMessage(`IP to Netblock failed for "${ip}"`);
+            transformBase.completeTransformProgress(false, `IP to Netblock: Failed for "${ip}"`);
         }
 }

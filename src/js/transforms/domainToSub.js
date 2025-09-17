@@ -7,6 +7,7 @@
 
 import { uploadFiles } from "../fileUploadHandler.js";
 import { setStatusMessage } from "../setStatusMessageHandler.js";
+import { TransformBase } from "../utils/transformBase.js";
 
 /**
  * runDomainToSub(node: CytoscapeNode)
@@ -18,12 +19,20 @@ export function runDomainToSub(node) {
     const domain = node.data("label");
     setStatusMessage(`FFuF: Fetching subdomains for "${domain}"...`);
 
+    const transformBase = new TransformBase();
+
+    // Start progress tracking
+    transformBase.startTransformProgress('domain-to-subdomain');
+    transformBase.updateTransformProgress(10, `FFuF: Fetching subdomains for "${domain}"...`);
+
     fetch("/domain-to-sub", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain })
     })
         .then(async res => {
+            transformBase.updateTransformProgress(60, `FFuF: Processing results for "${domain}"...`);
+            
             const text = await res.text();
             try{
                 return JSON.parse(text);
@@ -32,8 +41,11 @@ export function runDomainToSub(node) {
             }
         })
         .then(data => {
+            transformBase.updateTransformProgress(80, `FFuF: Creating file for "${domain}"...`);
+            
             if(!data.subdomains || !Array.isArray(data.subdomains)){
                 setStatusMessage(`FFuF returned no subdomains for "${domain}"`);
+                transformBase.completeTransformProgress(true, `FFuF: No subdomains found for "${domain}"`);
                 return;
             }
 
@@ -50,12 +62,16 @@ export function runDomainToSub(node) {
                 lastModified: Date.now()
             });
 
+            transformBase.updateTransformProgress(95, `FFuF: Uploading file...`);
+
             // Upload the file to the node
             uploadFiles(node, [textFile]);
             setStatusMessage(`FFuF complete for "${domain}" - ${data.subdomains.length} subdomains saved`);
+            transformBase.completeTransformProgress(true, `FFuF: Found ${data.subdomains.length} subdomains for "${domain}"`);
         })
         .catch(err => {
             console.error("FFuF error:", err);
             setStatusMessage(`FFuF failed for "${domain}"`);
+            transformBase.completeTransformProgress(false, `FFuF: Failed for "${domain}"`);
         });
 }

@@ -16,8 +16,92 @@ import { cy } from "../cytoscapeConfig.js";
 import { ur } from "../changeDataHandler.js";
 import { resolveNodeOverlap } from "../nodePositioning.js";
 import { detectNodeType } from "./nodeTypeDetection.js";
+import { progressMeter, TRANSFORM_DURATIONS, TRANSFORM_STRATEGIES } from "./progressMeter.js";
 
 export class TransformBase {
+    constructor() {
+        this.currentTransform = null;
+        this.transformStartTime = null;
+    }
+
+    /**
+     * Start Transform Progress Tracking
+     * 
+     * startTransformProgress(transformName: string, customDuration?: number)
+     * 
+     * Initiates progress tracking for a transform operation.
+     * 
+     * @param {string} transformName - Name of the transform being executed
+     * @param {number} customDuration - Custom duration override (optional)
+     */
+    startTransformProgress(transformName, customDuration = null) {
+        this.currentTransform = transformName;
+        this.transformStartTime = Date.now();
+        
+        const strategy = TRANSFORM_STRATEGIES[transformName] || 'time-based';
+        const duration = customDuration || TRANSFORM_DURATIONS[transformName] || null;
+        
+        progressMeter.startProgress(transformName, strategy, duration);
+    }
+
+    /**
+     * Update Transform Progress
+     * 
+     * updateTransformProgress(progress: number, customLabel?: string)
+     * 
+     * Updates the progress meter with a specific progress value.
+     * 
+     * @param {number} progress - Progress value between 0 and 100
+     * @param {string} customLabel - Optional custom label for this progress update
+     */
+    updateTransformProgress(progress, customLabel = null) {
+        if (this.currentTransform) {
+            progressMeter.updateProgress(progress, customLabel);
+        }
+    }
+
+    /**
+     * Complete Transform Progress
+     * 
+     * completeTransformProgress(success: boolean = true, message?: string)
+     * 
+     * Marks the transform progress as complete and hides the meter.
+     * 
+     * @param {boolean} success - Whether the transform completed successfully
+     * @param {string} message - Optional completion message
+     */
+    completeTransformProgress(success = true, message = null) {
+        if (this.currentTransform) {
+            progressMeter.completeProgress(success, message);
+            this.currentTransform = null;
+            this.transformStartTime = null;
+        }
+    }
+
+    /**
+     * Execute Transform with Progress Tracking
+     * 
+     * executeTransformWithProgress(transformName: string, transformFunction: Function, ...args)
+     * 
+     * Wraps a transform function with automatic progress tracking.
+     * 
+     * @param {string} transformName - Name of the transform
+     * @param {Function} transformFunction - The transform function to execute
+     * @param {...any} args - Arguments to pass to the transform function
+     * @returns {Promise<any>} Result of the transform function
+     */
+    async executeTransformWithProgress(transformName, transformFunction, ...args) {
+        try {
+            this.startTransformProgress(transformName);
+            const result = await transformFunction.apply(this, args);
+            this.completeTransformProgress(true);
+            return result;
+        } catch (error) {
+            this.completeTransformProgress(false, `Transform failed: ${error.message}`);
+            throw error;
+        }
+    }
+
     /**
      * Create Node with Automatic Type Detection
      * 

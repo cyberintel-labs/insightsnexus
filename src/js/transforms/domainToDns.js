@@ -71,14 +71,22 @@ export async function runDomainToDns(node){
     const parentId = node.id();
 
     try {
+        // Start progress tracking
+        transformBase.startTransformProgress('domain-to-dns');
+        transformBase.updateTransformProgress(20, `DNS Resolution: Querying "${domain}"...`);
+
         const response = await fetch("/domain-to-dns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ domain })
         });
         
+        transformBase.updateTransformProgress(60, `DNS Resolution: Processing results for "${domain}"...`);
+        
         const data = await response.json();
             let added = false;
+            let processedRecords = 0;
+            const totalRecordTypes = 5; // MX, NS, A, CNAME, TXT
 
             /**
              * Process Each DNS Record Type
@@ -102,6 +110,8 @@ export async function runDomainToDns(node){
                     }
                 }
             }
+            processedRecords++;
+            transformBase.updateTransformProgress(60 + (processedRecords / totalRecordTypes) * 30, `DNS Resolution: Processing MX records...`);
 
             // Process NS (Name Server) records
             if (data.ns && Array.isArray(data.ns)) {
@@ -114,6 +124,8 @@ export async function runDomainToDns(node){
                     }
                 }
             }
+            processedRecords++;
+            transformBase.updateTransformProgress(60 + (processedRecords / totalRecordTypes) * 30, `DNS Resolution: Processing NS records...`);
 
             // Process A (IPv4) records
             if (data.a && Array.isArray(data.a)) {
@@ -126,6 +138,8 @@ export async function runDomainToDns(node){
                     }
                 }
             }
+            processedRecords++;
+            transformBase.updateTransformProgress(60 + (processedRecords / totalRecordTypes) * 30, `DNS Resolution: Processing A records...`);
 
             // Process CNAME (Canonical Name) records
             if (data.cname && Array.isArray(data.cname)) {
@@ -138,6 +152,8 @@ export async function runDomainToDns(node){
                     }
                 }
             }
+            processedRecords++;
+            transformBase.updateTransformProgress(60 + (processedRecords / totalRecordTypes) * 30, `DNS Resolution: Processing CNAME records...`);
 
             // Process TXT records
             if (data.txt && Array.isArray(data.txt)) {
@@ -150,6 +166,8 @@ export async function runDomainToDns(node){
                     }
                 }
             }
+            processedRecords++;
+            transformBase.updateTransformProgress(95, `DNS Resolution: Finalizing results...`);
 
             /**
              * Update UI Status
@@ -160,8 +178,10 @@ export async function runDomainToDns(node){
              */
             if(added){
                 setStatusMessage(`DNS Resolution complete for "${domain}"`);
+                transformBase.completeTransformProgress(true, `DNS Resolution: Found records for "${domain}"`);
             }else{
                 setStatusMessage(`No new DNS records found for "${domain}"`);
+                transformBase.completeTransformProgress(true, `DNS Resolution: No new records found for "${domain}"`);
             }
         } catch (err) {
             /**
@@ -174,5 +194,6 @@ export async function runDomainToDns(node){
              */
             console.error("DNS Resolution error:", err);
             setStatusMessage(`DNS Resolution failed for "${domain}"`);
+            transformBase.completeTransformProgress(false, `DNS Resolution: Failed for "${domain}"`);
         }
 } 
