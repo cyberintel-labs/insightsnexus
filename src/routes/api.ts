@@ -8,6 +8,9 @@
  * Route Categories:
  * - OSINT Tools: Sherlock, port scanning, DNS, etc.
  * - File Operations: Save/load graph data
+ * 
+ * Copyright (c) 2024 Investigating Project
+ * Licensed under the MIT License
  * - Data Processing: Validation and transformation
  */
 

@@ -8,6 +8,9 @@
  * - Automatic node type detection
  * - Consistent node creation pattern
  * - Edge creation with proper linking
+ * 
+ * Copyright (c) 2024 Investigating Project
+ * Licensed under the MIT License
  * - Overlap prevention
  * - Undo/redo system integration
  */

@@ -1,5 +1,14 @@
 # OSINT Investigation Graph Analysis Tool
+
 This local web application allows users to manipulate and connect nodes on their screen to streamline OSINT investigations and information gathering.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Copyright
+
+Copyright (c) 2024 Investigating Project
 
 # Prerequisites
 * Users must install sherlock before usage.

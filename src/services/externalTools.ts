@@ -8,6 +8,9 @@
  * - Sherlock: Username enumeration
  * - Feroxbuster: Directory enumeration
  * - ffuf: Web fuzzing
+ * 
+ * Copyright (c) 2024 Investigating Project
+ * Licensed under the MIT License
  * - portscanner: Port scanning
  * - whois: Domain information
  */
