@@ -29,6 +29,7 @@
     "cytoscape": "^3.32.0",
     "express": "^5.1.0",
     "multer": "^2.0.2",
+    "portscanner": "^2.2.0",
     "puppeteer": "^24.9.0",
     "whois": "^2.15.0"
   }

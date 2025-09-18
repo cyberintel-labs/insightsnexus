@@ -8,13 +8,14 @@
  * - Sherlock: Username enumeration
  * - Feroxbuster: Directory enumeration
  * - ffuf: Web fuzzing
- * - nmap: Port scanning
+ * - portscanner: Port scanning
  * - whois: Domain information
  */
 
 import { exec } from "child_process";
 import { promisify } from "util";
 import path from "path";
+import fs from "fs";
 import { ToolPaths } from "./toolDetection.js";
 
 const execAsync = promisify(exec);
@@ -177,55 +178,67 @@ export async function executeFeroxbuster(feroxPath: string, domain: string): Pro
 }
 
 /**
- * Nmap Port Scan
+ * Port Scanner
  * 
- * executeNmapScan(nmapPath: string, target: string): Promise<Array<{port: number, service: string}>>
+ * executePortScan(target: string): Promise<Array<{port: number, service: string}>>
  * 
- * Executes nmap port scan on target systems.
+ * Executes port scan using the portscanner library with top 1000 ports.
  * 
  * Input:
- * - nmapPath: string - Path to nmap executable
  * - target: string - Target IP address or hostname
  * 
  * Returns:
  * - Promise<Array<{port: number, service: string}>> - Array of open ports with services
  * 
  * Process:
- * 1. Builds nmap command with service detection
- * 2. Executes command with grepable output
- * 3. Parses output to extract open ports and services
- * 4. Returns sorted port list
+ * 1. Reads top 1000 most common ports from data file
+ * 2. Scans ports using portscanner library in batches
+ * 3. Identifies open ports and attempts service detection
+ * 4. Returns sorted port list with service information
  * 
  * Error Handling:
- * - Throws error on command execution failure
- * - Handles parsing errors gracefully
+ * - Handles network errors gracefully
+ * - Provides meaningful error messages
+ * - Returns empty array on scan failure
  */
-export async function executeNmapScan(nmapPath: string, target: string): Promise<Array<{port: number, service: string}>> {
-    const command = `${nmapPath} -F -sV -oG - ${target}`;
-    const timeout = 60000; // 60 second timeout
-
+export async function executePortScan(target: string): Promise<Array<{port: number, service: string}>> {
+    const portscanner = require('portscanner');
+    
     console.log(`Running port scan for target: ${target}`);
 
     try {
-        const { stdout } = await execAsync(command, { timeout });
-        const lines = stdout.split("\n");
-        const ports: Array<{port: number, service: string}> = [];
+        // Read top 1000 ports from data file
+        const portsFilePath = path.join(__dirname, "../../data/top-1000-ports.txt");
+        const portsData = fs.readFileSync(portsFilePath, 'utf-8');
+        const topPorts = portsData
+            .split('\n')
+            .map(line => parseInt(line.trim(), 10))
+            .filter(port => !isNaN(port) && port > 0 && port <= 65535);
 
-        for (const line of lines) {
-            if (line.includes("/open/")) {
-                const portMatch = line.match(/(\d+)\/open\/(tcp|udp)\/\/([^\/]+)/);
-                if (portMatch && portMatch[1] && portMatch[3]) {
-                    const port = parseInt(portMatch[1]);
-                    const service = portMatch[3].trim();
-                    
-                    if (port && service && !ports.some(p => p.port === port)) {
-                        ports.push({
-                            port: port,
-                            service: service || "unknown"
-                        });
+        console.log(`Loaded ${topPorts.length} ports from top 1000 list`);
+
+        const ports: Array<{port: number, service: string}> = [];
+        
+        // Scan ports in batches to avoid overwhelming the target
+        const batchSize = 50;
+        for (let i = 0; i < topPorts.length; i += batchSize) {
+            const batch = topPorts.slice(i, i + batchSize);
+            const promises = batch.map(async (port) => {
+                try {
+                    const status = await portscanner.checkPortStatus(port, target, { timeout: 3000 });
+                    if (status === 'open') {
+                        const service = getServiceName(port);
+                        return { port, service };
                     }
+                    return null;
+                } catch (error) {
+                    return null;
                 }
-            }
+            });
+            
+            const results = await Promise.all(promises);
+            const openPorts = results.filter(result => result !== null) as Array<{port: number, service: string}>;
+            ports.push(...openPorts);
         }
 
         ports.sort((a, b) => a.port - b.port);
@@ -235,6 +248,37 @@ export async function executeNmapScan(nmapPath: string, target: string): Promise
         console.error("Error running port scan:", error);
         throw new Error("Failed to run port scan");
     }
+}
+
+/**
+ * Get Service Name for Port
+ * 
+ * getServiceName(port: number): string
+ * 
+ * Returns the common service name for a given port number.
+ * 
+ * Input:
+ * - port: number - Port number to identify service for
+ * 
+ * Returns:
+ * - string - Service name or "unknown" if not recognized
+ */
+function getServiceName(port: number): string {
+    const serviceMap: {[key: number]: string} = {
+        20: 'ftp-data', 21: 'ftp', 22: 'ssh', 23: 'telnet', 25: 'smtp', 26: 'smtp', 37: 'time', 
+        42: 'nameserver', 43: 'whois', 49: 'tacacs', 53: 'dns', 70: 'gopher', 79: 'finger', 
+        80: 'http', 88: 'kerberos', 102: 'iso-tsap', 106: 'pop3pw', 109: 'pop2', 110: 'pop3', 
+        111: 'rpcbind', 113: 'ident', 115: 'sftp', 118: 'sqlserv', 119: 'nntp', 123: 'ntp', 
+        135: 'msrpc', 136: 'profile', 137: 'netbios-ns', 138: 'netbios-dgm', 139: 'netbios-ssn', 
+        143: 'imap', 161: 'snmp', 162: 'snmptrap', 179: 'bgp', 194: 'irc', 199: 'smux', 
+        201: 'at-rtmp', 209: 'qmtp', 210: 'z39.50', 211: '914c/g', 212: 'anet', 213: 'ipx', 
+        220: 'imap3', 225: 'ldap', 443: 'https', 444: 'snpp', 445: 'microsoft-ds', 
+        993: 'imaps', 995: 'pop3s', 1723: 'pptp', 3306: 'mysql', 3389: 'rdp', 
+        5432: 'postgresql', 5900: 'vnc', 8080: 'http-alt', 8443: 'https-alt', 
+        8888: 'http-alt', 9000: 'http-alt', 9090: 'http-alt'
+    };
+    
+    return serviceMap[port] || 'unknown';
 }
 
 /**

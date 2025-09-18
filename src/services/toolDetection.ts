@@ -9,7 +9,7 @@
  * - Sherlock: Username enumeration across social media platforms
  * - Feroxbuster: Directory/file enumeration
  * - ffuf: Web fuzzing and subdomain discovery
- * - nmap: Port scanning and network discovery
+ * - Port scanning: Now handled by portscanner library with top 1000 ports (no external tool required)
  */
 
 import { execSync } from "child_process";
@@ -19,12 +19,12 @@ import { execSync } from "child_process";
  * 
  * Interface defining the structure for tool detection results.
  * Each tool has a path property that contains the executable path or empty string if not found.
+ * Note: Port scanning no longer requires external tools (uses portscanner library with top 1000 ports).
  */
 export interface ToolPaths {
     sherlock: string;
     feroxbuster: string;
     ffuf: string;
-    nmap: string;
 }
 
 /**
@@ -53,8 +53,7 @@ export function detectTools(): ToolPaths {
     const tools: ToolPaths = {
         sherlock: "",
         feroxbuster: "",
-        ffuf: "",
-        nmap: ""
+        ffuf: ""
     };
 
     // Detect Sherlock
@@ -96,20 +95,6 @@ export function detectTools(): ToolPaths {
         } catch {
             console.error("ffuf not found in path.");
             tools.ffuf = "";
-        }
-    }
-
-    // Detect nmap
-    try {
-        tools.nmap = execSync("where nmap", { encoding: "utf8" }).split("\n")[0].trim();
-        console.log("Nmap found at (Windows):", tools.nmap);
-    } catch {
-        try {
-            tools.nmap = execSync("which nmap", { encoding: "utf8" }).trim();
-            console.log("Nmap found at (Unix):", tools.nmap);
-        } catch {
-            console.error("Nmap not found in path.");
-            tools.nmap = "";
         }
     }
 

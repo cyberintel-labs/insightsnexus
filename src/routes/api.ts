@@ -28,7 +28,7 @@ import {
     executeSherlock,
     executeFfufSubdomain,
     executeFeroxbuster,
-    executeNmapScan,
+    executePortScan,
     executeWhois,
     executeIpAnalysis
 } from "../services/externalTools.js";
@@ -384,7 +384,7 @@ router.post("/ip-to-location", async (req: Request, res: Response): Promise<void
  * 
  * POST /port-scan
  * 
- * Executes nmap port scan on target systems.
+ * Executes port scan using portscanner library with top 1000 ports.
  */
 router.post("/port-scan", async (req: Request, res: Response): Promise<void> => {
     const { target } = req.body;
@@ -393,14 +393,9 @@ router.post("/port-scan", async (req: Request, res: Response): Promise<void> => 
         res.status(400).json(formatErrorResponse(null, "Target is required"));
         return;
     }
-    
-    if (!validateTool("Nmap", toolPaths.nmap)) {
-        res.status(500).json(formatErrorResponse(null, "Nmap executable not found in system PATH."));
-        return;
-    }
 
     try {
-        const ports = await executeNmapScan(toolPaths.nmap, target);
+        const ports = await executePortScan(target);
         res.json(formatSuccessResponse({ ports }));
     } catch (error) {
         console.error("Error running port scan:", error);

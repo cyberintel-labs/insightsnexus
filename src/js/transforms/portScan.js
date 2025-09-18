@@ -1,13 +1,15 @@
 /**
  * Port Scanning Integration
  * 
- * This module integrates with the nmap tool to scan for open ports on target systems.
+ * This module integrates with the portscanner library to scan for open ports on target systems.
  * It expands the investigation graph by adding new nodes representing discovered open ports.
  * 
- * Nmap Tool:
- * - Scans the top 1,000 ports on target systems
+ * Portscanner Library:
+ * - Scans top 1000 most common ports on target systems
+ * - Uses port frequency ranking data
  * - Identifies open ports and associated services
  * - Helps investigators discover network vulnerabilities and services
+ * - No external tool dependencies required
  * 
  * Key Features:
  * - Automated port scanning via server API
@@ -55,6 +57,7 @@ import { TransformBase } from "../utils/transformBase.js";
  * - POST request to /port-scan endpoint
  * - Request body: {target: string}
  * - Response: {ports: Array<{port: number, service: string}>} - Array of port objects
+ * - Uses portscanner library with top 1000 ports data
  * 
  * Error Handling:
  * - Network errors are caught and logged

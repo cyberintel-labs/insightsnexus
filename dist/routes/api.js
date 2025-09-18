@@ -332,7 +332,7 @@ router.post("/ip-to-location", (req, res) => __awaiter(void 0, void 0, void 0, f
  *
  * POST /port-scan
  *
- * Executes nmap port scan on target systems.
+ * Executes port scan using portscanner library with top 1000 ports.
  */
 router.post("/port-scan", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { target } = req.body;
@@ -340,12 +340,8 @@ router.post("/port-scan", (req, res) => __awaiter(void 0, void 0, void 0, functi
         res.status(400).json((0, dataProcessing_js_1.formatErrorResponse)(null, "Target is required"));
         return;
     }
-    if (!(0, toolDetection_js_1.validateTool)("Nmap", toolPaths.nmap)) {
-        res.status(500).json((0, dataProcessing_js_1.formatErrorResponse)(null, "Nmap executable not found in system PATH."));
-        return;
-    }
     try {
-        const ports = yield (0, externalTools_js_1.executeNmapScan)(toolPaths.nmap, target);
+        const ports = yield (0, externalTools_js_1.executePortScan)(target);
         res.json((0, dataProcessing_js_1.formatSuccessResponse)({ ports }));
     }
     catch (error) {
