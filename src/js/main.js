@@ -33,6 +33,7 @@ import { setStatusMessage } from "./setStatusMessageHandler.js";
 import { runDomainToEnd } from "./transforms/domainToEnd.js";
 import { createNodeWithType } from "./utils/nodeTypeDetection.js";
 import { TransformBase } from "./utils/transformBase.js";
+import { multiTransformManager } from "./utils/multiTransformManager.js";
 
 initNodePropertiesMenu(cy);
 
@@ -327,79 +328,111 @@ function toggleDropdown(id){
  * 2. Performs the requested action
  * 3. Hides the context menu
  */
+/**
+ * Run Custom Transform
+ * 
+ * runCustomTransform(node: CytoscapeNode)
+ * 
+ * Executes a custom transform on the specified node.
+ * 
+ * @param {CytoscapeNode} node - The node to transform
+ */
+async function runCustomTransform(node) {
+    const transformBase = new TransformBase();
+    const parentId = node.id();
+    
+    try {
+        // Start progress tracking
+        transformBase.startTransformProgress('run-custom-transform');
+        transformBase.updateTransformProgress(10, `Custom Transform: Processing "${node.data("label")}"...`);
+
+        const res = await fetch("/run-transform", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nodeLabel: node.data("label") })
+        });
+
+        if(!res.ok){
+            transformBase.completeTransformProgress(false, `Custom Transform: Failed for "${node.data("label")}"`);
+            throw new Error("Failed to run custom transform.");
+        }
+
+        transformBase.updateTransformProgress(60, `Custom Transform: Processing results...`);
+
+        const data = await res.json();
+        let added = false;
+        
+        if(Array.isArray(data.result)){
+            const totalResults = data.result.length;
+            for (let i = 0; i < data.result.length; i++) {
+                const binary = data.result[i];
+                const newId = "n" + idCounter++;
+                ur.do("add", {
+                    group: "nodes",
+                    data: { id: newId, label: binary, type: "custom" },
+                    position: {
+                        x: node.position("x") + Math.random() * 100 - 50,
+                        y: node.position("y") + Math.random() * 100 - 50
+                    }
+                });
+                ur.do("add", {
+                    group: "edges",
+                    data: {
+                        id: `e-${node.id()}-${newId}-${Date.now()}`,
+                        source: node.id(),
+                        target: newId
+                    }
+                });
+                added = true;
+                
+                // Update progress based on results processed
+                const resultProgress = 60 + (i / totalResults) * 30;
+                transformBase.updateTransformProgress(resultProgress, `Custom Transform: Processing ${i + 1}/${totalResults} results...`);
+            }
+        }
+
+        transformBase.updateTransformProgress(95, `Custom Transform: Finalizing results...`);
+
+        if(added){
+            transformBase.completeTransformProgress(true, `Custom Transform: Found ${data.result.length} results for "${node.data("label")}"`);
+        } else {
+            transformBase.completeTransformProgress(true, `Custom Transform: No results found for "${node.data("label")}"`);
+        }
+    } catch(err) {
+        console.error("Error running custom transform:", err);
+        transformBase.completeTransformProgress(false, `Custom Transform: Failed for "${node.data("label")}"`);
+        throw err;
+    }
+}
+
+/**
+ * Execute Transform with Multi-Transform Manager
+ * 
+ * executeTransformWithManager(transformName: string, transformFunction: Function, node: CytoscapeNode)
+ * 
+ * Wrapper function that executes transforms through the multi-transform manager
+ * for concurrent execution control and progress tracking.
+ * 
+ * @param {string} transformName - Name of the transform
+ * @param {Function} transformFunction - The transform function to execute
+ * @param {CytoscapeNode} node - The node to transform
+ */
+async function executeTransformWithManager(transformName, transformFunction, node) {
+    try {
+        await multiTransformManager.requestTransform(transformName, transformFunction, node);
+    } catch (error) {
+        console.error(`Transform ${transformName} failed:`, error);
+        setStatusMessage(`Transform ${transformName} failed: ${error.message}`);
+    }
+}
+
 async function handleContextAction(action){
     const node = rightClickedNode;
     if (!node) return;
 
     if(action === "run-custom-transform"){
-        // Logic is very similar with other transforms
-        // TODO: will move logic to own file for all transforms to use
-        const transformBase = new TransformBase();
-        const parentId = node.id();
-        
-        try {
-            // Start progress tracking
-            transformBase.startTransformProgress('run-custom-transform');
-            transformBase.updateTransformProgress(10, `Custom Transform: Processing "${node.data("label")}"...`);
-
-            const res = await fetch("/run-transform", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nodeLabel: node.data("label") })
-            });
-
-            if(!res.ok){
-                transformBase.completeTransformProgress(false, `Custom Transform: Failed for "${node.data("label")}"`);
-                alert("Failed to run custom transform.");
-                return;
-            }
-
-            transformBase.updateTransformProgress(60, `Custom Transform: Processing results...`);
-
-            const data = await res.json();
-            let added = false;
-            
-            if(Array.isArray(data.result)){
-                const totalResults = data.result.length;
-                for (let i = 0; i < data.result.length; i++) {
-                    const binary = data.result[i];
-                    const newId = "n" + idCounter++;
-                    ur.do("add", {
-                        group: "nodes",
-                        data: { id: newId, label: binary, type: "custom" },
-                        position: {
-                            x: node.position("x") + Math.random() * 100 - 50,
-                            y: node.position("y") + Math.random() * 100 - 50
-                        }
-                    });
-                    ur.do("add", {
-                        group: "edges",
-                        data: {
-                            id: `e-${node.id()}-${newId}-${Date.now()}`,
-                            source: node.id(),
-                            target: newId
-                        }
-                    });
-                    added = true;
-                    
-                    // Update progress based on results processed
-                    const resultProgress = 60 + (i / totalResults) * 30;
-                    transformBase.updateTransformProgress(resultProgress, `Custom Transform: Processing ${i + 1}/${totalResults} results...`);
-                }
-            }
-
-            transformBase.updateTransformProgress(95, `Custom Transform: Finalizing results...`);
-
-            if(added){
-                transformBase.completeTransformProgress(true, `Custom Transform: Found ${data.result.length} results for "${node.data("label")}"`);
-            } else {
-                transformBase.completeTransformProgress(true, `Custom Transform: No results found for "${node.data("label")}"`);
-            }
-        }catch(err){
-            console.error("Error running custom transform:", err);
-            transformBase.completeTransformProgress(false, `Custom Transform: Failed for "${node.data("label")}"`);
-            alert("Error running custom transform.");
-        }
+        console.log("Calling custom transform")
+        executeTransformWithManager('run-custom-transform', runCustomTransform, node);
     }else if(action === "edit"){
         console.log("Inside edit action")
         const newLabel = prompt("Enter new name:", node.data("label"));
@@ -416,34 +449,34 @@ async function handleContextAction(action){
         ur.do("remove", node);
     }else if(action === "sherlock"){
         console.log("Calling username search")
-        runSherlock(node);
+        executeTransformWithManager('sherlock', runSherlock, node);
     }else if(action === "domain-to-ip"){
         console.log("Calling domain to IP")
-        runDomainToIp(node);
+        executeTransformWithManager('domain-to-ip', runDomainToIp, node);
     }else if(action === "domain-to-dns"){
         console.log("Calling domain to DNS")
-        runDomainToDns(node);
+        executeTransformWithManager('domain-to-dns', runDomainToDns, node);
     }else if(action === "domain-to-endpoint"){
         console.log("Calling domain to endpoint")
-        runDomainToEnd(node);
+        executeTransformWithManager('domain-to-endpoint', runDomainToEnd, node);
     }else if(action === "website-to-domain"){
         console.log("Calling website to domain")
-        runWebsiteToDomain(node);
+        executeTransformWithManager('website-to-domain', runWebsiteToDomain, node);
     }else if(action === "website-screenshot"){
         console.log("Calling website screenshot")
-        runWebsiteScreenshot(node);
+        executeTransformWithManager('website-screenshot', runWebsiteScreenshot, node);
     }else if(action === "whois"){
         console.log("Calling whois")
-        runWhois(node);
+        executeTransformWithManager('whois', runWhois, node);
     }else if(action === "ip-to-netblock"){
         console.log("Calling IP to Netblock")
-        runIpToNetblock(node);
+        executeTransformWithManager('ip-to-netblock', runIpToNetblock, node);
     }else if(action === "ip-to-location"){
         console.log("Calling IP to Location")
-        runIpToLocation(node);
+        executeTransformWithManager('ip-to-location', runIpToLocation, node);
     }else if(action === "port-scan"){
         console.log("Calling port scan")
-        runPortScan(node);
+        executeTransformWithManager('port-scan', runPortScan, node);
     }else if(action === "domain-to-subdomain"){
         console.log("Calling domain-to-subdomain")
         // runFeroxbuster(node); // Function not implemented yet

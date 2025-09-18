@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multi-Transform Manager Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background: #e9ecef;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Multi-Transform Manager Test</h1>
+        <p>This test simulates multiple concurrent transforms to verify the concurrent limit system and multi-progress display.</p>
+        
+        <div class="status">
+            <strong>Status:</strong> <span id="status">Ready</span>
+        </div>
+        
+        <div>
+            <button class="test-button" onclick="startQuickTransform()">Start Quick Transform (2s)</button>
+            <button class="test-button" onclick="startMediumTransform()">Start Medium Transform (8s)</button>
+            <button class="test-button" onclick="startLongTransform()">Start Long Transform (25s)</button>
+            <button class="test-button" onclick="startMultipleTransforms()">Start Multiple Transforms</button>
+            <button class="test-button" onclick="clearAll()">Clear All</button>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script type="module">
+        // Import the multi-transform manager
+        import { multiTransformManager } from './src/js/utils/multiTransformManager.js';
+        
+        let transformCounter = 0;
+        
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function updateStatus() {
+            const activeCount = multiTransformManager.getActiveTransformsCount();
+            const queueLength = multiTransformManager.getQueueLength();
+            document.getElementById('status').textContent = 
+                `Active: ${activeCount}, Queued: ${queueLength}`;
+        }
+        
+        // Simulate different types of transforms
+        async function simulateTransform(name, duration, isQuick = false) {
+            const transformId = ++transformCounter;
+            log(`Starting ${name} (Transform #${transformId})`);
+            
+            return new Promise((resolve) => {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 100 / (duration / 1000); // Update every second
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        log(`Completed ${name} (Transform #${transformId})`);
+                        resolve();
+                    } else {
+                        log(`Progress ${name}: ${Math.round(progress)}%`);
+                    }
+                }, 1000);
+            });
+        }
+        
+        // Test functions
+        window.startQuickTransform = async function() {
+            try {
+                await multiTransformManager.requestTransform(
+                    'quick-test',
+                    simulateTransform,
+                    { data: () => 'test-node' },
+                    'Quick Test Transform',
+                    2000,
+                    true
+                );
+                log('Quick transform completed successfully');
+            } catch (error) {
+                log(`Quick transform failed: ${error.message}`);
+            }
+            updateStatus();
+        };
+        
+        window.startMediumTransform = async function() {
+            try {
+                await multiTransformManager.requestTransform(
+                    'medium-test',
+                    simulateTransform,
+                    { data: () => 'test-node' },
+                    'Medium Test Transform',
+                    8000,
+                    false
+                );
+                log('Medium transform completed successfully');
+            } catch (error) {
+                log(`Medium transform failed: ${error.message}`);
+            }
+            updateStatus();
+        };
+        
+        window.startLongTransform = async function() {
+            try {
+                await multiTransformManager.requestTransform(
+                    'long-test',
+                    simulateTransform,
+                    { data: () => 'test-node' },
+                    'Long Test Transform',
+                    25000,
+                    false
+                );
+                log('Long transform completed successfully');
+            } catch (error) {
+                log(`Long transform failed: ${error.message}`);
+            }
+            updateStatus();
+        };
+        
+        window.startMultipleTransforms = async function() {
+            log('Starting multiple transforms to test concurrency limits...');
+            
+            // Start 5 transforms simultaneously
+            const promises = [];
+            for (let i = 1; i <= 5; i++) {
+                const duration = i * 3000; // 3s, 6s, 9s, 12s, 15s
+                const promise = multiTransformManager.requestTransform(
+                    `multi-test-${i}`,
+                    simulateTransform,
+                    { data: () => 'test-node' },
+                    `Multi Test Transform ${i}`,
+                    duration,
+                    duration <= 5000
+                );
+                promises.push(promise);
+            }
+            
+            try {
+                await Promise.all(promises);
+                log('All multiple transforms completed successfully');
+            } catch (error) {
+                log(`Some multiple transforms failed: ${error.message}`);
+            }
+            updateStatus();
+        };
+        
+        window.clearAll = function() {
+            multiTransformManager.clearAllTransforms();
+            log('All transforms cleared');
+            updateStatus();
+        };
+        
+        // Initialize
+        log('Multi-Transform Manager Test initialized');
+        updateStatus();
+        
+        // Update status periodically
+        setInterval(updateStatus, 1000);
+    </script>
+</body>
+</html>

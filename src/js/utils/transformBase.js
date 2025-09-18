@@ -17,11 +17,14 @@ import { ur } from "../changeDataHandler.js";
 import { resolveNodeOverlap } from "../nodePositioning.js";
 import { detectNodeType } from "./nodeTypeDetection.js";
 import { progressMeter, TRANSFORM_DURATIONS, TRANSFORM_STRATEGIES } from "./progressMeter.js";
+import { multiTransformManager } from "./multiTransformManager.js";
 
 export class TransformBase {
     constructor() {
         this.currentTransform = null;
         this.transformStartTime = null;
+        this.transformId = null;
+        this.useMultiTransformManager = true;
     }
 
     /**
@@ -41,7 +44,10 @@ export class TransformBase {
         const strategy = TRANSFORM_STRATEGIES[transformName] || 'time-based';
         const duration = customDuration || TRANSFORM_DURATIONS[transformName] || null;
         
-        progressMeter.startProgress(transformName, strategy, duration);
+        // Use legacy progress meter for backward compatibility
+        if (!this.useMultiTransformManager) {
+            progressMeter.startProgress(transformName, strategy, duration);
+        }
     }
 
     /**
@@ -56,7 +62,21 @@ export class TransformBase {
      */
     updateTransformProgress(progress, customLabel = null) {
         if (this.currentTransform) {
-            progressMeter.updateProgress(progress, customLabel);
+            if (this.useMultiTransformManager) {
+                // Try to get the current transform ID if not set
+                if (!this.transformId) {
+                    this.transformId = multiTransformManager.getCurrentTransformId();
+                }
+                
+                if (this.transformId) {
+                    multiTransformManager.updateTransformProgress(this.transformId, progress, customLabel);
+                } else {
+                    // Fallback to legacy progress meter
+                    progressMeter.updateProgress(progress, customLabel);
+                }
+            } else {
+                progressMeter.updateProgress(progress, customLabel);
+            }
         }
     }
 
@@ -72,9 +92,24 @@ export class TransformBase {
      */
     completeTransformProgress(success = true, message = null) {
         if (this.currentTransform) {
-            progressMeter.completeProgress(success, message);
+            if (this.useMultiTransformManager) {
+                // Try to get the current transform ID if not set
+                if (!this.transformId) {
+                    this.transformId = multiTransformManager.getCurrentTransformId();
+                }
+                
+                if (this.transformId) {
+                    multiTransformManager.completeTransform(this.transformId, success, message);
+                } else {
+                    // Fallback to legacy progress meter
+                    progressMeter.completeProgress(success, message);
+                }
+            } else {
+                progressMeter.completeProgress(success, message);
+            }
             this.currentTransform = null;
             this.transformStartTime = null;
+            this.transformId = null;
         }
     }
 
@@ -100,6 +135,40 @@ export class TransformBase {
             this.completeTransformProgress(false, `Transform failed: ${error.message}`);
             throw error;
         }
+    }
+
+    /**
+     * Execute Transform with Multi-Transform Manager
+     * 
+     * executeTransformWithMultiManager(transformName: string, transformFunction: Function, node: CytoscapeNode, ...args)
+     * 
+     * Executes a transform using the multi-transform manager for concurrent execution control.
+     * 
+     * @param {string} transformName - Name of the transform
+     * @param {Function} transformFunction - The transform function to execute
+     * @param {CytoscapeNode} node - The node to transform
+     * @param {...any} args - Additional arguments for the transform
+     * @returns {Promise<any>} Result of the transform function
+     */
+    async executeTransformWithMultiManager(transformName, transformFunction, node, ...args) {
+        // Set up this instance for multi-transform manager
+        this.useMultiTransformManager = true;
+        
+        // Request execution through the multi-transform manager
+        return await multiTransformManager.requestTransform(transformName, transformFunction, node, ...args);
+    }
+
+    /**
+     * Set Transform ID
+     * 
+     * setTransformId(transformId: string)
+     * 
+     * Sets the transform ID for multi-transform manager integration.
+     * 
+     * @param {string} transformId - The transform ID from multi-transform manager
+     */
+    setTransformId(transformId) {
+        this.transformId = transformId;
     }
 
     /**
