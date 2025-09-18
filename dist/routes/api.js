@@ -26,12 +26,58 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const path_1 = __importDefault(require("path"));
+const multer_1 = __importDefault(require("multer"));
 // Import services
 const toolDetection_js_1 = require("../services/toolDetection.js");
 const fileSystem_js_1 = require("../services/fileSystem.js");
 const externalTools_js_1 = require("../services/externalTools.js");
 const dataProcessing_js_1 = require("../services/dataProcessing.js");
 const router = (0, express_1.Router)();
+const customTransform_js_1 = require("../services/customTransform.js");
+const upload = (0, multer_1.default)(); // memory storage
+// Upload a Python transform
+router.post("/upload-transform", upload.single("file"), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.file || !req.file.originalname.endsWith(".py")) {
+        res.status(400).json({ error: "Only .py files are allowed" });
+        return;
+    }
+    try {
+        yield (0, customTransform_js_1.saveCustomTransform)(req.file.buffer);
+        res.json({ message: "Custom transform uploaded successfully" });
+    }
+    catch (err) {
+        res.status(500).json({ error: "Failed to save custom transform" });
+    }
+}));
+// Remove custom transform
+router.delete("/remove-transform", (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield (0, customTransform_js_1.removeCustomTransform)();
+        res.json({ message: "Custom transform removed" });
+    }
+    catch (err) {
+        res.status(500).json({ error: "Failed to remove custom transform" });
+    }
+}));
+// Check if transform exists
+router.get("/has-transform", (_req, res) => {
+    res.json({ exists: (0, customTransform_js_1.hasCustomTransform)() });
+});
+// Run transform
+router.post("/run-transform", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { nodeLabel } = req.body;
+    if (!nodeLabel) {
+        res.status(400).json({ error: "nodeLabel is required" });
+        return;
+    }
+    try {
+        const result = yield (0, customTransform_js_1.executeCustomTransform)(nodeLabel);
+        res.json({ result });
+    }
+    catch (err) {
+        res.status(500).json({ error: "Failed to execute custom transform" });
+    }
+}));
 // Initialize directories and tool paths
 let directories;
 let toolPaths;

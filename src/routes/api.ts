@@ -13,6 +13,7 @@
 
 import { Router, Request, Response } from "express";
 import path from "path";
+import multer from "multer";
 
 // Import services
 import { ToolPaths, validateTool, detectTools } from "../services/toolDetection.js";
@@ -46,7 +47,6 @@ import {
 
 const router = Router();
 
-import multer from "multer";
 import{ 
     hasCustomTransform, 
     saveCustomTransform, 
@@ -57,7 +57,7 @@ import{
 const upload = multer(); // memory storage
 
 // Upload a Python transform
-router.post("/upload-transform", upload.single("file"), async (req: Request, res: Response) => {
+router.post("/upload-transform", upload.single("file"), async (req: Request & { file?: Express.Multer.File }, res: Response) => {
     if(!req.file || !req.file.originalname.endsWith(".py")){
         res.status(400).json({ error: "Only .py files are allowed" });
         return;
