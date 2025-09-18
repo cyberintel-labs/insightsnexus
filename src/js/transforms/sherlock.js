@@ -63,7 +63,7 @@ import { TransformBase } from "../utils/transformBase.js";
  */
 export async function runSherlock(node){
     const username = node.data("label");
-    setStatusMessage(`Sherlock: Searching "${username}"...`);
+    setStatusMessage(`Username Search: Searching "${username}"...`);
 
     const transformBase = new TransformBase();
     const parentId = node.id();
@@ -71,7 +71,7 @@ export async function runSherlock(node){
     try {
         // Start progress tracking
         transformBase.startTransformProgress('sherlock');
-        transformBase.updateTransformProgress(10, `Sherlock: Searching "${username}"...`);
+        transformBase.updateTransformProgress(10, `Username Search: Searching "${username}"...`);
 
         const response = await fetch("/sherlock", {
             method: "POST",
@@ -79,7 +79,7 @@ export async function runSherlock(node){
             body: JSON.stringify({ username })
         });
         
-        transformBase.updateTransformProgress(60, `Sherlock: Processing results for "${username}"...`);
+        transformBase.updateTransformProgress(60, `Username Search: Processing results for "${username}"...`);
         
         const data = await response.json();
         let added = false;
@@ -101,10 +101,10 @@ export async function runSherlock(node){
             
             // Update progress based on services processed
             const serviceProgress = 60 + (i / totalServices) * 30;
-            transformBase.updateTransformProgress(serviceProgress, `Sherlock: Processing ${i + 1}/${totalServices} services...`);
+            transformBase.updateTransformProgress(serviceProgress, `Username Search: Processing ${i + 1}/${totalServices} services...`);
         }
 
-        transformBase.updateTransformProgress(95, `Sherlock: Finalizing results...`);
+        transformBase.updateTransformProgress(95, `Username Search: Finalizing results...`);
 
         /**
          * Update UI Status
@@ -114,11 +114,11 @@ export async function runSherlock(node){
          * - Indicates if no new nodes were found (duplicates filtered out)
          */
         if(added){
-            setStatusMessage(`Sherlock complete for "${username}"`);
-            transformBase.completeTransformProgress(true, `Sherlock: Found ${data.services.length} platforms for "${username}"`);
+            setStatusMessage(`Username Search complete for "${username}"`);
+            transformBase.completeTransformProgress(true, `Username Search: Found ${data.services.length} platforms for "${username}"`);
         }else{
             setStatusMessage(`No new additions found for "${username}"`);
-            transformBase.completeTransformProgress(true, `Sherlock: No new platforms found for "${username}"`);
+            transformBase.completeTransformProgress(true, `Username Search: No new platforms found for "${username}"`);
         }
     } catch (err) {
         /**
@@ -130,7 +130,7 @@ export async function runSherlock(node){
          * - Preserves original node state
          */
         console.error("Sherlock error:", err);
-        setStatusMessage(`Sherlock failed for "${username}"`);
-        transformBase.completeTransformProgress(false, `Sherlock: Failed for "${username}"`);
+        setStatusMessage(`Username Search failed for "${username}"`);
+        transformBase.completeTransformProgress(false, `Username Search: Failed for "${username}"`);
     }
 }

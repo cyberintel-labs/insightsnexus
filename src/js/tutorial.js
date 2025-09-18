@@ -150,7 +150,7 @@ class TutorialSystem {
             },
             {
                 title: "Right-Click Context Menu",
-                content: "Right-click on any node to see the context menu with powerful OSINT tools. This is where the magic happens - you can run Sherlock username searches, domain analysis, IP geolocation, and more!",
+                content: "Right-click on any node to see the context menu with powerful OSINT tools. This is where the magic happens - you can run username searches, domain analysis, IP geolocation, and more!",
                 target: "#cy",
                 action: "cxttap",
                 position: "center",
@@ -174,7 +174,7 @@ class TutorialSystem {
             },
             {
                 title: "OSINT Tools Overview",
-                content: "The context menu offers powerful OSINT tools organized by category: Domain Analysis (IP lookup, DNS records), Network Intelligence (port scanning, geolocation), OSINT Tools (Sherlock), and Web Analysis (screenshots).",
+                content: "The context menu offers powerful OSINT tools organized by category: Domain Analysis (IP lookup, DNS records), Network Intelligence (port scanning, geolocation), OSINT Tools (username search), and Web Analysis (screenshots).",
                 target: null,
                 action: null,
                 position: "center"

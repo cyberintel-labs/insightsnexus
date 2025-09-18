@@ -9,7 +9,7 @@
  * - Context menu system for node operations
  * - Keyboard shortcuts for common actions
  * - Mode-based interaction system
- * - Integration with Sherlock username search
+ * - Integration with username search functionality
  * - Undo/redo functionality for all graph changes
  */
 
@@ -319,7 +319,7 @@ function toggleDropdown(id){
  * Available Actions:
  * - edit: Prompts for new node label and updates the node
  * - delete: Removes the node from the graph
- * - sherlock: Initiates Sherlock username search for the node
+ * - sherlock: Initiates username search for the node
  * - connect: Switches to connect mode for manual edge creation
  * 
  * Process:
@@ -415,7 +415,7 @@ async function handleContextAction(action){
         console.log("Delete using menu")
         ur.do("remove", node);
     }else if(action === "sherlock"){
-        console.log("Calling sherlock")
+        console.log("Calling username search")
         runSherlock(node);
     }else if(action === "domain-to-ip"){
         console.log("Calling domain to IP")
