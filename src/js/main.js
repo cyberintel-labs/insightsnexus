@@ -34,6 +34,7 @@ import { resolveNodeOverlap, resolveOverlapByMovingUnderlying } from "./nodePosi
 import { initNodePropertiesMenu, togglePropertiesMenu, openPropertiesMenu, closePropertiesMenu } from './nodePropertiesMenu.js';
 import { setStatusMessage } from "./setStatusMessageHandler.js";
 import { runDomainToEnd } from "./transforms/domainToEnd.js";
+import { runDomainToSub } from "./transforms/domainToSub.js";
 import { createNodeWithType } from "./utils/nodeTypeDetection.js";
 import { TransformBase } from "./utils/transformBase.js";
 import { multiTransformManager } from "./utils/multiTransformManager.js";
@@ -482,7 +483,7 @@ async function handleContextAction(action){
         executeTransformWithManager('port-scan', runPortScan, node);
     }else if(action === "domain-to-subdomain"){
         console.log("Calling domain-to-subdomain")
-        // runFeroxbuster(node); // Function not implemented yet
+        executeTransformWithManager('domain-to-subdomain', runDomainToSub, node);
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");

@@ -9,6 +9,9 @@
  * - Modular service-based architecture for business logic
  * - Graph data save/load functionality for investigation persistence
  * - Static file serving for the web interface
+ *
+ * Copyright (c) 2024 Investigating Project
+ * Licensed under the MIT License
  * - RESTful API endpoints for frontend communication
  *
  * Architecture:

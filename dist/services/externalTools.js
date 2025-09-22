@@ -9,6 +9,9 @@
  * - Sherlock: Username enumeration
  * - Feroxbuster: Directory enumeration
  * - ffuf: Web fuzzing
+ *
+ * Copyright (c) 2024 Investigating Project
+ * Licensed under the MIT License
  * - portscanner: Port scanning
  * - whois: Domain information
  */
@@ -111,9 +114,14 @@ function executeSherlock(sherlockPath, username) {
  */
 function executeFfufSubdomain(ffufPath, domain) {
     return __awaiter(this, void 0, void 0, function* () {
-        const wordlistPath = path_1.default.join(__dirname, "../../../Datalist/subdomains-top1million-110000.txt");
-        const command = `${ffufPath} -u https://FUZZ.${domain} -w ${wordlistPath} -mc 200,301,302 -v -of csv -o -`;
-        console.log(`Running ffuf for subdomains of: ${domain}`);
+        // Clean domain by removing common prefixes
+        const cleanDomain = domain
+            .replace(/^https?:\/\//, '') // Remove http:// or https://
+            .replace(/^www\./, '') // Remove www.
+            .replace(/\/$/, ''); // Remove trailing slash
+        const wordlistPath = path_1.default.join(__dirname, "../../data/subdomains-top1million-110000.txt");
+        const command = `${ffufPath} -u https://FUZZ.${cleanDomain} -w ${wordlistPath} -mc 200,301,302 -v -of csv -o -`;
+        console.log(`Running ffuf for subdomains of: ${cleanDomain} (cleaned from: ${domain})`);
         console.log("Executing command:", command);
         try {
             const { stdout } = yield execAsync(command, { maxBuffer: 1024 * 1024 * 20 });
@@ -130,7 +138,7 @@ function executeFfufSubdomain(ffufPath, domain) {
                 }
             }
             const uniqueSubs = Array.from(new Set(subdomains));
-            console.log(`ffuf found ${uniqueSubs.length} subdomains`);
+            console.log(`ffuf found ${uniqueSubs.length} subdomains for ${cleanDomain}`);
             return uniqueSubs;
         }
         catch (error) {
@@ -165,7 +173,7 @@ function executeFfufSubdomain(ffufPath, domain) {
  */
 function executeFeroxbuster(feroxPath, domain) {
     return __awaiter(this, void 0, void 0, function* () {
-        const wordlistPath = path_1.default.join(__dirname, "../../../Datalist/raft-medium-directories.txt");
+        const wordlistPath = path_1.default.join(__dirname, "../../data/raft-medium-directories.txt");
         const command = `${feroxPath} -u https://${domain}/ -w ${wordlistPath} --silent`;
         console.log(`Running Feroxbuster for domain: ${domain}`);
         console.log("Executing command:", command);

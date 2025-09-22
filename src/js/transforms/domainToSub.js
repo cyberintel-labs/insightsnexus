@@ -57,7 +57,7 @@ export function runDomainToSub(node) {
                 `\n\nTotal subdomains found: ${data.subdomains.length}`;
 
             // Create File object from the content
-            const textFile = new File([subdomainsContent], `ffuf_subdomains_${domain}_${Date.now()}.txt`, {
+            const textFile = new File([subdomainsContent], `ffuf_subdomains_${domain.replace(/[^a-zA-Z0-9.-]/g, '_')}_${Date.now()}.txt`, {
                 type: 'text/plain',
                 lastModified: Date.now()
             });

@@ -98,10 +98,16 @@ export async function executeSherlock(sherlockPath: string, username: string): P
  * - Handles parsing errors gracefully
  */
 export async function executeFfufSubdomain(ffufPath: string, domain: string): Promise<string[]> {
-    const wordlistPath = path.join(__dirname, "../../../Datalist/subdomains-top1million-110000.txt");
-    const command = `${ffufPath} -u https://FUZZ.${domain} -w ${wordlistPath} -mc 200,301,302 -v -of csv -o -`;
+    // Clean domain by removing common prefixes
+    const cleanDomain = domain
+        .replace(/^https?:\/\//, '')  // Remove http:// or https://
+        .replace(/^www\./, '')         // Remove www.
+        .replace(/\/$/, '');           // Remove trailing slash
+    
+    const wordlistPath = path.join(__dirname, "../../data/subdomains-top1million-110000.txt");
+    const command = `${ffufPath} -u https://FUZZ.${cleanDomain} -w ${wordlistPath} -mc 200,301,302 -v -of csv -o -`;
 
-    console.log(`Running ffuf for subdomains of: ${domain}`);
+    console.log(`Running ffuf for subdomains of: ${cleanDomain} (cleaned from: ${domain})`);
     console.log("Executing command:", command);
 
     try {
@@ -119,7 +125,7 @@ export async function executeFfufSubdomain(ffufPath: string, domain: string): Pr
         }
 
         const uniqueSubs = Array.from(new Set(subdomains));
-        console.log(`ffuf found ${uniqueSubs.length} subdomains`);
+        console.log(`ffuf found ${uniqueSubs.length} subdomains for ${cleanDomain}`);
         return uniqueSubs;
     } catch (error) {
         console.error("ffuf error:", error);
@@ -152,7 +158,7 @@ export async function executeFfufSubdomain(ffufPath: string, domain: string): Pr
  * - Handles parsing errors gracefully
  */
 export async function executeFeroxbuster(feroxPath: string, domain: string): Promise<string[]> {
-    const wordlistPath = path.join(__dirname, "../../../Datalist/raft-medium-directories.txt");
+    const wordlistPath = path.join(__dirname, "../../data/raft-medium-directories.txt");
     const command = `${feroxPath} -u https://${domain}/ -w ${wordlistPath} --silent`;
 
     console.log(`Running Feroxbuster for domain: ${domain}`);

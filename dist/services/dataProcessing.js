@@ -9,6 +9,9 @@
  * - Input validation for API requests
  * - Response data formatting
  * - Error message formatting
+ *
+ * Copyright (c) 2024 Investigating Project
+ * Licensed under the MIT License
  * - Data transformation utilities
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {

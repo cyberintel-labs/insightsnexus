@@ -1,0 +1,2 @@
+FUZZ,url,redirectlocation,position,status_code,content_length,content_words,content_lines,resultfile
+www,https://www.insightsnexus.org,https://insightsnexus.org/,1,301,41,3,1,
