@@ -174,20 +174,26 @@ function executeFfufSubdomain(ffufPath, domain) {
 function executeFeroxbuster(feroxPath, domain) {
     return __awaiter(this, void 0, void 0, function* () {
         const wordlistPath = path_1.default.join(__dirname, "../../data/raft-medium-directories.txt");
-        const command = `${feroxPath} -u https://${domain}/ -w ${wordlistPath} --silent`;
+        const command = `${feroxPath} -u ${domain} -w ${wordlistPath} -s 200,201,204`;
         console.log(`Running Feroxbuster for domain: ${domain}`);
         console.log("Executing command:", command);
         try {
             const { stdout } = yield execAsync(command, { maxBuffer: 1024 * 1024 * 20 });
             const lines = stdout.split("\n").map(l => l.trim()).filter(Boolean);
-            const endpoints = lines.map(url => {
-                try {
-                    const u = new URL(url);
-                    return u.pathname;
+            const endpoints = lines.map(line => {
+                // Feroxbuster output format: "200      GET       46l      120w     1256c http://example.com/"
+                // Extract URL from the line
+                const urlMatch = line.match(/https?:\/\/[^\s]+/);
+                if (urlMatch) {
+                    try {
+                        const u = new URL(urlMatch[0]);
+                        return u.pathname;
+                    }
+                    catch (_a) {
+                        return null;
+                    }
                 }
-                catch (_a) {
-                    return null;
-                }
+                return null;
             }).filter((endpoint) => endpoint !== null);
             const uniqueEndpoints = Array.from(new Set(endpoints));
             console.log(`Feroxbuster found ${uniqueEndpoints.length} endpoints`);
