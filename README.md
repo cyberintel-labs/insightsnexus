@@ -1,4 +1,4 @@
-# OSINT Investigation Graph Analysis Tool
+# Insight Nexus - OSINT Investigation Graph Analysis Tool
 
 This local web application allows users to manipulate and connect nodes on their screen to streamline OSINT investigations and information gathering.
 
@@ -13,12 +13,11 @@ Copyright (c) 2024 Investigating Project
 # Prerequisites
 * Users must install sherlock before usage.
 You can find it here: https://github.com/sherlock-project/sherlock
-* Users must install feroxbuster to search for endpoints (place exe in main directory.)
+* Users must install feroxbuster to search for endpoints.
 You can find it here: https://github.com/epi052/feroxbuster
-* Users must install ffuf to search for subdomains (place exe in main directory.)
+* Users must install ffuf to search for subdomains.
 You can find it here: https://github.com/ffuf/ffuf
-* Users must install nmap for port scanning.
-You can find it here: https://nmap.org/
+
 
 # Starting the application
 To start the server open command prompt in the main directory and execute the following:
@@ -85,49 +84,60 @@ If you clicked "prevent this from opening new dialog boxes" and can no longer cr
 2. Under "Allow", click "Add"
 3. Enter your site URL and click "Add"
 4. Refresh the page
-# Progress so far
-* NEW: Users can add files into nodes (right click -> Upload Files ~OR~ left click and use node menu on right)
-* NEW: Implemented domain to ip (right click -> transform -> select Domain to ip)
-* NEW: Implemented website to domain (right click -> transform -> select Website to Domain)
-* NEW: Implemented domain to subdomain (right click -> transform -> select Domain to Subdomain)
-* NEW: Implemented domain to endpoint (right click -> transform -> select Domain to Endpoint)
-* Added the ability to change node types: just select the node(s) and change type with the left plus button
-* Users should be able to create nodes to their desired locations.
-* Edit and delete nodes on screen.
-* Shift + left click to create box selection.
-* Ctrl + left click to create manual selection.
-* Create multiple connections with the c key.
-* Ctrl + z = undo / Ctrl + y = redo.
-* Allowed a way to delete connections.
-* Save and load their current progress.
-* Implemented keyboard actions such as delete, undo, and redo.
-* Implemented sherlock for hunting down social media accounts.
+# Features
 
-## Development - How to Add New Transforms Now
-Server.ts has been refactored into 4 separate files (externalTools.ts, api.ts, toolDetection.ts, and errorHandler.ts) to follow separation of duties and make the process of debugging easier. Server.ts now acts as an entry point and orchestrator for the entire backend system, bringing together all the modular components (middleware, routes, services) into a cohesive web server that can handle requests and serve the frontend interface.
-Now, when creating new transforms - 
+## Core Graph Functionality
+* Create, edit, and delete nodes on screen
+* Connect nodes with edges to show relationships
+* Save and load investigation progress
+* Undo/redo functionality (Ctrl+Z/Ctrl+Y)
+* Box selection with Shift+click
+* Manual selection with Ctrl+click
+* Sequential node connection with C key
+* Dark mode toggle
+* Zoom controls with reset view functionality
+
+## File Management
+* Upload files to nodes (images and text files)
+* View uploaded files in node properties panel
+* Navigate through multiple images with arrow keys
+* Add notes to nodes
+
+## OSINT Transforms
+* **Domain Analysis**: Domain to IP resolution, DNS record lookup, subdomain enumeration, endpoint discovery, WHOIS information
+* **Network Intelligence**: IP to netblock analysis, IP geolocation, port scanning
+* **OSINT Tools**: Username search with Sherlock
+* **Web Analysis**: Website to domain extraction, website screenshot capture
+* **Custom Transforms**: Upload and execute custom Python transforms
+
+## Node Types
+* Automatic node type detection based on content
+* Support for: Person, Event, Organization, Username, Custom, Address, Domain, IP, Email, Geo Data, Database
+* Change node types through properties panel
+
+## Development - How to Add New Transforms
+
+The backend has been refactored into modular services for better maintainability. Server.ts acts as an entry point orchestrating middleware, routes, and services.
 
 ### Files to Consider:
-1. **src/services/externalTools.ts** - Add new tool execution function following the existing pattern
-2. **src/routes/api.ts** - Add new API endpoint with proper validation and error handling
-3. **src/js/transforms/** - Create new transform file (e.g., newTransform.js) that calls the API endpoint
-4. **src/js/main.js** - Import and register the new transform function
-5. **src/index.html** - Add context menu option if needed for the new transform
-6. **src/services/toolDetection.ts** - Add tool detection if using a new external command-line tool
+1. **src/services/externalTools.ts** - Add new tool execution function following the existing pattern
+2. **src/routes/api.ts** - Add new API endpoint with proper validation and error handling
+3. **src/js/transforms/** - Create new transform file (e.g., newTransform.js) that calls the API endpoint
+4. **src/js/main.js** - Import and register the new transform function
+5. **src/index.html** - Add context menu option if needed for the new transform
+6. **src/services/toolDetection.ts** - Add tool detection if using a new external command-line tool
 
 ### Setup Process for New Transform:
-1. Create backend function in **src/services/externalTools.ts** with proper error handling and output parsing
-2. Add API endpoint in **src/routes/api.ts** with input validation and consistent response formatting
-3. Create frontend transform module in **src/js/transforms/** that makes API calls and handles graph updates
-4. Import the transform in **src/js/main.js** and add it to the context menu handler
-5. Add menu option in **src/index.html** context menu if the transform should be available via right-click
-6. Update tool detection in **src/services/toolDetection.ts** if the transform requires a new external tool
+1. Create backend function in **src/services/externalTools.ts** with proper error handling and output parsing
+2. Add API endpoint in **src/routes/api.ts** with input validation and consistent response formatting
+3. Create frontend transform module in **src/js/transforms/** that makes API calls and handles graph updates
+4. Import the transform in **src/js/main.js** and add it to the context menu handler
+5. Add menu option in **src/index.html** context menu if the transform should be available via right-click
+6. Update tool detection in **src/services/toolDetection.ts** if the transform requires a new external tool
 
 
 # TODO
-* Allow users to create and run their own transforms using python. 
 * Integrate more transforms using APIs
-* Add a help menu to guide users
 * Better spread out the sherlock results.
 * Allow the user to create edge labels.
 * Allow the user to select from different node and connection designs.
