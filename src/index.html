@@ -44,13 +44,18 @@
                 <button onclick="ur.redo()">Redo</button>
             </div>
         </div>
-        <div class="menu">
-            <button onclick="toggleDropdown('help-dropdown')">Help</button>
-            <div id="help-dropdown" class="dropdown">
-                <button onclick="tutorialSystem.restartTutorial()">Restart Tutorial</button>
-            </div>
+    <div class="menu">
+        <button onclick="toggleDropdown('help-dropdown')">Help</button>
+        <div id="help-dropdown" class="dropdown">
+            <button onclick="tutorialSystem.restartTutorial()">Restart Tutorial</button>
         </div>
     </div>
+    <div class="menu dark-mode-menu">
+        <button id="dark-mode-toggle" onclick="toggleDarkMode()">
+            <span class="icon">🌙</span>
+        </button>
+    </div>
+</div>
 
     <div id="cy"></div>
 
@@ -119,10 +124,6 @@
         <button id="reset-view-btn" onclick="resetToDefaultView()">Reset View</button>
     </div>
 
-    <!-- Dark mode toggle button -->
-    <button id="dark-mode-toggle" onclick="toggleDarkMode()">
-        <span class="icon">🌙</span>
-    </button>
 
     <!-- Progress meter for transforms -->
     <div id="progress-meter" class="progress-meter">

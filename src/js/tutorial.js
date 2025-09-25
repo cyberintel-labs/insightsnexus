@@ -205,11 +205,11 @@ class TutorialSystem {
             },
             {
                 title: "Dark Mode Toggle",
-                content: "Toggle between light and dark themes using the moon/sun button in the bottom left corner. This helps reduce eye strain during long investigation sessions.",
+                content: "Toggle between light and dark themes using the moon/sun button in the toolbar. This helps reduce eye strain during long investigation sessions.",
                 target: "#dark-mode-toggle",
                 action: null,
                 position: "center",
-                highlight: "darkmode"
+                highlight: "darkmodebutton"
             },
             {
                 title: "Tutorial Complete!",
@@ -365,7 +365,7 @@ class TutorialSystem {
         
         // Restore backdrop blur unless we're on steps that highlight specific elements
         const currentStep = this.steps[this.currentStep];
-        if (currentStep.highlight !== 'properties' && currentStep.highlight !== 'nodes' && currentStep.highlight !== 'contextmenu' && currentStep.highlight !== 'navigation' && currentStep.highlight !== 'darkmode' && currentStep.highlight !== 'filebutton' && currentStep.highlight !== 'editbutton' && currentStep.highlight !== 'helpbutton') {
+        if (currentStep.highlight !== 'properties' && currentStep.highlight !== 'nodes' && currentStep.highlight !== 'contextmenu' && currentStep.highlight !== 'navigation' && currentStep.highlight !== 'darkmode' && currentStep.highlight !== 'filebutton' && currentStep.highlight !== 'editbutton' && currentStep.highlight !== 'helpbutton' && currentStep.highlight !== 'darkmodebutton') {
             this.overlay.style.backdropFilter = 'blur(3px)';
             this.overlay.style.webkitBackdropFilter = 'blur(3px)';
         }
@@ -376,7 +376,7 @@ class TutorialSystem {
         modal.style.boxShadow = 'var(--shadow-heavy)';
         
         // Reset element z-index if not on highlighting steps
-        if (currentStep.highlight !== 'properties' && currentStep.highlight !== 'nodes' && currentStep.highlight !== 'contextmenu' && currentStep.highlight !== 'navigation' && currentStep.highlight !== 'darkmode' && currentStep.highlight !== 'filebutton' && currentStep.highlight !== 'editbutton' && currentStep.highlight !== 'helpbutton') {
+        if (currentStep.highlight !== 'properties' && currentStep.highlight !== 'nodes' && currentStep.highlight !== 'contextmenu' && currentStep.highlight !== 'navigation' && currentStep.highlight !== 'darkmode' && currentStep.highlight !== 'filebutton' && currentStep.highlight !== 'editbutton' && currentStep.highlight !== 'helpbutton' && currentStep.highlight !== 'darkmodebutton') {
             const propertiesPanel = document.querySelector('#node-properties-menu');
             if (propertiesPanel) {
                 propertiesPanel.style.zIndex = '';
@@ -509,7 +509,7 @@ class TutorialSystem {
         }, 100);
         
         // For highlighting steps, ensure both modal and highlighted elements are crisp
-        if (step.highlight === 'properties' || step.highlight === 'nodes' || step.highlight === 'contextmenu' || step.highlight === 'navigation' || step.highlight === 'darkmode' || step.highlight === 'filebutton' || step.highlight === 'editbutton' || step.highlight === 'helpbutton') {
+        if (step.highlight === 'properties' || step.highlight === 'nodes' || step.highlight === 'contextmenu' || step.highlight === 'navigation' || step.highlight === 'darkmode' || step.highlight === 'filebutton' || step.highlight === 'editbutton' || step.highlight === 'helpbutton' || step.highlight === 'darkmodebutton') {
             this.ensurePropertiesStepClarity();
         }
         
@@ -538,7 +538,7 @@ class TutorialSystem {
         
         // For highlighting steps, ensure modal is above overlay
         const currentStep = this.steps[this.currentStep];
-        if (currentStep.highlight === 'properties' || currentStep.highlight === 'nodes' || currentStep.highlight === 'contextmenu' || currentStep.highlight === 'navigation' || currentStep.highlight === 'darkmode' || currentStep.highlight === 'filebutton' || currentStep.highlight === 'editbutton' || currentStep.highlight === 'helpbutton') {
+        if (currentStep.highlight === 'properties' || currentStep.highlight === 'nodes' || currentStep.highlight === 'contextmenu' || currentStep.highlight === 'navigation' || currentStep.highlight === 'darkmode' || currentStep.highlight === 'filebutton' || currentStep.highlight === 'editbutton' || currentStep.highlight === 'helpbutton' || currentStep.highlight === 'darkmodebutton') {
             modal.style.zIndex = '20004'; // Above overlay
         } else {
             modal.style.zIndex = '20002'; // Default tutorial modal z-index
@@ -612,6 +612,9 @@ class TutorialSystem {
         } else if (step.highlight === 'helpbutton') {
             // Highlight the Help button
             this.highlightHelpButton(targetElement);
+        } else if (step.highlight === 'darkmodebutton') {
+            // Highlight the Dark Mode toggle button
+            this.highlightDarkModeButton(targetElement);
         } else {
             // Highlight the specific element
             this.highlightElement(targetElement);
@@ -959,6 +962,45 @@ class TutorialSystem {
     }
 
     /**
+     * Highlight the Dark Mode toggle button
+     */
+    highlightDarkModeButton(element) {
+        const rect = element.getBoundingClientRect();
+        
+        // For Dark Mode button, use a different approach - create a custom spotlight without the shadow mask
+        this.spotlight.style.display = 'block';
+        this.spotlight.style.left = `${rect.left}px`;
+        this.spotlight.style.top = `${rect.top}px`;
+        this.spotlight.style.width = `${rect.width}px`;
+        this.spotlight.style.height = `${rect.height}px`;
+        this.spotlight.style.borderRadius = '8px';
+        this.spotlight.style.boxShadow = '0 0 20px var(--primary-color)'; // Only glow, no mask shadow
+        this.spotlight.style.zIndex = '20000'; // Lower z-index to ensure button is above
+        
+        // Add moon icon to the spotlight
+        this.spotlight.innerHTML = '<span style="font-size: 18px;">🌙</span>';
+        this.spotlight.style.display = 'flex';
+        this.spotlight.style.alignItems = 'center';
+        this.spotlight.style.justifyContent = 'center';
+        this.spotlight.style.fontSize = '18px';
+        this.spotlight.style.fontWeight = '600';
+        this.spotlight.style.color = 'white';
+        this.spotlight.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.9)';
+        this.spotlight.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        this.spotlight.style.fontFamily = 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
+        
+        // Remove backdrop blur from overlay to prevent blurring of highlighted elements
+        this.overlay.style.backdropFilter = 'none';
+        this.overlay.style.webkitBackdropFilter = 'none';
+        
+        // Hide the original Dark Mode button to avoid duplication
+        element.style.display = 'none';
+        
+        // Also ensure the tutorial modal is above the overlay
+        this.tutorialModal.style.zIndex = '20004';
+    }
+
+    /**
      * Temporarily hide overlay to allow interactions
      */
     temporarilyHideOverlay() {
@@ -1125,6 +1167,22 @@ class TutorialSystem {
             helpButton.style.position = '';
             helpButton.style.display = ''; // Restore Help button visibility
         }
+        const darkModeButton = document.querySelector('#dark-mode-toggle');
+        if (darkModeButton) {
+            darkModeButton.style.zIndex = '';
+            darkModeButton.style.filter = '';
+            darkModeButton.style.backdropFilter = '';
+            darkModeButton.style.webkitBackdropFilter = '';
+            darkModeButton.style.background = '';
+            darkModeButton.style.color = '';
+            darkModeButton.style.border = '';
+            darkModeButton.style.textShadow = '';
+            darkModeButton.style.fontWeight = '';
+            darkModeButton.style.fontSize = '';
+            darkModeButton.style.boxShadow = '';
+            darkModeButton.style.position = '';
+            darkModeButton.style.display = ''; // Restore Dark Mode button visibility
+        }
         this.tutorialModal.style.zIndex = '20002'; // Reset to default tutorial modal z-index
     }
 
@@ -1253,7 +1311,7 @@ class TutorialSystem {
         
         // For highlighting steps, ensure modal is above overlay
         const currentStep = this.steps[this.currentStep];
-        if (currentStep.highlight === 'properties' || currentStep.highlight === 'nodes' || currentStep.highlight === 'contextmenu' || currentStep.highlight === 'navigation' || currentStep.highlight === 'darkmode' || currentStep.highlight === 'filebutton' || currentStep.highlight === 'editbutton' || currentStep.highlight === 'helpbutton') {
+        if (currentStep.highlight === 'properties' || currentStep.highlight === 'nodes' || currentStep.highlight === 'contextmenu' || currentStep.highlight === 'navigation' || currentStep.highlight === 'darkmode' || currentStep.highlight === 'filebutton' || currentStep.highlight === 'editbutton' || currentStep.highlight === 'helpbutton' || currentStep.highlight === 'darkmodebutton') {
             modal.style.zIndex = '20004';
             // Preserve original glass effect styling
             modal.style.background = 'var(--glass-bg)';
@@ -1436,6 +1494,26 @@ class TutorialSystem {
             this.spotlight.style.alignItems = 'center';
             this.spotlight.style.justifyContent = 'center';
             this.spotlight.style.fontSize = '14px';
+            this.spotlight.style.fontWeight = '600';
+            this.spotlight.style.color = 'white';
+            this.spotlight.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.9)';
+            this.spotlight.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            this.spotlight.style.fontFamily = 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
+        } else if (currentStep.highlight === 'darkmodebutton') {
+            const darkModeButton = document.querySelector('#dark-mode-toggle');
+            if (darkModeButton) {
+                // Hide the original Dark Mode button to avoid duplication
+                darkModeButton.style.display = 'none';
+            }
+            
+            // Also update spotlight to not use shadow mask for Dark Mode button and add moon icon
+            this.spotlight.style.boxShadow = '0 0 20px var(--primary-color)';
+            this.spotlight.style.zIndex = '20000'; // Lower z-index to ensure button is above
+            this.spotlight.innerHTML = '<span style="font-size: 18px;">🌙</span>';
+            this.spotlight.style.display = 'flex';
+            this.spotlight.style.alignItems = 'center';
+            this.spotlight.style.justifyContent = 'center';
+            this.spotlight.style.fontSize = '18px';
             this.spotlight.style.fontWeight = '600';
             this.spotlight.style.color = 'white';
             this.spotlight.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.9)';

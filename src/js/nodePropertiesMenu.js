@@ -33,6 +33,7 @@ function togglePropertiesMenu() {
 function openPropertiesMenu() {
     const menu = document.getElementById("node-properties-menu");
     menu.classList.add("open");
+    document.body.classList.add("properties-menu-open");
 }
 
 /**
@@ -45,6 +46,7 @@ function openPropertiesMenu() {
 function closePropertiesMenu() {
     const menu = document.getElementById("node-properties-menu");
     menu.classList.remove("open");
+    document.body.classList.remove("properties-menu-open");
 }
 
 // Immediately assign functions to global scope
