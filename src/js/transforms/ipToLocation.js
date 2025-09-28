@@ -144,7 +144,7 @@ export async function runIpToLocation(node){
                 const newId = transformBase.createNodeId("coordinates", ipAddress);
                 if(!transformBase.nodeExists(newId)){
                     const position = transformBase.generatePositionNearNode(node);
-                    const createdNode = await transformBase.createNode(newId, `Coordinates: ${data.latitude}, ${data.longitude}`, position, parentId);
+                    const createdNode = await transformBase.createNode(newId, `${data.latitude}, ${data.longitude}`, position, parentId);
                     if(createdNode) added = true;
                 }
             }

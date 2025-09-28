@@ -95,7 +95,7 @@ export async function runDomainToIp(node){
             const newId = transformBase.createNodeId("ip", ip);
             if(!transformBase.nodeExists(newId)){
                 const position = transformBase.generatePositionNearNode(node);
-                const createdNode = await transformBase.createNode(newId, `IP: ${ip}`, position, parentId);
+                const createdNode = await transformBase.createNode(newId, `${ip}`, position, parentId);
                 if(createdNode) added = true;
             }
             

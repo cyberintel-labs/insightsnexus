@@ -105,7 +105,7 @@ export async function runDomainToDns(node){
                     const newId = transformBase.createNodeId("mx", mxRecord);
                     if(!transformBase.nodeExists(newId)){
                         const position = transformBase.generatePositionNearNode(node);
-                        const createdNode = await transformBase.createNode(newId, `MX: ${mxRecord}`, position, parentId);
+                        const createdNode = await transformBase.createNode(newId, `${mxRecord}`, position, parentId);
                         if(createdNode) added = true;
                     }
                 }
@@ -119,7 +119,7 @@ export async function runDomainToDns(node){
                     const newId = transformBase.createNodeId("ns", nsRecord);
                     if(!transformBase.nodeExists(newId)){
                         const position = transformBase.generatePositionNearNode(node);
-                        const createdNode = await transformBase.createNode(newId, `NS: ${nsRecord}`, position, parentId);
+                        const createdNode = await transformBase.createNode(newId, `${nsRecord}`, position, parentId);
                         if(createdNode) added = true;
                     }
                 }
@@ -133,7 +133,7 @@ export async function runDomainToDns(node){
                     const newId = transformBase.createNodeId("a", aRecord);
                     if(!transformBase.nodeExists(newId)){
                         const position = transformBase.generatePositionNearNode(node);
-                        const createdNode = await transformBase.createNode(newId, `A: ${aRecord}`, position, parentId);
+                        const createdNode = await transformBase.createNode(newId, `${aRecord}`, position, parentId);
                         if(createdNode) added = true;
                     }
                 }
@@ -147,7 +147,7 @@ export async function runDomainToDns(node){
                     const newId = transformBase.createNodeId("cname", cnameRecord);
                     if(!transformBase.nodeExists(newId)){
                         const position = transformBase.generatePositionNearNode(node);
-                        const createdNode = await transformBase.createNode(newId, `CNAME: ${cnameRecord}`, position, parentId);
+                        const createdNode = await transformBase.createNode(newId, `${cnameRecord}`, position, parentId);
                         if(createdNode) added = true;
                     }
                 }
@@ -161,7 +161,7 @@ export async function runDomainToDns(node){
                     const newId = transformBase.createNodeId("txt", txtRecord);
                     if(!transformBase.nodeExists(newId)){
                         const position = transformBase.generatePositionNearNode(node);
-                        const createdNode = await transformBase.createNode(newId, `TXT: ${txtRecord}`, position, parentId);
+                        const createdNode = await transformBase.createNode(newId, `${txtRecord}`, position, parentId);
                         if(createdNode) added = true;
                     }
                 }
