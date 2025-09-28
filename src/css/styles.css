@@ -1102,7 +1102,7 @@ body {
 
 /* Move dark mode toggle when properties menu is open */
 .properties-menu-open #toolbar .dark-mode-menu {
-    margin-right: calc(var(--properties-menu-width) + 20px);
+    margin-right: calc(var(--properties-menu-width) + 60px);
 }
 
 #properties-toggle-btn {
