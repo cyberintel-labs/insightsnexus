@@ -19,7 +19,7 @@ import { cy } from "../cytoscapeConfig.js";
 import { ur } from "../changeDataHandler.js";
 import { resolveNodeOverlap } from "../nodePositioning.js";
 import { detectNodeType } from "./nodeTypeDetection.js";
-import { progressMeter, TRANSFORM_DURATIONS, TRANSFORM_STRATEGIES } from "./progressMeter.js";
+import { TRANSFORM_DURATIONS } from "./transformConstants.js";
 import { multiTransformManager } from "./multiTransformManager.js";
 
 export class TransformBase {
@@ -44,13 +44,11 @@ export class TransformBase {
         this.currentTransform = transformName;
         this.transformStartTime = Date.now();
         
-        const strategy = TRANSFORM_STRATEGIES[transformName] || 'time-based';
-        const duration = customDuration || TRANSFORM_DURATIONS[transformName] || null;
+        // Get the current transform ID from MultiTransformManager
+        this.transformId = multiTransformManager.getCurrentTransformId();
         
-        // Use legacy progress meter for backward compatibility
-        if (!this.useMultiTransformManager) {
-            progressMeter.startProgress(transformName, strategy, duration);
-        }
+        // Progress tracking is handled by MultiTransformManager's display system
+        // No need to start anything here - the MultiTransformManager already created the display
     }
 
     /**
@@ -64,22 +62,9 @@ export class TransformBase {
      * @param {string} customLabel - Optional custom label for this progress update
      */
     updateTransformProgress(progress, customLabel = null) {
-        if (this.currentTransform) {
-            if (this.useMultiTransformManager) {
-                // Try to get the current transform ID if not set
-                if (!this.transformId) {
-                    this.transformId = multiTransformManager.getCurrentTransformId();
-                }
-                
-                if (this.transformId) {
-                    multiTransformManager.updateTransformProgress(this.transformId, progress, customLabel);
-                } else {
-                    // Fallback to legacy progress meter
-                    progressMeter.updateProgress(progress, customLabel);
-                }
-            } else {
-                progressMeter.updateProgress(progress, customLabel);
-            }
+        if (this.currentTransform && this.transformId) {
+            // Use MultiTransformManager's progress tracking
+            multiTransformManager.updateTransformProgress(this.transformId, progress, customLabel);
         }
     }
 
@@ -94,26 +79,13 @@ export class TransformBase {
      * @param {string} message - Optional completion message
      */
     completeTransformProgress(success = true, message = null) {
-        if (this.currentTransform) {
-            if (this.useMultiTransformManager) {
-                // Try to get the current transform ID if not set
-                if (!this.transformId) {
-                    this.transformId = multiTransformManager.getCurrentTransformId();
-                }
-                
-                if (this.transformId) {
-                    multiTransformManager.completeTransform(this.transformId, success, message);
-                } else {
-                    // Fallback to legacy progress meter
-                    progressMeter.completeProgress(success, message);
-                }
-            } else {
-                progressMeter.completeProgress(success, message);
-            }
-            this.currentTransform = null;
-            this.transformStartTime = null;
-            this.transformId = null;
+        if (this.currentTransform && this.transformId) {
+            // Use MultiTransformManager's completion handling
+            multiTransformManager.completeTransform(this.transformId, success, message);
         }
+        this.currentTransform = null;
+        this.transformStartTime = null;
+        this.transformId = null;
     }
 
     /**

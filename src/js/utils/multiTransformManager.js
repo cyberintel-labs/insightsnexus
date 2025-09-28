@@ -14,7 +14,7 @@
  * - User-friendly queuing messages
  */
 
-import { TRANSFORM_DURATIONS, TRANSFORM_STRATEGIES } from "./progressMeter.js";
+import { TRANSFORM_DURATIONS } from "./transformConstants.js";
 
 class MultiTransformManager {
     constructor() {

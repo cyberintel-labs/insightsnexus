@@ -120,30 +120,51 @@ function executeFfufSubdomain(ffufPath, domain) {
             .replace(/^www\./, '') // Remove www.
             .replace(/\/$/, ''); // Remove trailing slash
         const wordlistPath = path_1.default.join(__dirname, "../../data/subdomains-top1million-110000.txt");
-        const command = `${ffufPath} -u https://FUZZ.${cleanDomain} -w ${wordlistPath} -mc 200,301,302 -v -of csv -o -`;
+        // Use a simpler command that returns plain text output
+        const command = `${ffufPath} -w ${wordlistPath} -u https://FUZZ.${cleanDomain} -mc 200 -fs 0 -o - -s`;
         console.log(`Running ffuf for subdomains of: ${cleanDomain} (cleaned from: ${domain})`);
         console.log("Executing command:", command);
         try {
-            const { stdout } = yield execAsync(command, { maxBuffer: 1024 * 1024 * 20 });
-            const lines = stdout.split("\n").map(l => l.trim()).filter(Boolean);
+            const { stdout, stderr } = yield execAsync(command, { maxBuffer: 1024 * 1024 * 20 });
+            // Check if stderr contains any errors
+            if (stderr && stderr.trim()) {
+                console.log("ffuf stderr:", stderr);
+            }
+            // Check if stdout contains ASCII art (ffuf logo) which indicates an error
+            if (stdout.includes('/___\\') || stdout.includes('ffuf') || stdout.trim().startsWith('/')) {
+                console.log("ffuf returned ASCII art instead of results, likely an error");
+                console.log("ffuf stdout:", stdout);
+                throw new Error("ffuf command failed - received ASCII art output instead of results");
+            }
+            // Parse plain text output - each line should be a subdomain
+            const lines = stdout.split('\n').map(line => line.trim()).filter(Boolean);
             const subdomains = [];
             for (const line of lines) {
-                if (line.startsWith("input"))
-                    continue; // skip header
-                const cols = line.split(",");
-                if (cols.length > 0) {
-                    const host = cols[0].replace("https://", "").replace("/", "");
-                    if (host.includes("."))
-                        subdomains.push(host);
+                // Skip empty lines and lines that don't look like subdomains
+                if (line && line.length > 0 && !line.includes(' ') && !line.includes('\t')) {
+                    // Check if this looks like a subdomain (contains the target domain)
+                    if (line.includes(cleanDomain)) {
+                        // Keep the full subdomain (e.g., "api.example.com")
+                        if (line !== cleanDomain && line.endsWith(cleanDomain)) {
+                            subdomains.push(line);
+                        }
+                    }
+                    else {
+                        // This might be just the subdomain part, construct full domain
+                        if (line.includes('.') && !line.includes('http')) {
+                            // If it's just a prefix, construct the full subdomain
+                            subdomains.push(`${line}.${cleanDomain}`);
+                        }
+                    }
                 }
             }
             const uniqueSubs = Array.from(new Set(subdomains));
-            console.log(`ffuf found ${uniqueSubs.length} subdomains for ${cleanDomain}`);
+            console.log(`ffuf found ${uniqueSubs.length} subdomains for ${cleanDomain}:`, uniqueSubs);
             return uniqueSubs;
         }
         catch (error) {
             console.error("ffuf error:", error);
-            throw new Error("Failed to run ffuf");
+            throw new Error(`Failed to run ffuf: ${error.message}`);
         }
     });
 }
