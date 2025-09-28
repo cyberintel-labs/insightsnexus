@@ -68,7 +68,9 @@ export async function runDomainToEnd(node) {
             const newId = transformBase.createNodeId("endpoint", endpoint);
             if(!transformBase.nodeExists(newId)){
                 const position = transformBase.generatePositionNearNode(node);
-                const createdNode = await transformBase.createNode(newId, `Endpoint: ${endpoint}`, position, parentId);
+                // Create full URL by combining domain with endpoint path
+                const fullEndpoint = endpoint.startsWith('/') ? `${domain}${endpoint}` : `${domain}/${endpoint}`;
+                const createdNode = await transformBase.createNode(newId, fullEndpoint, position, parentId);
                 if(createdNode) added = true;
             }
             processedEndpoints++;
@@ -81,7 +83,10 @@ export async function runDomainToEnd(node) {
         const endpointsContent = `Feroxbuster Results for ${domain}\n` +
             `Discovered Endpoints:\n` +
             `==================\n\n` +
-            data.endpoints.map(endpoint => `- ${endpoint}`).join('\n') +
+            data.endpoints.map(endpoint => {
+                const fullEndpoint = endpoint.startsWith('/') ? `${domain}${endpoint}` : `${domain}/${endpoint}`;
+                return `- ${fullEndpoint}`;
+            }).join('\n') +
             `\n\nTotal endpoints found: ${data.endpoints.length}`;
 
         // Create File object from the content

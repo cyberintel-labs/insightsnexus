@@ -186,7 +186,7 @@ export async function executeFfufSubdomain(ffufPath: string, domain: string): Pr
  */
 export async function executeFeroxbuster(feroxPath: string, domain: string): Promise<string[]> {
     const wordlistPath = path.join(__dirname, "../../data/raft-medium-directories.txt");
-    const command = `${feroxPath} -u ${domain} -w ${wordlistPath} -s 200,201,204`;
+    const command = `${feroxPath} -u ${domain} -w ${wordlistPath} -s 200`;
 
     console.log(`Running Feroxbuster for domain: ${domain}`);
     console.log("Executing command:", command);

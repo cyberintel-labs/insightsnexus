@@ -195,7 +195,7 @@ function executeFfufSubdomain(ffufPath, domain) {
 function executeFeroxbuster(feroxPath, domain) {
     return __awaiter(this, void 0, void 0, function* () {
         const wordlistPath = path_1.default.join(__dirname, "../../data/raft-medium-directories.txt");
-        const command = `${feroxPath} -u ${domain} -w ${wordlistPath} -s 200,201,204`;
+        const command = `${feroxPath} -u ${domain} -w ${wordlistPath} -s 200`;
         console.log(`Running Feroxbuster for domain: ${domain}`);
         console.log("Executing command:", command);
         try {
