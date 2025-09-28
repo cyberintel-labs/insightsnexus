@@ -176,6 +176,9 @@ class MultiTransformManager {
         this.createProgressDisplay(transformInfo);
         this.updateMultiProgressDisplay();
         
+        // Start incremental progress updates
+        this.startIncrementalProgress(transformInfo);
+        
         try {
             // Execute the transform function
             const result = await transformInfo.function(transformInfo.node, ...transformInfo.args);
@@ -212,6 +215,9 @@ class MultiTransformManager {
     completeTransform(transformId, success = true, message = null) {
         const transformInfo = this.activeTransforms.get(transformId);
         if (!transformInfo) return;
+
+        // Stop incremental progress updates
+        this.stopIncrementalProgress(transformId);
 
         transformInfo.status = success ? 'completed' : 'failed';
         transformInfo.progress = 100;
@@ -492,6 +498,43 @@ class MultiTransformManager {
     }
 
     /**
+     * Start Incremental Progress
+     * 
+     * startIncrementalProgress(transformInfo: object)
+     * 
+     * Starts automatic incremental progress updates at 1% per second.
+     */
+    startIncrementalProgress(transformInfo) {
+        // Fixed update interval of 1000ms for consistent progress updates
+        const updateInterval = 1000;
+        
+        // Store the interval ID for cleanup
+        transformInfo.progressInterval = setInterval(() => {
+            if (transformInfo.status === 'running' && transformInfo.progress < 95) {
+                // Simple incremental progress: +1% every second
+                const newProgress = transformInfo.progress + 1;
+                
+                this.updateTransformProgress(transformInfo.id, newProgress, 'Processing...');
+            }
+        }, updateInterval);
+    }
+
+    /**
+     * Stop Incremental Progress
+     * 
+     * stopIncrementalProgress(transformId: string)
+     * 
+     * Stops the incremental progress updates for a transform.
+     */
+    stopIncrementalProgress(transformId) {
+        const transformInfo = this.activeTransforms.get(transformId);
+        if (transformInfo && transformInfo.progressInterval) {
+            clearInterval(transformInfo.progressInterval);
+            transformInfo.progressInterval = null;
+        }
+    }
+
+    /**
      * Clear All Transforms
      * 
      * clearAllTransforms()
@@ -501,6 +544,9 @@ class MultiTransformManager {
     clearAllTransforms() {
         // Clear active transforms
         this.activeTransforms.forEach((transformInfo) => {
+            // Stop incremental progress
+            this.stopIncrementalProgress(transformInfo.id);
+            
             if (transformInfo.reject) {
                 transformInfo.reject(new Error('Transform cancelled'));
             }
