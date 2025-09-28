@@ -989,6 +989,11 @@ body {
     text-align: right;
 }
 
+/* Dark mode: Make progress percentage white instead of purple */
+.dark-mode .transform-percentage {
+    color: white;
+}
+
 /* Queue item styles */
 .multi-transform-queue-item {
     background: rgba(102, 126, 234, 0.05);
