@@ -194,13 +194,16 @@ function buildContextMenu() {
     const existing = document.getElementById("run-custom-transform");
     if (existing) existing.remove();
 
-    // Add "Run Custom Transform" only if a transform exists
+    // Add "Run Custom Transform" to Transforms submenu only if a transform exists
     if(hasCustomTransform){
-        const li = document.createElement("li");
-        li.id = "run-custom-transform";
-        li.textContent = "Run Custom Transform";
-        li.onclick = () => handleContextAction("run-custom-transform");
-        menu.appendChild(li);
+        const transformSubmenu = document.getElementById("transform-submenu");
+        if (transformSubmenu) {
+            const li = document.createElement("li");
+            li.id = "run-custom-transform";
+            li.textContent = "Run Custom Transform";
+            li.onclick = () => handleContextAction("run-custom-transform");
+            transformSubmenu.appendChild(li);
+        }
     }
 }
 // END: Custom button logic will be moved to it's own file
@@ -347,7 +350,7 @@ async function runCustomTransform(node) {
     
     try {
         // Start progress tracking
-        transformBase.startTransformProgress('run-custom-transform');
+        transformBase.startTransformProgress('Running Custom Transform');
         transformBase.updateTransformProgress(10, `Custom Transform: Processing "${node.data("label")}"...`);
 
         const res = await fetch("/run-transform", {
@@ -436,7 +439,7 @@ async function handleContextAction(action){
 
     if(action === "run-custom-transform"){
         console.log("Calling custom transform")
-        executeTransformWithManager('run-custom-transform', runCustomTransform, node);
+        executeTransformWithManager('Running Custom Transform', runCustomTransform, node);
     }else if(action === "edit"){
         console.log("Inside edit action")
         const newLabel = prompt("Enter new name:", node.data("label"));
