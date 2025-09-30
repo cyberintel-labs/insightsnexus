@@ -75,7 +75,10 @@ router.post("/run-transform", (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
     try {
         const result = yield (0, customTransform_js_1.executeCustomTransform)(nodeLabel);
-        res.json({ result });
+        res.json({
+            nodes: result.nodes,
+            files: result.files
+        });
     }
     catch (err) {
         res.status(500).json({ error: "Failed to execute custom transform" });

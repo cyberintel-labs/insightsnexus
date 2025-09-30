@@ -1,4 +1,5 @@
 *.txt
 *.json
 *.state
-*.py
+customTransform.py
+dist/

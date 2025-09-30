@@ -369,39 +369,74 @@ async function runCustomTransform(node) {
         const data = await res.json();
         let added = false;
         
-        if(Array.isArray(data.result)){
-            const totalResults = data.result.length;
-            for (let i = 0; i < data.result.length; i++) {
-                const binary = data.result[i];
-                const newId = "n" + idCounter++;
-                ur.do("add", {
-                    group: "nodes",
-                    data: { id: newId, label: binary, type: "custom" },
-                    position: {
-                        x: node.position("x") + Math.random() * 100 - 50,
-                        y: node.position("y") + Math.random() * 100 - 50
-                    }
-                });
-                ur.do("add", {
-                    group: "edges",
-                    data: {
-                        id: `e-${node.id()}-${newId}-${Date.now()}`,
-                        source: node.id(),
-                        target: newId
-                    }
-                });
-                added = true;
+        // Process new nodes
+        if(data.nodes && Array.isArray(data.nodes)) {
+            const totalResults = data.nodes.length;
+            for (let i = 0; i < data.nodes.length; i++) {
+                const nodeLabel = data.nodes[i];
+                const newId = transformBase.createNodeId("custom", nodeLabel);
+                
+                if(!transformBase.nodeExists(newId)){
+                    const position = transformBase.generatePositionNearNode(node);
+                    const createdNode = await transformBase.createNode(newId, nodeLabel, position, parentId);
+                    if(createdNode) added = true;
+                }
                 
                 // Update progress based on results processed
-                const resultProgress = 60 + (i / totalResults) * 30;
-                transformBase.updateTransformProgress(resultProgress, `Custom Transform: Processing ${i + 1}/${totalResults} results...`);
+                const resultProgress = 60 + (i / totalResults) * 20;
+                transformBase.updateTransformProgress(resultProgress, `Custom Transform: Creating nodes ${i + 1}/${totalResults}...`);
+            }
+        }
+
+        // Process file uploads
+        if(data.files && Array.isArray(data.files)) {
+            transformBase.updateTransformProgress(85, `Custom Transform: Processing files...`);
+            
+            // Import uploadFiles function dynamically to avoid circular imports
+            const { uploadFiles } = await import('./fileUploadHandler.js');
+            
+            for (let i = 0; i < data.files.length; i++) {
+                const file = data.files[i];
+                
+                if (file.type === "text") {
+                    // Create text file
+                    const textFile = new File([file.content], file.name, {
+                        type: 'text/plain',
+                        lastModified: Date.now()
+                    });
+                    uploadFiles(node, [textFile]);
+                } else if (file.type === "image") {
+                    // Handle base64 image data
+                    if (file.content.startsWith('data:image/')) {
+                        // Convert data URL to blob
+                        const response = await fetch(file.content);
+                        const blob = await response.blob();
+                        const imageFile = new File([blob], file.name, {
+                            type: blob.type,
+                            lastModified: Date.now()
+                        });
+                        uploadFiles(node, [imageFile]);
+                    }
+                }
+                
+                // Update progress
+                const fileProgress = 85 + (i / data.files.length) * 10;
+                transformBase.updateTransformProgress(fileProgress, `Custom Transform: Uploading file ${i + 1}/${data.files.length}...`);
             }
         }
 
         transformBase.updateTransformProgress(95, `Custom Transform: Finalizing results...`);
 
-        if(added){
-            transformBase.completeTransformProgress(true, `Custom Transform: Found ${data.result.length} results for "${node.data("label")}"`);
+        const nodeCount = data.nodes ? data.nodes.length : 0;
+        const fileCount = data.files ? data.files.length : 0;
+        
+        if(added || fileCount > 0){
+            let message = `Custom Transform: Found ${nodeCount} nodes`;
+            if (fileCount > 0) {
+                message += ` and uploaded ${fileCount} files`;
+            }
+            message += ` for "${node.data("label")}"`;
+            transformBase.completeTransformProgress(true, message);
         } else {
             transformBase.completeTransformProgress(true, `Custom Transform: No results found for "${node.data("label")}"`);
         }

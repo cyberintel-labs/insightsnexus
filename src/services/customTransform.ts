@@ -86,7 +86,7 @@ export async function saveCustomTransform(fileBuffer: Buffer): Promise<void> {
 /**
  * Execute Custom Transform
  * 
- * executeCustomTransform(input: string): Promise<string[]>
+ * executeCustomTransform(input: string): Promise<{nodes: string[], files: Array<{name: string, content: string, type: string}>}>
  * 
  * Runs the uploaded Python transform against a provided input string.
  * 
@@ -98,29 +98,58 @@ export async function saveCustomTransform(fileBuffer: Buffer): Promise<void> {
  * 2. Builds shell command: python3 "<transformPath>" "<input>"
  * 3. Executes script using execAsync
  * 4. Captures stdout output from script
- * 5. Parses stdout as JSON array of results
+ * 5. Parses stdout as JSON with nodes and files arrays
  * 
  * Expected Python Script Contract:
  * - Accepts one argument (input string) via sys.argv[1]
  * - Processes the input string
- * - Prints a JSON array to stdout (e.g., ["a = 01100001", "b = 01100010"])
+ * - Prints JSON to stdout with nodes and files arrays
+ * 
+ * Supported Output Formats:
+ * 
+ * Array Format (simple nodes only):
+ * ```json
+ * ["result1", "result2", "result3"]
+ * ```
+ * 
+ * Object Format (with file support):
+ * ```json
+ * {
+ *   "nodes": ["result1", "result2", "result3"],
+ *   "files": [
+ *     {
+ *       "name": "report.txt",
+ *       "content": "file content here",
+ *       "type": "text"
+ *     }
+ *   ]
+ * }
+ * ```
  * 
  * Example Python Implementation:
  * ```python
  * import sys, json
  * input_str = sys.argv[1]
- * result = [f"{ch} = {bin(ord(ch))[2:].zfill(8)}" for ch in input_str]
+ * result = {
+ *     "nodes": [f"{ch} = {bin(ord(ch))[2:].zfill(8)}" for ch in input_str],
+ *     "files": [{
+ *         "name": "analysis.txt",
+ *         "content": f"Analysis of: {input_str}",
+ *         "type": "text"
+ *     }]
+ * }
  * print(json.dumps(result))
  * ```
  * 
  * Returns:
- * - Parsed JSON array from Python script output
+ * - Object with nodes array and files array from Python script output
+ * - Automatically converts array format to object format
  * 
  * Error Handling:
  * - If file does not exist, throws "No custom transform uploaded"
  * - If execution fails or JSON is invalid, logs error and throws
  */
-export async function executeCustomTransform(input: string): Promise<string[]> {
+export async function executeCustomTransform(input: string): Promise<{nodes: string[], files: Array<{name: string, content: string, type: string}>}> {
     if(!fs.existsSync(customTransformPath)){
         throw new Error("No custom transform uploaded");
     }
@@ -128,7 +157,27 @@ export async function executeCustomTransform(input: string): Promise<string[]> {
     const command = `python3 "${customTransformPath}" "${input}"`;
     try{
         const { stdout } = await execAsync(command);
-        return JSON.parse(stdout.trim());
+        const result = JSON.parse(stdout.trim());
+        
+        // Handle array format (simple nodes only) - convert to object format
+        if (Array.isArray(result)) {
+            return {
+                nodes: result,
+                files: []
+            };
+        }
+        
+        // Handle object format (with nodes and files)
+        if (typeof result === 'object' && result !== null) {
+            return {
+                nodes: result.nodes || [],
+                files: result.files || []
+            };
+        }
+        
+        // Invalid format
+        throw new Error("Invalid output format from custom transform");
+        
     }catch(error){
         console.error("Custom transform failed:", error);
         throw new Error("Failed to execute custom transform");
