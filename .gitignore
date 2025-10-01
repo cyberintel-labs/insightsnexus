@@ -3,3 +3,4 @@
 *.state
 customTransform.py
 dist/
+node_modules/
