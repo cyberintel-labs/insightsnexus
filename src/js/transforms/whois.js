@@ -126,7 +126,7 @@ export async function runWhois(node){
                 const newId = transformBase.createNodeId("nameserver", nameServer);
                 if(!transformBase.nodeExists(newId)){
                     const position = transformBase.generatePositionNearNode(node);
-                    const createdNode = await transformBase.createNode(newId, `Name Server: ${nameServer}`, position, parentId);
+                    const createdNode = await transformBase.createNode(newId, nameServer, position, parentId);
                     if(createdNode) added = true;
                 }
             }
