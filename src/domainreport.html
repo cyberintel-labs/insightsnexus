@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Domain Report Example - Insight Nexus</title>
+    <!-- Copyright (c) 2024 Investigating Project - Licensed under the MIT License -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/guide.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="guide-page">
+    <button class="back-button" onclick="window.history.back()">← Back to Guide</button>
+
+    <div class="guide-container">
+        <div class="guide-header">
+            <h1 class="guide-title">Domain Report Example</h1>
+            <p class="guide-subtitle">Comprehensive domain analysis with both nodes and files</p>
+        </div>
+
+        <div class="guide-section">
+            <div class="section-content">
+                <div class="code-block">
+                    <pre>import sys, json, requests, socket, ssl, datetime
+domain = sys.argv[1]
+
+# Initialize variables for node creation
+resolved_ip = None
+ssl_issuer = None
+server_header = None
+
+# Create comprehensive report
+report_content = f"Domain Intelligence Report for {domain}\n"
+report_content += "=" * 50 + "\n\n"
+
+# SSL Certificate Information
+try:
+    context = ssl.create_default_context()
+    with socket.create_connection((domain, 443), timeout=10) as sock:
+        with context.wrap_socket(sock, server_hostname=domain) as ssock:
+            cert = ssock.getpeercert()
+            report_content += "SSL Certificate Details:\n"
+            report_content += f"Subject: {cert.get('subject', 'N/A')}\n"
+            report_content += f"Issuer: {cert.get('issuer', 'N/A')}\n"
+            report_content += f"Valid From: {cert.get('notBefore', 'N/A')}\n"
+            report_content += f"Valid Until: {cert.get('notAfter', 'N/A')}\n\n"
+            
+            # Extract SSL issuer for node creation
+            issuer_info = cert.get('issuer', [])
+            if issuer_info:
+                for item in issuer_info:
+                    if isinstance(item, tuple) and len(item) > 0:
+                        for subitem in item:
+                            if isinstance(subitem, tuple) and len(subitem) == 2:
+                                if subitem[0] == 'organizationName':
+                                    ssl_issuer = subitem[1]
+                                    break
+                        if ssl_issuer:
+                            break
+except Exception as e:
+    report_content += f"SSL Certificate Error: {str(e)}\n\n"
+
+# DNS Resolution
+try:
+    resolved_ip = socket.gethostbyname(domain)
+    report_content += f"DNS Resolution: {domain} -> {resolved_ip}\n\n"
+except Exception as e:
+    report_content += f"DNS Resolution Error: {str(e)}\n\n"
+
+# HTTP Headers Analysis
+try:
+    response = requests.get(f"https://{domain}", timeout=10, allow_redirects=True)
+    report_content += "HTTP Headers Analysis:\n"
+    for header, value in response.headers.items():
+        if header.lower() in ['server', 'x-powered-by', 'x-frame-options', 'content-security-policy']:
+            report_content += f"{header}: {value}\n"
+            if header.lower() == 'server':
+                server_header = value
+    report_content += "\n"
+except Exception as e:
+    report_content += f"HTTP Analysis Error: {str(e)}\n\n"
+
+# Create nodes for key findings
+nodes = []
+if resolved_ip:
+    nodes.append(f"IP Address: {resolved_ip}")
+if ssl_issuer:
+    nodes.append(f"SSL Issuer: {ssl_issuer}")
+if server_header:
+    nodes.append(f"Web Server: {server_header}")
+
+# Add timestamp to report
+report_content += f"Report Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+
+# Return new format with nodes and file
+result_data = {
+    "nodes": nodes,
+    "files": [{
+        "name": f"domain_intel_{domain}_{int(datetime.datetime.now().timestamp())}.txt",
+        "content": report_content,
+        "type": "text"
+    }]
+}
+print(json.dumps(result_data))</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add dark mode support
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        // Check for existing dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Save dark mode preference
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModeToggle = document.createElement('button');
+            darkModeToggle.innerHTML = '🌙';
+            darkModeToggle.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--primary-gradient);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 18px;
+                z-index: 1000;
+                box-shadow: var(--shadow-light);
+                transition: var(--transition-smooth);
+            `;
+            darkModeToggle.onclick = function() {
+                toggleDarkMode();
+                localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            };
+            document.body.appendChild(darkModeToggle);
+        });
+    </script>
+</body>
+
+</html>

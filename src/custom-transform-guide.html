@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Custom Transform User Guide - Insight Nexus</title>
+    <!-- Copyright (c) 2024 Investigating Project - Licensed under the MIT License -->
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/guide.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+</head>
+
+<body class="guide-page">
+    <button class="back-button" onclick="window.close()">← Back to App</button>
+
+    <div class="guide-container">
+        <div class="guide-header">
+            <h1 class="guide-title">Custom Transform User Guide</h1>
+            <p class="guide-subtitle">Extend your investigation graph with custom Python logic</p>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">Overview</h2>
+            <div class="section-content">
+                <p>Custom transforms let you extend the investigation graph with your own Python logic. You can upload a Python script that processes any input string and returns results that get integrated into your investigation.</p>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">Security Considerations</h2>
+            <div class="section-content">
+                <div class="highlight-box warning">
+                    <div class="highlight-title">⚠️ Important Security Notice</div>
+                    <p>Custom transforms execute Python code directly on the server. Only upload scripts you trust completely. In production environments, implement additional security measures such as sandboxing, code validation, and restricted execution environments.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">Quick Start</h2>
+            <div class="section-content">
+                <h3>Create Your Python Script</h3>
+                <p>Write a Python script that follows this contract:</p>
+                
+                <div class="code-block">
+                    <pre>import sys, json
+
+# Get the input string from command line argument
+input_str = sys.argv[1]
+
+# Process the input string (your custom logic here)
+result = [f"Processed: {input_str}"]
+
+# Print JSON to stdout
+print(json.dumps(result))</pre>
+                </div>
+
+                <h3>Requirements</h3>
+                <ul class="requirements-list">
+                    <li>Accept one command-line argument via <code>sys.argv[1]</code></li>
+                    <li>Print valid JSON to stdout</li>
+                    <li>Have a <code>.py</code> extension</li>
+                </ul>
+
+                <h3>Upload Your Script</h3>
+                <ol class="step-list">
+                    <li>Go to the application toolbar and click "Tools" → "Upload Transform"</li>
+                    <li>Select your <code>.py</code> file in the file picker dialog</li>
+                    <li>Click "Open" to upload</li>
+                </ol>
+                <p>The button text changes to "Remove Transform" upon successful upload.</p>
+
+                <h3>Execute Your Transform</h3>
+                <p>Right-click any node in your investigation graph, select Transforms, then select "Run Custom Transform" from the context menu. Your script executes with the node's data as input, and results appear as new nodes connected to the original.</p>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">Output Formats</h2>
+            <div class="section-content">
+                <p>Your script can output JSON in two formats:</p>
+
+                <h3>Array Format (Simple Nodes Only)</h3>
+                <div class="code-block">
+                    <pre>["result1", "result2", "result3"]</pre>
+                </div>
+
+                <h3>Object Format (With File Support)</h3>
+                <div class="code-block">
+                    <pre>{
+  "nodes": ["result1", "result2", "result3"],
+  "files": [
+    {
+      "name": "report.txt",
+      "content": "file content here",
+      "type": "text"
+    }
+  ]
+}</pre>
+                </div>
+
+                <h3>File Object Properties</h3>
+                <table class="file-format-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>name</code></td>
+                            <td>The filename</td>
+                        </tr>
+                        <tr>
+                            <td><code>content</code></td>
+                            <td>File content (plain text for text files, base64 data URL for images)</td>
+                        </tr>
+                        <tr>
+                            <td><code>type</code></td>
+                            <td>Either "text" or "image"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">Example Scripts</h2>
+            <div class="section-content">
+                <p>Reference implementations are available in the project's <code>saves/examples/</code> directory:</p>
+                
+                <div class="highlight-box">
+                    <div class="highlight-title">Available Examples</div>
+                    <p><strong><a href="dnsTransfer.html" style="color: var(--primary-color); text-decoration: none;">dnsTransfer.py</a></strong> - DNS zone transfer attempt with file upload</p>
+                    <p><strong><a href="hashDetect.html" style="color: var(--primary-color); text-decoration: none;">hashDetect.py</a></strong> - Hash type detection with node creation</p>
+                    <p><strong><a href="domainreport.html" style="color: var(--primary-color); text-decoration: none;">domainreport.py</a></strong> - Comprehensive domain analysis with both nodes and files</p>
+                </div>
+                
+                <p>These examples demonstrate different transform patterns and output formats.</p>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">System Behavior</h2>
+            <div class="section-content">
+                <ul class="requirements-list">
+                    <li><strong>Single Active Transform:</strong> Only one custom transform can be active at a time. Uploading a new script automatically replaces the previous one.</li>
+                    <li><strong>Storage:</strong> Scripts are stored as <code>customTransform.py</code> in the <code>saves/</code> directory.</li>
+                    <li><strong>Execution:</strong> Scripts are executed using <code>python3 "path/to/customTransform.py" "input_string"</code>.</li>
+                    <li><strong>Input:</strong> Node data is passed as a command-line argument to your script.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">Management</h2>
+            <div class="section-content">
+                <h3>Removing Your Transform</h3>
+                <p>To remove your custom transform:</p>
+                <ol class="step-list">
+                    <li>Click "Tools" in the toolbar</li>
+                    <li>Select "Remove Transform"</li>
+                    <li>The script is deleted from the server and the button reverts to "Upload Transform"</li>
+                </ol>
+
+                <h3>Error Handling</h3>
+                <ul class="requirements-list">
+                    <li><strong>Invalid JSON:</strong> If your script outputs invalid JSON, the transform fails</li>
+                    <li><strong>Python Errors:</strong> Execution errors are logged to the console</li>
+                    <li><strong>File Upload Errors:</strong> Display alert messages to the user</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="guide-section">
+            <h2 class="section-title">Advanced Patterns</h2>
+            <div class="section-content">
+                <h3>Multiple Results</h3>
+                <p>Return multiple results to create multiple connected nodes:</p>
+                <div class="code-block">
+                    <pre>import sys, json
+input_str = sys.argv[1]
+nodes = [f"Result {i}: {item}" for i, item in enumerate(process_input(input_str))]
+print(json.dumps({"nodes": nodes, "files": []}))</pre>
+                </div>
+
+                <h3>File Generation</h3>
+                <p>Create and upload files with your transform results:</p>
+                <div class="code-block">
+                    <pre>import sys, json
+input_str = sys.argv[1]
+
+# Generate report content
+report = f"Analysis Report for: {input_str}\n"
+report += f"Timestamp: {datetime.now()}\n"
+report += f"Length: {len(input_str)}\n"
+
+result = {
+    "nodes": [f"Analyzed: {input_str}"],
+    "files": [{
+        "name": "analysis_report.txt",
+        "content": report,
+        "type": "text"
+    }]
+}
+print(json.dumps(result))</pre>
+                </div>
+
+                <h3>Image Upload</h3>
+                <p>Upload images using base64 data URLs:</p>
+                <div class="code-block">
+                    <pre>import sys, json, base64
+
+# Generate or load image data
+image_data = generate_image_data(input_str)
+
+result = {
+    "nodes": [f"Generated image for: {input_str}"],
+    "files": [{
+        "name": "output.png",
+        "content": f"data:image/png;base64,{image_data}",
+        "type": "image"
+    }]
+}
+print(json.dumps(result))</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add dark mode support
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        // Check for existing dark mode preference
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Save dark mode preference
+        document.addEventListener('DOMContentLoaded', function() {
+            const darkModeToggle = document.createElement('button');
+            darkModeToggle.innerHTML = '🌙';
+            darkModeToggle.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--primary-gradient);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 18px;
+                z-index: 1000;
+                box-shadow: var(--shadow-light);
+                transition: var(--transition-smooth);
+            `;
+            darkModeToggle.onclick = function() {
+                toggleDarkMode();
+                localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            };
+            document.body.appendChild(darkModeToggle);
+        });
+    </script>
+</body>
+
+</html>

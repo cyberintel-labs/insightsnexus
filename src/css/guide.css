@@ -1,0 +1,328 @@
+/* Guide-specific styles */
+.guide-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: var(--glass-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-heavy);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    min-height: 100vh;
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+.guide-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid var(--glass-border);
+}
+
+.guide-title {
+    font-size: 2.5em;
+    font-weight: 600;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 10px 0;
+}
+
+.guide-subtitle {
+    font-size: 1.2em;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin: 0;
+}
+
+.guide-section {
+    margin-bottom: 40px;
+    padding: 30px;
+    background: var(--panel-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--glass-border);
+    transition: var(--transition-smooth);
+}
+
+.guide-section:hover {
+    background: var(--panel-hover-bg);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-light);
+}
+
+.section-title {
+    font-size: 1.8em;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.section-content {
+    line-height: 1.7;
+    color: var(--text-color);
+    font-size: 1.1em;
+}
+
+.section-content p {
+    margin-bottom: 16px;
+}
+
+.code-block {
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-small);
+    padding: 20px;
+    margin: 20px 0;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+    overflow-x: auto;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.code-block pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.highlight-box {
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: var(--border-radius-small);
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.highlight-box.warning {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.highlight-box.warning .highlight-title {
+    color: #e74c3c;
+}
+
+.highlight-title {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0 0 10px 0;
+    font-size: 1.1em;
+}
+
+.step-list {
+    counter-reset: step-counter;
+    list-style: none;
+    padding: 0;
+}
+
+.step-list li {
+    counter-increment: step-counter;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: var(--input-bg);
+    border-radius: var(--border-radius-small);
+    border: 1px solid var(--glass-border);
+    position: relative;
+    padding-left: 60px;
+}
+
+.step-list li::before {
+    content: counter(step-counter);
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    background: var(--primary-gradient);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.requirements-list {
+    list-style: none;
+    padding: 0;
+}
+
+.requirements-list li {
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    background: var(--input-bg);
+    border-radius: var(--border-radius-small);
+    border-left: 4px solid var(--primary-color);
+    position: relative;
+    padding-left: 40px;
+}
+
+.requirements-list li::before {
+    content: "✓";
+    position: absolute;
+    left: 15px;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.file-format-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: var(--input-bg);
+    border-radius: var(--border-radius-small);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+.file-format-table th,
+.file-format-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.file-format-table th {
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 600;
+}
+
+.file-format-table tr:hover {
+    background: var(--panel-hover-bg);
+}
+
+.example-link {
+    display: inline-block;
+    background: var(--primary-gradient);
+    color: white;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-small);
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    margin: 5px 5px 5px 0;
+}
+
+.example-link:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-light);
+}
+
+.back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 500;
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-light);
+    z-index: 1000;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-heavy);
+}
+
+/* Override main app styles for guide page */
+html, body {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    max-height: none !important;
+}
+
+/* Ensure all content is visible */
+.guide-container {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+}
+
+/* Make sure sections are fully visible */
+.guide-section {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+}
+
+/* Force visibility of all content */
+* {
+    max-height: none !important;
+}
+
+/* Additional overrides to ensure content is visible */
+body.guide-page {
+    overflow: visible !important;
+    height: auto !important;
+}
+
+/* Ensure the page can scroll */
+html {
+    overflow-y: scroll !important;
+    overflow-x: visible !important;
+}
+
+/* Dark mode adjustments */
+.dark-mode .guide-container {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+}
+
+.dark-mode .guide-section {
+    background: var(--panel-bg);
+    border-color: var(--glass-border);
+}
+
+.dark-mode .guide-section:hover {
+    background: var(--panel-hover-bg);
+}
+
+.dark-mode .code-block {
+    background: var(--input-bg);
+    border-color: var(--glass-border);
+}
+
+.dark-mode .highlight-box {
+    background: rgba(74, 144, 226, 0.1);
+    border-color: rgba(74, 144, 226, 0.3);
+}
+
+.dark-mode .highlight-box.warning {
+    background: rgba(231, 76, 60, 0.15);
+    border-color: rgba(231, 76, 60, 0.4);
+}
+
+.dark-mode .step-list li {
+    background: var(--input-bg);
+    border-color: var(--glass-border);
+}
+
+.dark-mode .requirements-list li {
+    background: var(--input-bg);
+}
+
+.dark-mode .file-format-table {
+    background: var(--input-bg);
+}
+
+.dark-mode .file-format-table th,
+.dark-mode .file-format-table td {
+    border-color: var(--glass-border);
+}
+
+.dark-mode .file-format-table tr:hover {
+    background: var(--panel-hover-bg);
+}

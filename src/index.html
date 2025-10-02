@@ -48,6 +48,7 @@
         <button onclick="toggleDropdown('help-dropdown')">Help</button>
         <div id="help-dropdown" class="dropdown">
             <button onclick="tutorialSystem.restartTutorial()">Restart Tutorial</button>
+            <button onclick="openCustomTransformGuide()">Custom Transform User Guide</button>
         </div>
     </div>
     <div class="menu dark-mode-menu">
@@ -199,6 +200,9 @@
         };
         window.resetToDefaultView = function() {
             console.log('resetToDefaultView called - waiting for module to load');
+        };
+        window.openCustomTransformGuide = function() {
+            window.open('custom-transform-guide.html', '_blank');
         };
     </script>
     

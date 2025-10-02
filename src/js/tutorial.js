@@ -212,6 +212,14 @@ class TutorialSystem {
                 highlight: "darkmodebutton"
             },
             {
+                title: "Custom Transforms Guide",
+                content: "Access the Custom Transforms Guide from the Help menu to learn how to create your own custom OSINT transforms. This powerful feature allows you to extend the tool's capabilities with custom Python scripts for specialized investigations.",
+                target: "button[onclick=\"toggleDropdown('help-dropdown')\"]",
+                action: null,
+                position: "center",
+                highlight: "helpbutton"
+            },
+            {
                 title: "Tutorial Complete!",
                 content: "You're ready to start your OSINT investigation! You've learned how to create nodes, connect them, use OSINT tools, and manage your investigations. You can restart this tutorial anytime from the Help menu. Happy investigating!",
                 target: "button[onclick=\"toggleDropdown('help-dropdown')\"]",
