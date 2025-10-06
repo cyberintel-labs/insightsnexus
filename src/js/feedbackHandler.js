@@ -42,20 +42,55 @@ function openFeedbackEmail() {
     }
 }
 
-// Make function immediately available globally
+/**
+ * Open Support Email
+ * 
+ * openSupportEmail()
+ * 
+ * Opens the user's default email client with a pre-populated subject line
+ * for support requests. This provides a seamless experience for users
+ * experiencing issues with the application.
+ */
+function openSupportEmail() {
+    try {
+        // Create a pre-populated subject line
+        const supportSubject = '[Insight Nexus - Support] User Support';
+        
+        // Create email body template with helpful prompts
+        const emailBody = `Please describe the issue you are experiencing:`;
+        
+        // Create mailto link with encoded subject and body
+        const mailtoLink = `mailto:info@insightsnexus.org?subject=${encodeURIComponent(supportSubject)}&body=${emailBody}`;
+
+        // Open email client
+        window.location.href = mailtoLink;
+        
+        console.log('Support email client opened successfully');
+        
+    } catch (error) {
+        console.error('Error opening email client:', error);
+        
+        // Fallback: Show alert if email client fails to open
+        alert('Unable to open email client. Please send your support request to info@insightsnexus.org with the subject "[Insight Nexus - Support] User Support"');
+    }
+}
+
+// Make functions immediately available globally
 window.openFeedbackEmail = openFeedbackEmail;
+window.openSupportEmail = openSupportEmail;
 
 /**
  * Initialize Feedback Handler
  * 
  * initFeedbackHandler()
  * 
- * Initializes the feedback handler by making the openFeedbackEmail function
- * globally available.
+ * Initializes the feedback handler by making the openFeedbackEmail and
+ * openSupportEmail functions globally available.
  */
 function initFeedbackHandler() {
-    // Make function globally available 
+    // Make functions globally available 
     window.openFeedbackEmail = openFeedbackEmail;
+    window.openSupportEmail = openSupportEmail;
     
     console.log('Feedback handler initialized successfully');
 }
@@ -64,5 +99,6 @@ function initFeedbackHandler() {
 document.addEventListener('DOMContentLoaded', initFeedbackHandler);
 
 export { 
-    openFeedbackEmail
+    openFeedbackEmail,
+    openSupportEmail
 };
