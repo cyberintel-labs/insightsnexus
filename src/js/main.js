@@ -787,6 +787,12 @@ document.addEventListener("keydown", function(evt){
         evt.preventDefault();
         ur.redo();
     }
+    if((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === "s"){
+        evt.preventDefault();
+        saveToCurrentFile().catch(error => {
+            console.error('Error in Ctrl+S save:', error);
+        });
+    }
 
     if(evt.key === "Shift" && !shiftDown){
         shiftDown = true;

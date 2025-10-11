@@ -2,6 +2,46 @@
 
 This local web application allows users to manipulate and connect nodes on their screen to streamline OSINT investigations and information gathering.
 
+## IMPORTANT LEGAL DISCLAIMER AND TERMS OF SERVICE
+
+**BY USING THIS SOFTWARE, YOU ACKNOWLEDGE AND AGREE TO THE FOLLOWING TERMS:**
+
+### Legal Compliance and Authorized Use Only
+This software is designed for **LEGITIMATE OSINT INVESTIGATIONS ONLY**. Users must ensure they have proper authorization before conducting any reconnaissance activities. Unauthorized scanning, enumeration, or information gathering activities may violate local, national, and international laws
+
+### Prohibited Activities
+**DO NOT USE THIS SOFTWARE FOR:**
+- Scanning networks or systems you do not own or lack explicit permission to test
+- Conducting reconnaissance on targets without proper authorization
+- Violating any platform's Terms of Service (social media, websites, etc.)
+- Engaging in harassment, stalking, or doxxing activities
+- Any illegal or malicious activities
+- Unauthorized penetration testing or security assessments
+
+### User Responsibility and Liability
+- **You are solely responsible** for ensuring all activities comply with applicable laws
+- **You assume all legal liability** for any misuse of this software
+- The developers and contributors **disclaim all liability** for misuse or illegal activities
+- Users must obtain proper authorization before testing any external systems
+- Users must respect rate limits and terms of service of target platforms
+
+### Ethical Guidelines
+- Only use this tool on systems you own or have explicit written permission to test
+- Respect privacy and data protection laws
+- Do not use information gathered for malicious purposes
+- Follow responsible disclosure practices for any vulnerabilities discovered
+- Consider the ethical implications of your investigations
+
+### No Warranty
+This software is provided "AS IS" without warranty of any kind. The developers make no representations or warranties regarding the legality, appropriateness, or safety of using this software for any particular purpose.
+
+### Indemnification
+By using this software, you agree to indemnify and hold harmless the developers, contributors, and distributors from any claims, damages, or legal actions arising from your use of this software.
+
+**IF YOU DO NOT AGREE TO THESE TERMS, DO NOT USE THIS SOFTWARE.**
+
+---
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

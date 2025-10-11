@@ -121,37 +121,55 @@ export function loadSaveFiles(){
  * 
  * Process:
  * 1. Gets the current loaded filename from localStorage
- * 2. Exports current graph data using Cytoscape's json() method
- * 3. Sends data to server via POST request to /save endpoint
- * 4. Updates status display with success/failure message
+ * 2. If no current file exists, creates a new project automatically
+ * 3. Exports current graph data using Cytoscape's json() method
+ * 4. Sends data to server via POST request to /save endpoint
+ * 5. Updates status display with success/failure message
  * 
  * Behavior:
- * - If no current file exists, prompts user to create new file
- * - Uses the same filename as the currently loaded graph
+ * - If no current file exists, creates new project with timestamp-based name
+ * - Uses the same filename as the currently loaded graph for subsequent saves
  * - Provides immediate feedback on save operation
+ * - Handles network errors gracefully
  */
-export function saveToCurrentFile(){
+export async function saveToCurrentFile(){
     const currentFile = localStorage.getItem('lastSavedFile');
+    let filename, displayName;
+    
     if(!currentFile) {
-        // No current file, prompt for new filename
-        saveAsNewFile();
-        return;
+        // No current file, create new project automatically
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        filename = `project-${timestamp}`;
+        displayName = `${filename}.json`;
+    } else {
+        filename = currentFile.replace('.json', '');
+        displayName = currentFile;
     }
     
-    const filename = currentFile.replace('.json', '');
     const graphData = cy.json();
     
-    fetch("/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename, graphData })
-    }).then(res => {
-        if(res.ok) {
-            setStatusMessage(`Saved to "${currentFile}"`);
+    try {
+        const response = await fetch("/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filename, graphData })
+        });
+        
+        if(response.ok) {
+            // Store the filename in localStorage for future saves (only if new project)
+            if(!currentFile) {
+                localStorage.setItem('lastSavedFile', displayName);
+                setStatusMessage(`New project created and saved to "${displayName}"`);
+            } else {
+                setStatusMessage(`Saved to "${displayName}"`);
+            }
         } else {
-            setStatusMessage(`Failed to save "${currentFile}"`);
+            setStatusMessage(`Failed to save "${displayName}"`);
         }
-    });
+    } catch (error) {
+        console.error('Error saving file:', error);
+        setStatusMessage(`Network error: Failed to save "${displayName}"`);
+    }
 }
 
 /**
