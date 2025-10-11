@@ -73,6 +73,9 @@ export function initNodePropertiesMenu(cytoscapeInstance){
     // const noNodeMessage = document.getElementById("no-node-message");
     // const nodeDetails = document.getElementById("node-details");
 
+    // Initialize drag and drop functionality for properties sections
+    const dragDropManager = initPropertiesSectionDragDrop();
+
     // Show node details when a node is selected
     cy.on("select", "node", (evt) => {
         selectedNode = evt.target;
@@ -281,6 +284,11 @@ export function initNodePropertiesMenu(cytoscapeInstance){
                 textsContainer.appendChild(wrapper);
             });
         }
+        
+        // Re-add drag handles after DOM updates
+        if (dragDropManager && dragDropManager.refreshDragHandles) {
+            setTimeout(() => dragDropManager.refreshDragHandles(), 10);
+        }
     }
 }
 
@@ -352,6 +360,323 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+
+/**
+ * Drag and Drop Manager for Properties Sections
+ * 
+ * Manages drag and drop functionality for reordering properties sections
+ * within the node properties panel. Follows best practices for DOM manipulation,
+ * event handling, and memory management.
+ */
+class PropertiesSectionDragDropManager {
+    constructor() {
+        this.propertiesContent = document.getElementById("properties-content");
+        this.draggedElement = null;
+        this.draggedOverElement = null;
+        this.sectionHeaders = [];
+        this.eventListeners = new Map();
+        
+        if (!this.propertiesContent) {
+            console.warn("Properties content container not found");
+            return;
+        }
+        
+        this.init();
+    }
+
+    /**
+     * Initialize drag and drop functionality
+     */
+    init() {
+        try {
+            this.setupDragHandles();
+            this.loadSavedOrder();
+        } catch (error) {
+            console.error("Failed to initialize drag and drop:", error);
+        }
+    }
+
+    /**
+     * Setup drag handles for all section headers
+     */
+    setupDragHandles() {
+        this.sectionHeaders = Array.from(
+            document.querySelectorAll(".properties-section .section-header")
+        );
+        
+        this.sectionHeaders.forEach(header => {
+            if (!header.querySelector(".drag-handle")) {
+                this.createDragHandle(header);
+            }
+        });
+    }
+
+    /**
+     * Create and attach drag handle to a section header
+     * @param {HTMLElement} header - The section header element
+     */
+    createDragHandle(header) {
+        try {
+            const dragHandle = document.createElement("span");
+            dragHandle.classList.add("drag-handle");
+            dragHandle.innerHTML = "⋮⋮";
+            dragHandle.title = "Drag to reorder sections";
+            
+            // Use CSS classes instead of inline styles
+            dragHandle.classList.add("drag-handle-styled");
+
+            header.insertBefore(dragHandle, header.firstChild);
+            
+            const section = header.closest(".properties-section");
+            if (section) {
+                this.makeSectionDraggable(section);
+            }
+        } catch (error) {
+            console.error("Failed to create drag handle:", error);
+        }
+    }
+
+    /**
+     * Make a section draggable and attach event listeners
+     * @param {HTMLElement} section - The properties section element
+     */
+    makeSectionDraggable(section) {
+        section.draggable = true;
+        section.classList.add("draggable-section");
+        
+        // Store event listeners for cleanup
+        const listeners = {
+            dragstart: (e) => this.handleDragStart(e),
+            dragend: (e) => this.handleDragEnd(e),
+            dragover: (e) => this.handleDragOver(e),
+            dragenter: (e) => this.handleDragEnter(e),
+            dragleave: (e) => this.handleDragLeave(e),
+            drop: (e) => this.handleDrop(e)
+        };
+        
+        // Attach listeners and store references
+        Object.entries(listeners).forEach(([event, handler]) => {
+            section.addEventListener(event, handler);
+        });
+        
+        this.eventListeners.set(section, listeners);
+    }
+
+    /**
+     * Handle drag start event
+     * @param {DragEvent} e - The drag start event
+     */
+    handleDragStart(e) {
+        try {
+            this.draggedElement = e.target;
+            this.draggedElement.classList.add("dragging");
+            
+            // Set drag data
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/html", this.draggedElement.outerHTML);
+            
+            // Add visual feedback using CSS classes
+            this.draggedElement.style.opacity = "0.5";
+            this.draggedElement.style.transform = "rotate(2deg)";
+        } catch (error) {
+            console.error("Drag start failed:", error);
+        }
+    }
+
+    /**
+     * Handle drag end event
+     * @param {DragEvent} e - The drag end event
+     */
+    handleDragEnd(e) {
+        try {
+            if (this.draggedElement) {
+                this.draggedElement.classList.remove("dragging");
+                this.draggedElement.style.opacity = "";
+                this.draggedElement.style.transform = "";
+                this.draggedElement = null;
+            }
+            
+            this.cleanupDragOverStates();
+        } catch (error) {
+            console.error("Drag end failed:", error);
+        }
+    }
+
+    /**
+     * Handle drag over event
+     * @param {DragEvent} e - The drag over event
+     */
+    handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    }
+
+    /**
+     * Handle drag enter event
+     * @param {DragEvent} e - The drag enter event
+     */
+    handleDragEnter(e) {
+        e.preventDefault();
+        const section = e.target.closest(".properties-section");
+        if (section && section !== this.draggedElement) {
+            this.draggedOverElement = section;
+            section.classList.add("drag-over");
+        }
+    }
+
+    /**
+     * Handle drag leave event
+     * @param {DragEvent} e - The drag leave event
+     */
+    handleDragLeave(e) {
+        const section = e.target.closest(".properties-section");
+        if (section && section !== this.draggedElement) {
+            section.classList.remove("drag-over");
+        }
+    }
+
+    /**
+     * Handle drop event
+     * @param {DragEvent} e - The drop event
+     */
+    handleDrop(e) {
+        e.preventDefault();
+        
+        try {
+            if (this.draggedElement && this.draggedOverElement && 
+                this.draggedElement !== this.draggedOverElement) {
+                
+                this.reorderSections();
+                this.saveSectionOrder();
+                this.showSuccessMessage();
+            }
+            
+            this.cleanupDropState();
+        } catch (error) {
+            console.error("Drop failed:", error);
+        }
+    }
+
+    /**
+     * Reorder sections based on drag and drop
+     */
+    reorderSections() {
+        const container = this.propertiesContent;
+        const draggedIndex = Array.from(container.children).indexOf(this.draggedElement);
+        const targetIndex = Array.from(container.children).indexOf(this.draggedOverElement);
+        
+        if (draggedIndex < targetIndex) {
+            container.insertBefore(this.draggedElement, this.draggedOverElement.nextSibling);
+        } else {
+            container.insertBefore(this.draggedElement, this.draggedOverElement);
+        }
+    }
+
+    /**
+     * Save section order to localStorage
+     */
+    saveSectionOrder() {
+        try {
+            const sections = Array.from(document.querySelectorAll(".properties-section"));
+            const order = sections.map(section => {
+                const header = section.querySelector(".section-header");
+                return header ? header.textContent.trim() : "";
+            }).filter(title => title);
+            
+            localStorage.setItem("propertiesSectionOrder", JSON.stringify(order));
+        } catch (error) {
+            console.error("Failed to save section order:", error);
+        }
+    }
+
+    /**
+     * Load saved section order from localStorage
+     */
+    loadSavedOrder() {
+        try {
+            const savedOrder = localStorage.getItem("propertiesSectionOrder");
+            if (!savedOrder) return;
+            
+            const order = JSON.parse(savedOrder);
+            const sections = Array.from(document.querySelectorAll(".properties-section"));
+            const container = this.propertiesContent;
+            
+            // Create a map of section titles to elements
+            const sectionMap = new Map();
+            sections.forEach(section => {
+                const header = section.querySelector(".section-header");
+                if (header) {
+                    const title = header.textContent.trim();
+                    sectionMap.set(title, section);
+                }
+            });
+            
+            // Reorder sections based on saved order
+            order.forEach(title => {
+                const section = sectionMap.get(title);
+                if (section) {
+                    container.appendChild(section);
+                }
+            });
+        } catch (error) {
+            console.warn("Failed to load properties section order:", error);
+        }
+    }
+
+    /**
+     * Show success message after reordering
+     */
+    showSuccessMessage() {
+        if (typeof setStatusMessage === 'function') {
+            setStatusMessage("Properties sections reordered successfully!");
+        }
+    }
+
+    /**
+     * Clean up drag over states
+     */
+    cleanupDragOverStates() {
+        document.querySelectorAll(".properties-section").forEach(section => {
+            section.classList.remove("drag-over");
+        });
+    }
+
+    /**
+     * Clean up drop state
+     */
+    cleanupDropState() {
+        this.draggedOverElement = null;
+        this.cleanupDragOverStates();
+    }
+
+    /**
+     * Refresh drag handles (called when DOM updates)
+     */
+    refreshDragHandles() {
+        this.setupDragHandles();
+    }
+
+    /**
+     * Cleanup method to remove event listeners
+     */
+    destroy() {
+        this.eventListeners.forEach((listeners, section) => {
+            Object.entries(listeners).forEach(([event, handler]) => {
+                section.removeEventListener(event, handler);
+            });
+        });
+        this.eventListeners.clear();
+    }
+}
+
+/**
+ * Initialize drag and drop functionality for properties sections
+ * 
+ * @returns {PropertiesSectionDragDropManager} The drag drop manager instance
+ */
+function initPropertiesSectionDragDrop() {
+    return new PropertiesSectionDragDropManager();
+}
 
 // Export functions for use in other modules
 export { togglePropertiesMenu, openPropertiesMenu, closePropertiesMenu, showImageOverlay, closeImageOverlay };

@@ -575,6 +575,19 @@ body {
     border-bottom: none;
 }
 
+/* Enhanced borders for light mode visibility */
+:root:not(.dark-mode) .properties-section {
+    border: 1px solid rgba(102, 126, 234, 0.15);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+:root:not(.dark-mode) .properties-section:hover {
+    border-color: rgba(102, 126, 234, 0.25);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 .properties-section:hover {
     background: var(--panel-hover-bg);
     transform: translateY(-2px);
@@ -632,11 +645,100 @@ body {
     position: relative;
 }
 
+/* Enhanced borders for light mode file items */
+:root:not(.dark-mode) .file-item {
+    border: 1px solid rgba(102, 126, 234, 0.25);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+:root:not(.dark-mode) .file-item:hover {
+    border-color: rgba(102, 126, 234, 0.4);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
 .file-item:hover {
     background: var(--panel-hover-bg);
     border-color: rgba(102, 126, 234, 0.4);
     transform: translateY(-2px);
     box-shadow: var(--shadow-light);
+}
+
+/* Drag and Drop Styles for Properties Sections */
+.draggable-section {
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.draggable-section.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    z-index: 1000;
+    box-shadow: var(--shadow-heavy);
+}
+
+.draggable-section.drag-over {
+    border: 2px dashed var(--primary-color);
+    background: rgba(102, 126, 234, 0.05);
+    transform: scale(1.02);
+}
+
+/* Enhanced drag-over styling for light mode */
+:root:not(.dark-mode) .draggable-section.drag-over {
+    border: 2px dashed rgba(102, 126, 234, 0.6);
+    background: rgba(102, 126, 234, 0.08);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.draggable-section.drag-over::before {
+    content: "Drop here";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: var(--border-radius-small);
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 1001;
+    pointer-events: none;
+}
+
+.drag-handle {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    cursor: grab !important;
+    margin-right: 8px;
+    color: rgba(102, 126, 234, 0.6);
+    font-size: 14px;
+    user-select: none;
+    transition: color 0.2s ease;
+    vertical-align: middle;
+}
+
+.drag-handle-styled {
+    cursor: grab;
+    margin-right: 8px;
+    color: rgba(102, 126, 234, 0.6);
+    font-size: 14px;
+    user-select: none;
+    transition: color 0.2s ease;
+}
+
+.drag-handle:hover {
+    color: rgba(102, 126, 234, 0.8);
+}
+
+.drag-handle:active {
+    cursor: grabbing !important;
+}
+
+.draggable-section:hover .drag-handle {
+    color: rgba(102, 126, 234, 0.8);
 }
 
 /* Thumbnail image styles */
@@ -713,6 +815,21 @@ body {
     font-weight: 500;
     transition: var(--transition-smooth);
     outline: none;
+}
+
+/* Enhanced input fields for light mode */
+:root:not(.dark-mode) .node-info input,
+:root:not(.dark-mode) .node-info select {
+    border: 1px solid rgba(102, 126, 234, 0.25);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+:root:not(.dark-mode) .node-info input:focus,
+:root:not(.dark-mode) .node-info select:focus {
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.1);
 }
 
 .node-info input:focus,
@@ -1173,6 +1290,19 @@ body {
     transition: var(--transition-smooth);
     outline: none;
     box-sizing: border-box;
+}
+
+/* Enhanced notes textarea for light mode */
+:root:not(.dark-mode) .notes-textarea {
+    border: 1px solid rgba(102, 126, 234, 0.25);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+:root:not(.dark-mode) .notes-textarea:focus {
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.1);
 }
 
 .notes-textarea:focus {
