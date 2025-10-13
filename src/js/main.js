@@ -39,9 +39,11 @@ import { createNodeWithType } from "./utils/nodeTypeDetection.js";
 import { TransformBase } from "./utils/transformBase.js";
 import { multiTransformManager } from "./utils/multiTransformManager.js";
 import { initGroupManager, toggleGroupMode, getGroupedNodes, isGroupModeActive, getGroupCount } from "./groupManager.js";
+import { initNotesManager, getNotesContent, setNotesContent } from "./notesManager.js";
 
 initNodePropertiesMenu(cy);
 initGroupManager();
+initNotesManager();
 
 // START: Custom button logic will be moved to it's own file
 /**

@@ -363,7 +363,7 @@ router.post("/port-scan", (req, res) => __awaiter(void 0, void 0, void 0, functi
  * Saves the current graph state to a JSON file.
  */
 router.post("/save", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { filename, graphData } = req.body;
+    const { filename, graphData, notes } = req.body;
     if (!filename || !graphData) {
         res.status(400).json((0, dataProcessing_js_1.formatErrorResponse)(null, "Missing filename or graph data"));
         return;
@@ -371,8 +371,13 @@ router.post("/save", (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const safeName = (0, fileSystem_js_1.sanitizeFilename)(filename);
         const filePath = path_1.default.join(directories.graphSaveDir, `${safeName}.json`);
-        yield (0, fileSystem_js_1.writeJsonFile)(filePath, graphData);
-        console.log(`Graph saved to ${filePath}`);
+        // Create save data object with notes
+        const saveData = {
+            graphData,
+            notes: notes || ''
+        };
+        yield (0, fileSystem_js_1.writeJsonFile)(filePath, saveData);
+        console.log(`Graph and notes saved to ${filePath}`);
         res.status(200).json((0, dataProcessing_js_1.formatSuccessResponse)({}, "Saved successfully"));
     }
     catch (error) {

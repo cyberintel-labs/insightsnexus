@@ -1744,3 +1744,299 @@ body {
     background-color: rgba(74, 144, 226, 0.1);
     box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
 }
+
+/* Notes Panel Styles */
+#notes-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    height: 100%;
+    width: 400px;
+    background: var(--glass-bg);
+    border-right: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-heavy);
+    backdrop-filter: blur(20px);
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    transform: translateX(-100%);
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+}
+
+#notes-panel.open {
+    transform: translateX(0);
+}
+
+#notes-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+}
+
+.notes-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0 var(--border-radius) 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.notes-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.notes-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.notes-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.notes-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.global-notes-textarea {
+    flex: 1;
+    width: 100%;
+    padding: 16px;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: var(--border-radius-small);
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+    resize: none;
+    transition: var(--transition-smooth);
+    outline: none;
+    box-sizing: border-box;
+    min-height: 300px;
+}
+
+/* Enhanced notes textarea for light mode */
+:root:not(.dark-mode) .global-notes-textarea {
+    border: 1px solid rgba(102, 126, 234, 0.25);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+:root:not(.dark-mode) .global-notes-textarea:focus {
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.1);
+}
+
+.global-notes-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: var(--panel-hover-bg);
+}
+
+.global-notes-textarea::placeholder {
+    color: rgba(102, 126, 234, 0.6);
+    font-style: italic;
+    line-height: 1.6;
+}
+
+.notes-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.notes-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-color);
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+.notes-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.notes-action-btn {
+    padding: 8px 16px;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--primary-color);
+    cursor: pointer;
+    border-radius: var(--border-radius-small);
+    font-weight: 500;
+    font-size: 13px;
+    transition: var(--transition-smooth);
+    min-width: 60px;
+}
+
+.notes-action-btn:hover {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.notes-action-btn.secondary {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: rgba(102, 126, 234, 0.2);
+    color: var(--text-color);
+}
+
+.notes-action-btn.secondary:hover {
+    background: rgba(102, 126, 234, 0.1);
+    border-color: rgba(102, 126, 234, 0.3);
+    color: var(--primary-color);
+}
+
+/* Notes Toggle Button */
+#notes-toggle-btn {
+    position: fixed;
+    top: 35%;
+    left: 0;
+    width: 50px;
+    height: 80px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 0 var(--border-radius-small) var(--border-radius-small) 0;
+    font-size: 16px;
+    font-weight: bold;
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-light);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--glass-border);
+}
+
+#notes-toggle-btn:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-heavy);
+    width: 60px;
+}
+
+#notes-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.notes-icon {
+    font-size: 20px;
+    transition: var(--transition-smooth);
+}
+
+.notes-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+
+#notes-panel.open + #notes-toggle-btn {
+    left: 400px;
+}
+
+#notes-panel.open + #notes-toggle-btn .notes-icon {
+    transform: rotate(180deg);
+}
+
+/* Adjust main content when notes panel is open */
+.notes-panel-open #cy {
+    left: 400px;
+}
+
+.notes-panel-open #node-properties-menu {
+    right: 0;
+}
+
+.notes-panel-open #properties-toggle-btn {
+    right: 0;
+}
+
+/* Dark mode adjustments for notes panel */
+.dark-mode #notes-panel {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+}
+
+.dark-mode .notes-header {
+    background: var(--primary-gradient);
+}
+
+.dark-mode .global-notes-textarea {
+    background: var(--input-bg);
+    color: var(--text-color);
+}
+
+.dark-mode .global-notes-textarea:focus {
+    background: var(--panel-hover-bg);
+}
+
+.dark-mode .notes-stats {
+    color: var(--text-color);
+}
+
+.dark-mode .notes-action-btn {
+    background: rgba(74, 144, 226, 0.1);
+    color: #4a90e2;
+    border-color: rgba(74, 144, 226, 0.3);
+}
+
+.dark-mode .notes-action-btn:hover {
+    background: rgba(74, 144, 226, 0.2);
+    border-color: rgba(74, 144, 226, 0.5);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
+}
+
+.dark-mode .notes-action-btn.secondary {
+    background: rgba(74, 144, 226, 0.05);
+    border-color: rgba(74, 144, 226, 0.2);
+    color: var(--text-color);
+}
+
+.dark-mode .notes-action-btn.secondary:hover {
+    background: rgba(74, 144, 226, 0.1);
+    border-color: rgba(74, 144, 226, 0.3);
+    color: #4a90e2;
+}

@@ -14,6 +14,7 @@
 
 import { cy } from './cytoscapeConfig.js';
 import { setStatusMessage } from './setStatusMessageHandler.js';
+import { getNotesContent, setNotesContent, clearNotesForProjectSwitch } from './notesManager.js';
 
 // Import updateIdCounter function from main.js
 let updateIdCounter = null;
@@ -51,10 +52,18 @@ export function saveGraph(){
     const filename = prompt("Enter a filename:");
     if(!filename) return;
     const graphData = cy.json();
+    const notes = getNotesContent();
+    
+    const saveData = {
+        filename,
+        graphData,
+        notes: notes || ''
+    };
+    
     fetch("/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename, graphData })
+        body: JSON.stringify(saveData)
     }).then(res => {
         if(res.ok) {
             // Store the filename in localStorage for auto-load functionality
@@ -147,12 +156,19 @@ export async function saveToCurrentFile(){
     }
     
     const graphData = cy.json();
+    const notes = getNotesContent();
+    
+    const saveData = {
+        filename,
+        graphData,
+        notes: notes || ''
+    };
     
     try {
         const response = await fetch("/save", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filename, graphData })
+            body: JSON.stringify(saveData)
         });
         
         if(response.ok) {
@@ -197,10 +213,18 @@ export function saveAsNewFile(){
     if(!filename) return;
     
     const graphData = cy.json();
+    const notes = getNotesContent();
+    
+    const saveData = {
+        filename,
+        graphData,
+        notes: notes || ''
+    };
+    
     fetch("/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename, graphData })
+        body: JSON.stringify(saveData)
     }).then(res => {
         if(res.ok) {
             // Store the filename in localStorage for auto-load functionality
@@ -293,10 +317,26 @@ export function loadGraph(){
 export function confirmLoad(){
     const file = document.getElementById("file-picker").value;
     if(!file) return;
+    
+    // Clear current notes before loading new project
+    clearNotesForProjectSwitch();
+    
     fetch(`/load/${file}`)
         .then(res => res.json())
         .then(data => {
-            cy.json(data);
+            // Load graph data
+            if (data.graphData) {
+                cy.json(data.graphData);
+            } else {
+                // Backward compatibility with old save format
+                cy.json(data);
+            }
+            
+            // Load notes if available
+            if (data.notes !== undefined) {
+                setNotesContent(data.notes);
+            }
+            
             // Update ID counter to prevent duplicate ID errors
             if(updateIdCounter) updateIdCounter();
             // Store the loaded filename in localStorage for future auto-load
@@ -343,7 +383,22 @@ export function autoLoadLastSave(){
                 }
             })
             .then(data => {
-                cy.json(data);
+                // Clear current notes before loading new project
+                clearNotesForProjectSwitch();
+                
+                // Load graph data
+                if (data.graphData) {
+                    cy.json(data.graphData);
+                } else {
+                    // Backward compatibility with old save format
+                    cy.json(data);
+                }
+                
+                // Load notes if available
+                if (data.notes !== undefined) {
+                    setNotesContent(data.notes);
+                }
+                
                 // Update ID counter to prevent duplicate ID errors
                 if(updateIdCounter) updateIdCounter();
                 setStatusMessage(`Auto-loaded: ${lastSavedFile}`);
@@ -383,10 +438,25 @@ function loadMostRecentFromServer(){
         })
         .then(data => {
             const filename = data.filename;
-            return fetch(`/load/${filename}`).then(res => res.json()).then(graphData => ({ filename, graphData }));
+            return fetch(`/load/${filename}`).then(res => res.json()).then(loadData => ({ filename, loadData }));
         })
         .then(data => {
-            cy.json(data.graphData);
+            // Clear current notes before loading new project
+            clearNotesForProjectSwitch();
+            
+            // Load graph data
+            if (data.loadData.graphData) {
+                cy.json(data.loadData.graphData);
+            } else {
+                // Backward compatibility with old save format
+                cy.json(data.loadData);
+            }
+            
+            // Load notes if available
+            if (data.loadData.notes !== undefined) {
+                setNotesContent(data.loadData.notes);
+            }
+            
             // Update ID counter to prevent duplicate ID errors
             if(updateIdCounter) updateIdCounter();
             // Store the loaded filename in localStorage for future auto-load
@@ -428,6 +498,9 @@ export function newProject(){
     // Clear the graph
     cy.elements().remove();
     
+    // Clear notes for new project
+    clearNotesForProjectSwitch();
+    
     // Reset ID counter since graph is empty
     if(updateIdCounter) updateIdCounter();
     
@@ -439,5 +512,5 @@ export function newProject(){
         window.setMode("none");
     }
     
-    setStatusMessage("New project created - graph cleared");
+    setStatusMessage("New project created - graph and notes cleared");
 }

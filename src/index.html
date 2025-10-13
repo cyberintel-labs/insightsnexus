@@ -65,6 +65,37 @@
 
     <div id="cy"></div>
 
+    <!-- Notes Panel -->
+    <div id="notes-panel">
+        <div id="notes-content">
+            <div class="notes-header">
+                <h3 class="notes-title">Investigation Notes</h3>
+                <button id="notes-close-btn" class="notes-close-btn" onclick="toggleNotesPanel()">
+                    <span class="close-icon">×</span>
+                </button>
+            </div>
+            <div class="notes-body">
+                <textarea id="global-notes-textarea" placeholder="Write your investigation notes here...&#10;&#10;• Use this space to document your findings&#10;• Track important observations&#10;• Record hypotheses and conclusions&#10;• Notes are automatically saved with your project" class="global-notes-textarea"></textarea>
+                <div class="notes-footer">
+                    <div class="notes-stats">
+                        <span id="notes-word-count">0 words</span>
+                        <span id="notes-char-count">0 characters</span>
+                    </div>
+                    <div class="notes-actions">
+                        <button id="clear-notes-btn" class="notes-action-btn secondary">Clear</button>
+                        <button id="export-notes-btn" class="notes-action-btn">Export</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes Toggle Button -->
+    <button id="notes-toggle-btn" onclick="toggleNotesPanel()">
+        <span class="notes-icon">📝</span>
+        <span class="notes-label">Notes</span>
+    </button>
+
     <div id="node-properties-menu">
         <div id="properties-content">
 
@@ -216,6 +247,9 @@
         };
         window.openCustomTransformGuide = function() {
             window.open('custom-transform-guide.html', '_blank');
+        };
+        window.toggleNotesPanel = function() {
+            console.log('toggleNotesPanel called - waiting for module to load');
         };
     </script>
     
