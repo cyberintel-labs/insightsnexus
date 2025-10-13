@@ -1693,3 +1693,54 @@ body {
     background: rgba(231, 76, 60, 0.25);
     border-color: rgba(231, 76, 60, 0.6);
 }
+
+/* Node Group Management Styles */
+
+/* Grouped nodes styling */
+.grouped {
+    border-width: 3px !important;
+    border-color: #667eea !important;
+    border-style: solid !important;
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.4) !important;
+    background-color: rgba(102, 126, 234, 0.1) !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Group selected nodes (during drag selection) */
+.group-selected {
+    border-width: 2px !important;
+    border-color: #764ba2 !important;
+    border-style: dashed !important;
+    background-color: rgba(118, 75, 162, 0.1) !important;
+    transition: all 0.1s ease !important;
+}
+
+/* Selection box styling */
+#selection-box {
+    border: 2px dashed #667eea;
+    background-color: rgba(102, 126, 234, 0.1);
+    pointer-events: none;
+    z-index: 1000;
+    position: absolute;
+    display: none;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+/* Dark mode adjustments for group management */
+.dark-mode .grouped {
+    border-color: #4a90e2 !important;
+    box-shadow: 0 0 15px rgba(74, 144, 226, 0.4) !important;
+    background-color: rgba(74, 144, 226, 0.1) !important;
+}
+
+.dark-mode .group-selected {
+    border-color: #7b68ee !important;
+    background-color: rgba(123, 104, 238, 0.1) !important;
+}
+
+.dark-mode #selection-box {
+    border-color: #4a90e2;
+    background-color: rgba(74, 144, 226, 0.1);
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
+}

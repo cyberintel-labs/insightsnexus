@@ -34,6 +34,7 @@
             <button onclick="toggleDropdown('selection-dropdown')">Tools</button>
             <div id="selection-dropdown" class="dropdown">
                 <button onclick="handleContextAction('connect')">Connect Nodes</button>
+                <button id="group-nodes-btn" onclick="toggleGroupMode()">Group Nodes</button>
                 <button id="transform-toggle-btn" onclick="handleTransformAction()">Upload Transform</button>
             </div>
         </div>
@@ -168,6 +169,7 @@
         <li onclick="handleContextAction('edit')">Edit</li>
         <li onclick="handleContextAction('delete')">Delete</li>
         <li onclick="handleContextAction('connect')">Create Connection</li>
+        <li onclick="handleContextAction('group-nodes')">Group Nodes</li>
         <li onclick="handleContextAction('upload')">Upload File</li>
     </ul>
 
@@ -205,6 +207,12 @@
         };
         window.resetToDefaultView = function() {
             console.log('resetToDefaultView called - waiting for module to load');
+        };
+        window.toggleGroupMode = function() {
+            console.log('toggleGroupMode called - waiting for module to load');
+        };
+        window.handleContextAction = function() {
+            console.log('handleContextAction called - waiting for module to load');
         };
         window.openCustomTransformGuide = function() {
             window.open('custom-transform-guide.html', '_blank');

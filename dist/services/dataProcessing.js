@@ -317,7 +317,12 @@ function captureScreenshot(url) {
         const puppeteer = yield Promise.resolve().then(() => __importStar(require('puppeteer')));
         const browser = yield puppeteer.default.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-source-maps',
+            ]
         });
         try {
             const page = yield browser.newPage();

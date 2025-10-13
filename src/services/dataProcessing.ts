@@ -267,7 +267,12 @@ export async function captureScreenshot(url: string): Promise<string> {
     const puppeteer = await import('puppeteer');
     const browser = await puppeteer.default.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox', 
+            '--disable-dev-shm-usage',
+            '--disable-source-maps',
+        ]
     });
 
     try {

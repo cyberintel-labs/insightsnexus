@@ -38,8 +38,10 @@ import { runDomainToSub } from "./transforms/domainToSub.js";
 import { createNodeWithType } from "./utils/nodeTypeDetection.js";
 import { TransformBase } from "./utils/transformBase.js";
 import { multiTransformManager } from "./utils/multiTransformManager.js";
+import { initGroupManager, toggleGroupMode, getGroupedNodes, isGroupModeActive, getGroupCount } from "./groupManager.js";
 
 initNodePropertiesMenu(cy);
+initGroupManager();
 
 // START: Custom button logic will be moved to it's own file
 /**
@@ -525,6 +527,9 @@ async function handleContextAction(action){
     }else if(action === "connect"){
         console.log("Currently connecting")
         setMode("connect");
+    }else if(action === "group-nodes"){
+        console.log("Activating group mode from context menu")
+        toggleGroupMode();
     }else if(action === "upload"){
         uploadFiles(node);
     }else if(action === "next-image" || action === "prev-image"){
@@ -595,6 +600,11 @@ cy.on("tap", () => {
     if (submenu && submenu.classList.contains("show")) {
         submenu.classList.remove("show");
         trigger.classList.remove("active");
+    }
+    
+    // Don't interfere with group mode tap handling
+    if (isGroupModeActive()) {
+        return;
     }
 });
 document.addEventListener("click", (evt) => {
@@ -778,6 +788,11 @@ document.addEventListener("keydown", function(evt){
 
     if(evt.key === "Delete" && selected.length){
         ur.do("remove", selected);
+    }
+    
+    // Handle grouped nodes deletion (handled by groupManager, but we need to prevent default)
+    if((evt.key === "Delete" || evt.key === "Backspace") && isGroupModeActive() && getGroupCount() > 0){
+        evt.preventDefault();
     }
     if((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === "z"){
         evt.preventDefault();
@@ -1138,6 +1153,7 @@ function initializeGlobalFunctions() {
     window.toggleDarkMode = toggleDarkMode;
     window.resetToDefaultView = resetToDefaultView;
     window.handleTransformAction = handleTransformAction;
+    window.toggleGroupMode = toggleGroupMode;
     
     // Make tutorialSystem globally available when it's initialized
     if (window.tutorialSystem) {
