@@ -627,14 +627,34 @@ body {
     font-weight: 600;
     cursor: pointer;
     margin-bottom: 12px;
-    color: var(--text-color);
+    color: var(--primary-color);
     font-size: 16px;
     transition: var(--transition-smooth);
     padding: 8px 0;
 }
 
 .section-header:hover {
+    color: var(--text-color);
+}
+
+/* Enhanced section header styling for light mode */
+:root:not(.dark-mode) .section-header {
+    color: #667eea;
+    font-weight: 700;
+}
+
+:root:not(.dark-mode) .section-header:hover {
+    color: #2c3e50;
+}
+
+/* Enhanced section header styling for dark mode */
+.dark-mode .section-header {
     color: var(--primary-color);
+    font-weight: 700;
+}
+
+.dark-mode .section-header:hover {
+    color: var(--text-color);
 }
 
 .section-body {
@@ -830,6 +850,18 @@ body {
     margin-bottom: 8px;
     color: var(--text-color);
     font-size: 14px;
+}
+
+/* Enhanced label styling for light mode */
+:root:not(.dark-mode) .node-info label {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+/* Enhanced label styling for dark mode */
+.dark-mode .node-info label {
+    color: var(--text-color);
+    font-weight: 700;
 }
 
 .node-info input,
