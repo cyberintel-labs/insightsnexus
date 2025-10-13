@@ -54,6 +54,14 @@
         </div>
     </div>
     <div class="menu">
+        <button onclick="toggleDropdown('settings-dropdown')">Settings</button>
+        <div id="settings-dropdown" class="dropdown">
+            <button id="node-properties-collapse-toggle" onclick="toggleNodePropertiesCollapse()">
+                <span id="node-properties-collapse-indicator">☐</span> Node Properties Always Collapsed: <span id="node-properties-collapse-status">OFF</span>
+            </button>
+        </div>
+    </div>
+    <div class="menu">
         <button onclick="openFeedbackEmail()">Feedback</button>
     </div>
     <div class="menu dark-mode-menu">

@@ -231,6 +231,94 @@ let rightClickedNode = null;
 let shiftDown = false;
 
 /**
+ * Settings Management
+ * 
+ * Manages application settings with localStorage persistence.
+ * Currently handles the Node Properties Always Collapsed setting.
+ */
+let settings = {
+    nodePropertiesAlwaysCollapsed: false
+};
+
+/**
+ * Load Settings from localStorage
+ * 
+ * loadSettings()
+ * 
+ * Loads settings from localStorage and applies them to the application.
+ * Falls back to default values if no saved settings exist.
+ */
+function loadSettings() {
+    const savedSettings = localStorage.getItem('appSettings');
+    if (savedSettings) {
+        try {
+            const parsed = JSON.parse(savedSettings);
+            settings = { ...settings, ...parsed };
+        } catch (error) {
+            console.warn('Failed to parse saved settings:', error);
+        }
+    }
+    updateSettingsUI();
+}
+
+/**
+ * Save Settings to localStorage
+ * 
+ * saveSettings()
+ * 
+ * Saves current settings to localStorage for persistence across sessions.
+ */
+function saveSettings() {
+    localStorage.setItem('appSettings', JSON.stringify(settings));
+}
+
+/**
+ * Update Settings UI
+ * 
+ * updateSettingsUI()
+ * 
+ * Updates the settings UI elements to reflect the current settings state.
+ */
+function updateSettingsUI() {
+    const indicator = document.getElementById('node-properties-collapse-indicator');
+    const status = document.getElementById('node-properties-collapse-status');
+    
+    if (indicator && status) {
+        if (settings.nodePropertiesAlwaysCollapsed) {
+            indicator.textContent = '☑';
+            indicator.classList.add('active');
+            status.textContent = 'ON';
+            status.classList.add('active');
+        } else {
+            indicator.textContent = '☐';
+            indicator.classList.remove('active');
+            status.textContent = 'OFF';
+            status.classList.remove('active');
+        }
+    }
+}
+
+/**
+ * Toggle Node Properties Always Collapsed Setting
+ * 
+ * toggleNodePropertiesCollapse()
+ * 
+ * Toggles the Node Properties Always Collapsed setting and saves it to localStorage.
+ * When enabled, clicking outside of nodes will automatically collapse the properties menu.
+ */
+function toggleNodePropertiesCollapse() {
+    settings.nodePropertiesAlwaysCollapsed = !settings.nodePropertiesAlwaysCollapsed;
+    saveSettings();
+    updateSettingsUI();
+    
+    // Close the settings dropdown after toggling
+    const dropdown = document.getElementById('settings-dropdown');
+    if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+}
+
+/**
  * Update ID Counter Function
  * 
  * updateIdCounter()
@@ -602,6 +690,11 @@ cy.on("tap", () => {
     if (submenu && submenu.classList.contains("show")) {
         submenu.classList.remove("show");
         trigger.classList.remove("active");
+    }
+    
+    // Close properties menu if "Always Collapsed" setting is enabled and clicking on empty space
+    if (settings.nodePropertiesAlwaysCollapsed && cy.$(":selected").length === 0) {
+        closePropertiesMenu();
     }
     
     // Don't interfere with group mode tap handling
@@ -1156,6 +1249,8 @@ function initializeGlobalFunctions() {
     window.resetToDefaultView = resetToDefaultView;
     window.handleTransformAction = handleTransformAction;
     window.toggleGroupMode = toggleGroupMode;
+    window.toggleNodePropertiesCollapse = toggleNodePropertiesCollapse;
+    window.settings = settings; // Make settings globally available
     
     // Make tutorialSystem globally available when it's initialized
     if (window.tutorialSystem) {
@@ -1174,6 +1269,8 @@ function initializeGlobalFunctions() {
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize global functions first
     initializeGlobalFunctions();
+    // Load settings from localStorage
+    loadSettings();
     // Small delay to ensure Cytoscape is fully initialized
     setTimeout(() => {
         autoLoadLastSave();

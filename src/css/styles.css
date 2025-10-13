@@ -165,6 +165,35 @@ body {
     transform: translateX(4px);
 }
 
+/* Settings toggle button specific styling */
+#node-properties-collapse-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 10px 16px;
+}
+
+#node-properties-collapse-indicator {
+    font-size: 16px;
+    margin-right: 8px;
+    transition: color 0.3s ease;
+}
+
+#node-properties-collapse-indicator.active {
+    color: #4CAF50;
+}
+
+#node-properties-collapse-status {
+    font-weight: 600;
+    color: var(--text-color);
+    transition: color 0.3s ease;
+}
+
+#node-properties-collapse-status.active {
+    color: #4CAF50;
+}
+
 .sub-dropdown select {
     margin: 8px 16px;
     padding: 10px 12px;

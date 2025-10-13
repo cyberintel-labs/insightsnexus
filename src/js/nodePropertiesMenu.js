@@ -102,6 +102,11 @@ export function initNodePropertiesMenu(cytoscapeInstance){
         }
         selectedNode = null;
         updatePropertiesMenu(selectedNode);
+        
+        // Close properties menu if "Always Collapsed" setting is enabled
+        if (window.settings && window.settings.nodePropertiesAlwaysCollapsed) {
+            closePropertiesMenu();
+        }
     });
 
     // Name input → updates node label
