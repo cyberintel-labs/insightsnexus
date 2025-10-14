@@ -213,6 +213,11 @@ body {
     transform: scale(1.02);
 }
 
+/* Dark mode: Make text black for better readability in sub-dropdown select */
+.dark-mode .sub-dropdown select {
+    color: #000000;
+}
+
 .scroll-node {
     width: 180px;
     height: 120px;
@@ -839,6 +844,11 @@ body {
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Dark mode: Make text black for better readability in text file content */
+.dark-mode .text-file-content {
+    color: #000000;
+}
+
 .node-info .field-row {
     display: flex;
     flex-direction: column;
@@ -899,6 +909,12 @@ body {
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     transform: scale(1.02);
     background: var(--panel-hover-bg);
+}
+
+/* Dark mode: Make text black for better readability in input fields */
+.dark-mode .node-info input,
+.dark-mode .node-info select {
+    color: #000000;
 }
 
 .thumbnail-selected {
@@ -1370,6 +1386,11 @@ body {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     background: var(--panel-hover-bg);
+}
+
+/* Dark mode: Make text black for better readability in notes textarea */
+.dark-mode .notes-textarea {
+    color: #000000;
 }
 
 .notes-textarea::placeholder {
@@ -2067,7 +2088,7 @@ body {
 
 .dark-mode .global-notes-textarea {
     background: var(--input-bg);
-    color: var(--text-color);
+    color: #000000;
 }
 
 .dark-mode .global-notes-textarea:focus {
