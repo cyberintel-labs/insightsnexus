@@ -6,11 +6,17 @@ echo ==== Starting Application ====
 :: Run build
 echo Running npm run build...
 call npm run build
+
+:: Stop if the build still failed
 if errorlevel 1 (
-    echo ERROR: Build failed.
+    echo ERROR: Build failed. Application will not start.
+    echo Check the error messages above for details.
     pause
     exit /b 1
 )
+
+echo Build completed successfully.
+echo Starting server in new window...
 
 :: Start application in a new background window
 echo Starting server in new window...
