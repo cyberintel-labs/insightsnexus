@@ -13,6 +13,9 @@
  */
 
 import { execSync } from "child_process";
+import { existsSync } from "fs";
+import * as path from "path";
+import * as os from "os";
 
 /**
  * Tool Path Detection Results
@@ -36,10 +39,13 @@ export interface ToolPaths {
  * Uses platform-specific commands (Windows 'where' vs Unix 'which') to locate tools.
  * 
  * Process:
- * 1. Attempts Windows 'where' command for each tool
- * 2. Falls back to Unix 'which' command if Windows fails
- * 3. Sets empty string if tool is not found
- * 4. Logs detection results for debugging
+ * 1. Sets empty string for the tools in case they are not found
+ * 2. Determines the platform
+ * 3. Commands used to locate tools are determine based on platform
+ * 4. For each tool an attempt is made to locate the path
+ * 5. If the tool is not found after we tried to locate it, check the local directory
+ *      For linux only we check at specific directories just in case
+ * 6. Logs detection results for debugging
  * 
  * Returns:
  * - ToolPaths object with detected paths for each tool
@@ -56,48 +62,52 @@ export function detectTools(): ToolPaths {
         ffuf: ""
     };
 
-    // Detect Sherlock
-    try {
-        tools.sherlock = execSync("where sherlock", { encoding: "utf8" }).split("\n")[0].trim();
-        console.log("Sherlock found at (Windows):", tools.sherlock);
-    } catch {
-        try {
-            tools.sherlock = execSync("which sherlock", { encoding: "utf8" }).trim();
-            console.log("Sherlock found at (Unix):", tools.sherlock);
-        } catch {
-            console.error("Sherlock not found in path.");
-            tools.sherlock = "";
-        }
-    }
+    const isWindows = process.platform === "win32";
+    const commands = isWindows ? ["where"] : ["which", "command -v"];
+    const homeDir = os.homedir();
 
-    // Detect Feroxbuster
-    try {
-        tools.feroxbuster = execSync("where feroxbuster", { encoding: "utf8" }).split("\n")[0].trim();
-        console.log("Feroxbuster found at (Windows):", tools.feroxbuster);
-    } catch {
-        try {
-            tools.feroxbuster = execSync("which feroxbuster", { encoding: "utf8" }).trim();
-            console.log("Feroxbuster found at (Unix):", tools.feroxbuster);
-        } catch {
-            console.error("Feroxbuster not found in path.");
-            tools.feroxbuster = "";
+    const detect = (tool: string): string => {
+        for (const cmd of commands) {
+            try {
+                const output = execSync(`${cmd} ${tool}`, { encoding: "utf8" })
+                    .split("\n")[0]
+                    .trim();
+                if (output && existsSync(output)) return output;
+            } catch {
+                continue;
+            }
         }
-    }
 
-    // Detect ffuf
-    try {
-        tools.ffuf = execSync("where ffuf", { encoding: "utf8" }).split("\n")[0].trim();
-        console.log("ffuf found at (Windows):", tools.ffuf);
-    } catch {
-        try {
-            tools.ffuf = execSync("which ffuf", { encoding: "utf8" }).trim();
-            console.log("ffuf found at (Unix):", tools.ffuf);
-        } catch {
-            console.error("ffuf not found in path.");
-            tools.ffuf = "";
+        // Fallback: check local directory
+        const localPath = path.resolve(process.cwd(), `${tool}${isWindows ? ".exe" : ""}`);
+        if (existsSync(localPath)) return localPath;
+
+        // Additional fallback for Linux pipx/pip installs
+        if (!isWindows) {
+            const possibleLinuxPaths = [
+                path.join(homeDir, ".local", "bin", tool),
+                path.join("/usr/local/bin", tool),
+                path.join("/usr/bin", tool),
+                path.join("/bin", tool),
+            ];
+
+            for (const p of possibleLinuxPaths) {
+                if (existsSync(p)) {
+                    console.log(`${tool} found at fallback path: ${p}`);
+                    return p;
+                }
+            }
         }
-    }
 
+        console.error(`${tool} not found in PATH or known fallback directories.`);
+        return "";
+    };
+
+    tools.sherlock = detect("sherlock");
+    tools.feroxbuster = detect("feroxbuster");
+    tools.ffuf = detect("ffuf");
+
+    console.log("Detected Tools:", tools);
     return tools;
 }
 
