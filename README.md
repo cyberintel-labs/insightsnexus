@@ -51,36 +51,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 Copyright (c) 2024 Investigating Project
 
 # Prerequisites
-* Users must install sherlock before usage.
-You can find it here: https://github.com/sherlock-project/sherlock
-* Users must install feroxbuster to search for endpoints.
-You can find it here: https://github.com/epi052/feroxbuster
-* Users must install ffuf to search for subdomains.
-You can find it here: https://github.com/ffuf/ffuf
-
+* We highly recommend that you install the executable installers for your platform for an easy setup.
+You can find it at the releases tab where each platform has an executable and a readme file.
 
 # Starting the application
-To start the server open command prompt in the main directory and execute the following:
+To start the server open the start-up file that relates to your platform.
+If you would like to do it manually, type the following in your terminal at your project directory:
 1. First build the project: `npm run build`
 2. Then start the server: `npm start`
-
-# Testing the application
-To start running test files, open command prompt in the main directory and execute either:
-`npm test`
-`npm run test:ui`
 
 # Troubleshooting
 
 ## Common Issues
-
-### "Cannot find module 'dist/server.js'" Error
-If you get an error like `Error: Cannot find module '/path/to/project/dist/server.js'`, this means the TypeScript files haven't been compiled yet. 
-
-**Solution:**
-1. First build the project: `npm run build`
-2. Then start the server: `npm start` or `node dist/server.js`
-
-**Why this happens:** The project uses TypeScript, which needs to be compiled to JavaScript before Node.js can run it. The `dist` folder contains the compiled JavaScript files.
 
 ### Permission Errors
 If you run into access denied permission errors even when using sudo, run the following:
