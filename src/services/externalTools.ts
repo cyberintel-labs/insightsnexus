@@ -253,7 +253,7 @@ export async function executePortScan(target: string): Promise<Array<{port: numb
         const portsFilePath = path.join(__dirname, "../../data/top-1000-ports.txt");
         const portsData = fs.readFileSync(portsFilePath, 'utf-8');
         const topPorts = portsData
-            .split('\n')
+            .split(/[,\s]+/) 
             .map(line => parseInt(line.trim(), 10))
             .filter(port => !isNaN(port) && port > 0 && port <= 65535);
 
