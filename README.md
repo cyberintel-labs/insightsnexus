@@ -2,56 +2,43 @@
 
 This local web application allows users to manipulate and connect nodes on their screen to streamline OSINT investigations and information gathering.
 
-## IMPORTANT LEGAL DISCLAIMER AND TERMS OF SERVICE
+# Demo
 
-**BY USING THIS SOFTWARE, YOU ACKNOWLEDGE AND AGREE TO THE FOLLOWING TERMS:**
+![Demo](Demo.gif)
 
-### Legal Compliance and Authorized Use Only
-This software is designed for **LEGITIMATE OSINT INVESTIGATIONS ONLY**. Users must ensure they have proper authorization before conducting any reconnaissance activities. Unauthorized scanning, enumeration, or information gathering activities may violate local, national, and international laws
+# Features
+## Core Graph Functionality
+* Create, edit, and delete nodes on screen
+* Connect nodes with edges to show relationships
+* Save and load investigation progress
+* Undo/redo functionality (Ctrl+Z/Ctrl+Y)
+* Box selection with Shift+click
+* Manual selection with Ctrl+click
+* Sequential node connection with C key
+* Dark mode toggle
+* Zoom controls with reset view functionality
 
-### Prohibited Activities
-**DO NOT USE THIS SOFTWARE FOR:**
-- Scanning networks or systems you do not own or lack explicit permission to test
-- Conducting reconnaissance on targets without proper authorization
-- Violating any platform's Terms of Service (social media, websites, etc.)
-- Engaging in harassment, stalking, or doxxing activities
-- Any illegal or malicious activities
-- Unauthorized penetration testing or security assessments
+## File Management
+* Upload files to nodes (images and text files)
+* View uploaded files in node properties panel
+* Navigate through multiple images with arrow keys
+* Add notes to nodes
 
-### User Responsibility and Liability
-- **You are solely responsible** for ensuring all activities comply with applicable laws
-- **You assume all legal liability** for any misuse of this software
-- The developers and contributors **disclaim all liability** for misuse or illegal activities
-- Users must obtain proper authorization before testing any external systems
-- Users must respect rate limits and terms of service of target platforms
+## OSINT Transforms
+* **Domain Analysis**: Domain to IP resolution, DNS record lookup, subdomain enumeration, endpoint discovery, WHOIS information
+* **Network Intelligence**: IP to netblock analysis, IP geolocation, port scanning
+* **OSINT Tools**: Username search with Sherlock
+* **Web Analysis**: Website to domain extraction, website screenshot capture
+* **Custom Transforms**: Upload and execute custom Python transforms
 
-### Ethical Guidelines
-- Only use this tool on systems you own or have explicit written permission to test
-- Respect privacy and data protection laws
-- Do not use information gathered for malicious purposes
-- Follow responsible disclosure practices for any vulnerabilities discovered
-- Consider the ethical implications of your investigations
+## Node Types
+* Automatic node type detection based on content
+* Support for: Person, Event, Organization, Username, Custom, Address, Domain, IP, Email, Geo Data, Database
+* Change node types through properties panel
 
-### No Warranty
-This software is provided "AS IS" without warranty of any kind. The developers make no representations or warranties regarding the legality, appropriateness, or safety of using this software for any particular purpose.
-
-### Indemnification
-By using this software, you agree to indemnify and hold harmless the developers, contributors, and distributors from any claims, damages, or legal actions arising from your use of this software.
-
-**IF YOU DO NOT AGREE TO THESE TERMS, DO NOT USE THIS SOFTWARE.**
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Copyright
-
-Copyright (c) 2024 Investigating Project
 
 # Prerequisites
-* We highly recommend that you install the executable installers for your platform for an easy setup.
+We highly recommend that you install the executable installers for your platform for an easy setup.
 You can find it at the releases tab where each platform has an executable and a readme file.
 
 # Starting the application
@@ -60,10 +47,8 @@ If you would like to do it manually, type the following in your terminal at your
 1. First build the project: `npm run build`
 2. Then start the server: `npm start`
 
+
 # Troubleshooting
-
-## Common Issues
-
 ### Permission Errors
 If you run into access denied permission errors even when using sudo, run the following:
 `rm -rf ./node_modules; npm i`
@@ -106,56 +91,46 @@ If you clicked "prevent this from opening new dialog boxes" and can no longer cr
 2. Under "Allow", click "Add"
 3. Enter your site URL and click "Add"
 4. Refresh the page
-# Features
 
-## Core Graph Functionality
-* Create, edit, and delete nodes on screen
-* Connect nodes with edges to show relationships
-* Save and load investigation progress
-* Undo/redo functionality (Ctrl+Z/Ctrl+Y)
-* Box selection with Shift+click
-* Manual selection with Ctrl+click
-* Sequential node connection with C key
-* Dark mode toggle
-* Zoom controls with reset view functionality
 
-## File Management
-* Upload files to nodes (images and text files)
-* View uploaded files in node properties panel
-* Navigate through multiple images with arrow keys
-* Add notes to nodes
+## IMPORTANT LEGAL DISCLAIMER AND TERMS OF SERVICE
 
-## OSINT Transforms
-* **Domain Analysis**: Domain to IP resolution, DNS record lookup, subdomain enumeration, endpoint discovery, WHOIS information
-* **Network Intelligence**: IP to netblock analysis, IP geolocation, port scanning
-* **OSINT Tools**: Username search with Sherlock
-* **Web Analysis**: Website to domain extraction, website screenshot capture
-* **Custom Transforms**: Upload and execute custom Python transforms
+**BY USING THIS SOFTWARE, YOU ACKNOWLEDGE AND AGREE TO THE FOLLOWING TERMS:**
 
-## Node Types
-* Automatic node type detection based on content
-* Support for: Person, Event, Organization, Username, Custom, Address, Domain, IP, Email, Geo Data, Database
-* Change node types through properties panel
+### Legal Compliance and Authorized Use Only
+This software is designed for **LEGITIMATE OSINT INVESTIGATIONS ONLY**. Users must ensure they have proper authorization before conducting any reconnaissance activities. Unauthorized scanning, enumeration, or information gathering activities may violate local, national, and international laws
 
-## Development - How to Add New Transforms
+### Prohibited Activities
+**DO NOT USE THIS SOFTWARE FOR:**
+- Scanning networks or systems you do not own or lack explicit permission to test
+- Conducting reconnaissance on targets without proper authorization
+- Violating any platform's Terms of Service (social media, websites, etc.)
+- Engaging in harassment, stalking, or doxxing activities
+- Any illegal or malicious activities
+- Unauthorized penetration testing or security assessments
 
-The backend has been refactored into modular services for better maintainability. Server.ts acts as an entry point orchestrating middleware, routes, and services.
+### User Responsibility and Liability
+- **You are solely responsible** for ensuring all activities comply with applicable laws
+- **You assume all legal liability** for any misuse of this software
+- The developers and contributors **disclaim all liability** for misuse or illegal activities
+- Users must obtain proper authorization before testing any external systems
+- Users must respect rate limits and terms of service of target platforms
 
-### Files to Consider:
-1. **src/services/externalTools.ts** - Add new tool execution function following the existing pattern
-2. **src/routes/api.ts** - Add new API endpoint with proper validation and error handling
-3. **src/js/transforms/** - Create new transform file (e.g., newTransform.js) that calls the API endpoint
-4. **src/js/main.js** - Import and register the new transform function
-5. **src/index.html** - Add context menu option if needed for the new transform
-6. **src/services/toolDetection.ts** - Add tool detection if using a new external command-line tool
+### Ethical Guidelines
+- Only use this tool on systems you own or have explicit written permission to test
+- Respect privacy and data protection laws
+- Do not use information gathered for malicious purposes
+- Follow responsible disclosure practices for any vulnerabilities discovered
+- Consider the ethical implications of your investigations
 
-### Setup Process for New Transform:
-1. Create backend function in **src/services/externalTools.ts** with proper error handling and output parsing
-2. Add API endpoint in **src/routes/api.ts** with input validation and consistent response formatting
-3. Create frontend transform module in **src/js/transforms/** that makes API calls and handles graph updates
-4. Import the transform in **src/js/main.js** and add it to the context menu handler
-5. Add menu option in **src/index.html** context menu if the transform should be available via right-click
-6. Update tool detection in **src/services/toolDetection.ts** if the transform requires a new external tool
+### No Warranty
+This software is provided "AS IS" without warranty of any kind. The developers make no representations or warranties regarding the legality, appropriateness, or safety of using this software for any particular purpose.
+
+### Indemnification
+By using this software, you agree to indemnify and hold harmless the developers, contributors, and distributors from any claims, damages, or legal actions arising from your use of this software.
+
+**IF YOU DO NOT AGREE TO THESE TERMS, DO NOT USE THIS SOFTWARE.**
+
 
 
 # TODO
