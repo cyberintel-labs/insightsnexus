@@ -6,6 +6,9 @@ This local web application allows users to manipulate and connect nodes on their
 
 ![Demo](Demo.gif)
 
+# Become an Alpha Tester
+Sign Up Here: https://insightsnexus.org/
+
 # Features
 ## Core Graph Functionality
 * Create, edit, and delete nodes on screen
@@ -133,7 +136,7 @@ By using this software, you agree to indemnify and hold harmless the developers,
 
 
 
-# TODO
+# Roadmap
 * Integrate more transforms using APIs
 * Better spread out the sherlock results.
 * Allow the user to create edge labels.
