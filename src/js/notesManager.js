@@ -13,7 +13,7 @@
  * - Responsive design with dark mode support
  * 
  * Copyright (c) 2024 Investigating Project
- * Licensed under the MIT License
+ * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
  */
 
 // Global notes state

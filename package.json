@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "description": "",
   "devDependencies": {
     "@types/express": "^5.0.2",

@@ -10,7 +10,7 @@
  * - File Operations: Save/load graph data
  * 
  * Copyright (c) 2024 Investigating Project
- * Licensed under the MIT License
+ * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
  * - Data Processing: Validation and transformation
  */
 

@@ -10,7 +10,7 @@
  * - Keyboard shortcuts for common actions
  * 
  * Copyright (c) 2024 Investigating Project
- * Licensed under the MIT License
+ * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
  * - Mode-based interaction system
  * - Integration with username search functionality
  * - Undo/redo functionality for all graph changes
