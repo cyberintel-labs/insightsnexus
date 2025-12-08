@@ -40,6 +40,7 @@ import { TransformBase } from "./utils/transformBase.js";
 import { multiTransformManager } from "./utils/multiTransformManager.js";
 import { initGroupManager, toggleGroupMode, getGroupedNodes, isGroupModeActive, getGroupCount } from "./groupManager.js";
 import { initNotesManager, getNotesContent, setNotesContent } from "./notesManager.js";
+import { createInlineEditor } from "./utils/inlineNodeEditor.js";
 
 initNodePropertiesMenu(cy);
 initGroupManager();
@@ -721,45 +722,56 @@ document.addEventListener("click", (evt) => {
  * Node Creation Handler
  * 
  * Double-tap on empty space creates a new node.
- * Prompts user for node name and adds it to the graph with overlap prevention.
- * Automatically detects node type based on the label content.
+ * Creates node with default label and immediately enables inline editing.
+ * User enters node name directly within the node without a popup dialog.
+ * Automatically detects node type based on the label content after editing.
  */
 cy.on("dbltap", (evt) => {
     if(evt.target === cy){
-        const name = prompt("Enter node name:");
-        if(!name) return;
         const newId = "n" + idCounter++;
         
         // Apply overlap prevention to ensure new node doesn't overlap existing nodes
         const safePosition = resolveNodeOverlap(null, evt.position);
         
-        // Create node with automatic type detection
-        createNodeWithType({
-            id: newId,
-            label: name,
+        // Create node with temporary label - will be updated via inline editor
+        const tempNode = {
+            group: "nodes",
+            data: {
+                id: newId,
+                label: "New Node",
+                type: 'custom'
+            },
             position: safePosition
-        }).then(nodeData => {
-            ur.do("add", nodeData);
-            // Automatically select the newly created node to show its properties
-            const newNode = cy.getElementById(newId);
-            if (newNode.length) {
-                newNode.select();
-            }
-        }).catch(error => {
-            console.error("Error creating node with type:", error);
-            // Fallback to custom type if detection fails
-            const fallbackNode = {
-                group: "nodes",
-                data: {id: newId, label: name, type: 'custom'},
-                position: safePosition
-            };
-            ur.do("add", fallbackNode);
-            // Automatically select the newly created node to show its properties
-            const newNode = cy.getElementById(newId);
-            if (newNode.length) {
-                newNode.select();
-            }
-        });
+        };
+        
+        // Add node to graph
+        ur.do("add", tempNode);
+        
+        // Get the newly created node
+        const newNode = cy.getElementById(newId);
+        if (!newNode.length) {
+            console.error("Failed to create node");
+            return;
+        }
+        
+        // Automatically select the newly created node to show its properties
+        newNode.select();
+        
+        // Start inline editing immediately
+        // Use setTimeout to ensure node is fully rendered before positioning editor
+        setTimeout(() => {
+            createInlineEditor(newNode, (node, newLabel, wasCancelled, shouldDelete) => {
+                // If user cancelled editing a new node, remove it
+                if (wasCancelled && shouldDelete) {
+                    ur.do("remove", node);
+                } else if (newLabel) {
+                    // Node was successfully edited, ensure it's still selected
+                    if (node.length) {
+                        node.select();
+                    }
+                }
+            }, true); // Pass true to indicate this is a newly created node
+        }, 50);
     }
 });
 
