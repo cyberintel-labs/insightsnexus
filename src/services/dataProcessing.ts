@@ -9,7 +9,6 @@
  * - Response data formatting
  * - Error message formatting
  * 
- * Copyright (c) 2024 Investigating Project
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
  * - Data transformation utilities
  */

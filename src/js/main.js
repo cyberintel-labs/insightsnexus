@@ -9,7 +9,6 @@
  * - Context menu system for node operations
  * - Keyboard shortcuts for common actions
  * 
- * Copyright (c) 2024 Investigating Project
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
  * - Mode-based interaction system
  * - Integration with username search functionality
@@ -41,10 +40,12 @@ import { multiTransformManager } from "./utils/multiTransformManager.js";
 import { initGroupManager, toggleGroupMode, getGroupedNodes, isGroupModeActive, getGroupCount } from "./groupManager.js";
 import { initNotesManager, getNotesContent, setNotesContent } from "./notesManager.js";
 import { createInlineEditor } from "./utils/inlineNodeEditor.js";
+import { initNodeIndicators, refreshAllIndicators } from "./nodeIndicators.js";
 
 initNodePropertiesMenu(cy);
 initGroupManager();
 initNotesManager();
+initNodeIndicators(cy);
 
 // START: Custom button logic will be moved to it's own file
 /**

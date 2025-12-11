@@ -9,7 +9,6 @@
  * - Graph data save/load functionality for investigation persistence
  * - Static file serving for the web interface
  * 
- * Copyright (c) 2024 Investigating Project
  * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
  * - RESTful API endpoints for frontend communication
  * 
