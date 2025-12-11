@@ -11,7 +11,7 @@
  * - ffuf: Web fuzzing
  *
  * Copyright (c) 2024 Investigating Project
- * Licensed under the MIT License
+ * Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
  * - portscanner: Port scanning
  * - whois: Domain information
  */
@@ -259,7 +259,7 @@ function executePortScan(target) {
             const portsFilePath = path_1.default.join(__dirname, "../../data/top-1000-ports.txt");
             const portsData = fs_1.default.readFileSync(portsFilePath, 'utf-8');
             const topPorts = portsData
-                .split('\n')
+                .split(/[,\s]+/)
                 .map(line => parseInt(line.trim(), 10))
                 .filter(port => !isNaN(port) && port > 0 && port <= 65535);
             console.log(`Loaded ${topPorts.length} ports from top 1000 list`);
